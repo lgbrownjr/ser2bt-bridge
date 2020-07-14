@@ -1,0 +1,10 @@
+[Unit]
+Description=Bluetooth serial service
+After=bluetooth.service
+Requires=bluetooth.service
+
+[Service]
+ExecStart=/usr/bin/rfcomm watch hci0 1 setsid /sbin/agetty -L rfcomm0 9600 xterm -a pi
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,85 @@
+#!/bin/bash
+#color and other formatting defenitions:
+source $HOME/bin/format.sh
+#variables:
+bt_port="/dev/rfcomm0"
+usb_port="/dev/ttyUSB0"
+acm_port="/dev/ttyACM0"
+installed_app_count=0
+app_count=0
+declare -a cmds=(stty screen minicom tio)
+
+function exit_script () {
+	if [[ $exit_status == 0 ]]; then
+		printf "\n${nor}Exit Status is: ${grn}$exit_status${end}\n"
+	else
+		printf "\n${nor}Exit Status is: ${red}$exit_status${end}\n"
+	fi
+	printf "${nor}Exit Resason is: $exit_status_reason\n"
+	printf "\n${nor}Exiting to shell...\n${end}"
+}
+
+#Check to make sure user is logging in through a bluetooth serial port (rfcomm[0-9])
+if [[ $(tty) != $bt_port ]]; then
+	printf "\n${yel}$0${nor} is only designed to work from a ${blu}bluetooth${nor} vty.  Please\nlogin to ${mag}$HOSTNAME${nor}"
+	printf "through a ${blu}bluetooth${nor} vty, to activate the serial passthrough\nfunction.\n"
+	exit_status=2
+	exit_status_reason="${bro}Can only work if being accessed from ${blu}bluetooth${bro} serial."
+	exit_script $exit_status ${exit_status_reason}
+	exit $exit_status # Exit - can only work if being accessed from bluetooth serial.
+fi
+#Check dependencies:
+printf "${nor}Checking for dependencies:\n"
+for cmd in ${cmds[@]} ; do
+	let app_count++
+	if command -v $cmd > /dev/null 2>&1 ; then
+#		echo "${mag}$cmd${nor} found"
+		let installed_app_count++
+		sleep .1
+	else
+		printf "${red}$cmd${nor} not found, please use: \"${yel}sudo apt install $cmd${nor}\"\n"
+		sleep .1
+	fi
+done
+if [[ $app_count != $installed_app_count ]]; then
+	printf "\n"
+	exit_status=3
+	exit_status_reason="${bro}Dependancies need to be met.${nor}"
+	exit_script $exit_status $exit_status_reason
+	exit $exit_status # Exit as dependancies need to be met.
+else
+	printf "${grn}Done${nor}\n\n"
+fi
+#set the bluetooth port, and assign the usb and acm ports.
+printf "Checking to make sure we are connected to a serial device...\n"
+sleep 1
+if [[ ! -e $usb_port ]]; then
+   printf "${cyn}$usb_port${nor} is ${red}not${nor} available - Stamdby, checking for ACM port insted...\n"
+	if [[ ! -e $acm_port ]]; then
+		printf "${cyn}$acm_port${nor} is ${red}not${nor} available.\nPlease run \"${yel}$0${nor}\" once the serial connection to the device is established.\n"
+		exit_status=4
+		exit_status_reason="${bro}There is no device connected via serial..${nor}"
+		exit_script $exit_status $exit_status_reason
+		exit $exit_status # Exit as there is no device connected via serial.
+	else
+	  wire_port=$acm_port
+	fi
+	sleep 1
+else
+  wire_port=$usb_port
+fi
+resize
+printf "Both sides are connected, bridging ${cyn}$bt_port${nor} with ${cyn}$wire_port${nor}...\n\n"
+tio -b 9600 -o 5 $wire_port
+#screen -a -c /etc/bt_2_serial_screenrc
+#screen -S bt2serial -p 0
+#screen -d -m -a -S bt2serial -t link_2_cisco -X stuff "
+printf "You are now connected!\n\nPress ${cyn}CTRL${nor} + ${cyn}A${nor}, then press the ${cyn}\${nor} key.  Finally, press the ${cyn}y${nor} key to agree to exit${end}\r"
+#screen -c /etc/bt_2_serial_screenrc -a
+wait
+clear
+#exit routine.
+exit_status=0
+exit_status_reason="Successful completion."
+exit_script $exit_status $exit_status_reason
+exit $exit_status
