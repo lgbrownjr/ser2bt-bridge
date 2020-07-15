@@ -1,13 +1,14 @@
+[Unit]
 Description=Bluetooth to serial status for e-paper
 Before=bluetooth.service network.online.target
 After=sysinit.target
 
 [Service]
 Type=simple
-KillSignal=SIGKILL
+KillSignal=SIGINT
 TimeoutStopSec=8
+SyslogIdentifier=ser2bt-e-paper-status
 ExecStart=nice -15 /usr/local/bin/ser2bt_status
-StandardOutput=inherit
 StandardOutput=inherit
 Restart=on-failure
 RestartSec=10

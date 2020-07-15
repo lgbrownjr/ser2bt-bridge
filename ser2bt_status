@@ -205,7 +205,8 @@ try:
     os.system("shutdown -P now")
     exit()
 
-except (KeyboardInterrupt, SystemExit):
+#except (KeyboardInterrupt, SystemExit):
+except:
     term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     print ("application is closeing\n")
     term_draw = ImageDraw.Draw(term_image)
