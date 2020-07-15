@@ -47,7 +47,6 @@ def readCapacity(bus):
      capacity = swapped/256
      return capacity
 
-
 try:
     epd = epd2in13_V2.EPD()
     epd.init(epd.FULL_UPDATE)
@@ -197,8 +196,8 @@ try:
     term_draw = ImageDraw.Draw(term_image)
     epd.init(epd.FULL_UPDATE)
     epd.Clear(0xFF)
-    term_draw.text((20, 50), 'Shutting Down!', font = f_title_font24, fill = 0)
-    term_draw.text((15, 80), 'Due to Critical Battary level', font = f_title_font16, fill = 0)
+    term_draw.text((30, 50), 'Shutting Down!', font = f_title_font24, fill = 0)
+    term_draw.text((20, 80), 'Due to Critical Battary level', font = f_title_font16, fill = 0)
     logging.info ("Shutting down has battary has reached critical level")
     logging.info ("Battary is: "+str(bat_cap)+"%")
     epd.display(epd.getbuffer(term_image))
@@ -207,7 +206,6 @@ try:
     exit()
 
 except (KeyboardInterrupt, SystemExit):
-#except:
     term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     print ("application is closeing\n")
     term_draw = ImageDraw.Draw(term_image)
