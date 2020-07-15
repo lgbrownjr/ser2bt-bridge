@@ -1,7 +1,9 @@
 [Unit]
 Description=Bluetooth to serial status for e-paper
-Before=bluetooth.service network.online.target
+#Before=sysinit.target shutdown.target
+Before=networking.service bluetooth.service
 After=sysinit.target
+#DefaultDependencies=no
 
 [Service]
 Type=simple
@@ -12,7 +14,8 @@ ExecStart=nice -15 /usr/local/bin/ser2bt_status
 StandardOutput=inherit
 Restart=on-failure
 RestartSec=10
-KillMode=mixed
+#KillMode=mixed
 
 [Install]
+#WantedBy=basic.target
 WantedBy=sysinit.target
