@@ -21,7 +21,10 @@ import smbus
 import psutil
 import logging
 
-host_name = socket.gethostname()
+#Variable decleration:
+host_name = socket.gethostname() #define host_name
+bus = smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
+min_bat_cap = 2 # setting minimum battery capacity before we'll shutdown.
 
 def get_ssid():
     ps = subprocess.Popen(['iwgetid'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -44,7 +47,6 @@ def readCapacity(bus):
      capacity = swapped/256
      return capacity
 
-bus = smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
 
 try:
     epd = epd2in13_V2.EPD()
@@ -73,7 +75,8 @@ try:
 
     time.sleep(0.25)
     num = 0
-    while (True):
+    bat_cap = int(readCapacity(bus))
+    while (bat_cap > min_bat_cap):
         #update status:
         time.sleep(0.25)
         try:
@@ -188,19 +191,20 @@ try:
         epd.displayPartial(epd.getbuffer(image))
         num = num + 1
         time.sleep(0.25)
-        if bat_cap <= 2:
-           term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
-           term_draw = ImageDraw.Draw(term_image)
-           epd.init(epd.FULL_UPDATE)
-           epd.Clear(0xFF)
-           term_draw.text((20, 50), 'Shutting Down!', font = f_title_font24, fill = 0)
-           term_draw.text((15, 80), 'Due to Critical Battary level', font = f_title_font16, fill = 0)
-           logging.info ("Shutting down has battary has reached critical level")
-           logging.info ("Battary is: "+str(bat_cap)+"%")
-           epd.display(epd.getbuffer(term_image))
-           epd2in13_V2.epdconfig.module_exit()
-           os.system("shutdown -P now")
-           exit()
+#End of while bat_cap > 2 loop...
+#After the loop closes due to the battery reaching minimum capacity, we'll follow the remaining code - to shutdown.
+    term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
+    term_draw = ImageDraw.Draw(term_image)
+    epd.init(epd.FULL_UPDATE)
+    epd.Clear(0xFF)
+    term_draw.text((20, 50), 'Shutting Down!', font = f_title_font24, fill = 0)
+    term_draw.text((15, 80), 'Due to Critical Battary level', font = f_title_font16, fill = 0)
+    logging.info ("Shutting down has battary has reached critical level")
+    logging.info ("Battary is: "+str(bat_cap)+"%")
+    epd.display(epd.getbuffer(term_image))
+    epd2in13_V2.epdconfig.module_exit()
+    os.system("shutdown -P now")
+    exit()
 
 except (KeyboardInterrupt, SystemExit):
 #except:
@@ -209,8 +213,8 @@ except (KeyboardInterrupt, SystemExit):
     term_draw = ImageDraw.Draw(term_image)
     epd.init(epd.FULL_UPDATE)
     epd.Clear(0xFF)
-    term_draw.text((20, 50), 'Exiting ser2bt e-ink display', font = f_title_font24, fill = 0)
-    term_draw.text((15, 80), 'Due to Quit (SIGTERM)', font = f_title_font16, fill = 0)
+    term_draw.text((8, 50), 'Exiting ser2bt_status', font = f_title_font24, fill = 0)
+    term_draw.text((35, 80), 'Due to Quit (SIGTERM)', font = f_title_font16, fill = 0)
     epd.display(epd.getbuffer(term_image))
     epd2in13_V2.epdconfig.module_exit()
     exit()
