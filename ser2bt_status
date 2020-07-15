@@ -205,15 +205,14 @@ try:
     os.system("shutdown -P now")
     exit()
 
-#except (KeyboardInterrupt, SystemExit):
-except:
+except (KeyboardInterrupt, SystemExit):
     term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     print ("application is closeing\n")
     term_draw = ImageDraw.Draw(term_image)
     epd.init(epd.FULL_UPDATE)
     epd.Clear(0xFF)
     term_draw.text((8, 50), 'Exiting ser2bt_status', font = f_title_font24, fill = 0)
-    term_draw.text((35, 80), 'Due to Quit (SIGTERM)', font = f_title_font16, fill = 0)
+    term_draw.text((33, 80), 'Due to Quit (SIGINT)', font = f_title_font16, fill = 0)
     epd.display(epd.getbuffer(term_image))
     epd2in13_V2.epdconfig.module_exit()
     exit()
