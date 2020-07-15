@@ -1,6 +1,7 @@
 [Unit]
 Description=Bluetooth to serial status for e-paper
-DefaultDependencies=no
+Before=bluetooth.service network.online.target
+After=sysinit.target
 
 [Service]
 Type=simple
