@@ -62,7 +62,7 @@ try:
     image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     draw = ImageDraw.Draw(image)
 
-    time.sleep(0.25)
+    time.sleep(0.15)
     draw.text((0, 0), host_name, font = f_top_line_font16, fill = 0)
     draw.line([(0, 17),(250, 17)], fill = 0,width = 2)
     draw.text((0, 20), 'Load:', font = f_title_font16, fill = 0)
@@ -72,12 +72,12 @@ try:
     draw.text((0, 100), 'TTYs:', font = f_title_font16, fill = 0)
     epd.display(epd.getbuffer(image))
 
-    time.sleep(0.25)
+    time.sleep(0.15)
     num = 0
     bat_cap = int(readCapacity(bus))
     while (bat_cap > min_bat_cap):
         #update status:
-        time.sleep(0.25)
+        time.sleep(0.15)
         try:
            iface = netifaces.gateways()['default'][netifaces.AF_INET][1]
         except:
@@ -86,7 +86,7 @@ try:
            host_ip = netifaces.ifaddresses(iface)[netifaces.AF_INET][0]['addr']
         else:
            host_ip = "Not Connected" 
-        time.sleep(0.25)
+        time.sleep(0.15)
         bt_service_status = subprocess.Popen(['systemctl', 'is-active', 'rfcomm'], stdout=subprocess.PIPE).communicate()[0]
         bt_string_status = bt_service_status.decode(encoding='UTF-8')
 
@@ -186,10 +186,10 @@ try:
            draw.text((122, 100), bt_serial_status, font = f_var_spc_char_font16, fill = 0)
            draw.text((145, 100), wired_serial_port, font = f_var_font16, fill = 0)
            draw.text((190, 100), wired_serial_status, font = f_var_spc_char_font16, fill = 0)
-           time.sleep(0.15)
+           time.sleep(0.1)
         epd.displayPartial(epd.getbuffer(image))
         num = num + 1
-        time.sleep(0.25)
+        time.sleep(0.15)
 #End of while bat_cap > 2 loop...
 #After the loop closes due to the battery reaching minimum capacity, we'll follow the remaining code - to shutdown.
     term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
