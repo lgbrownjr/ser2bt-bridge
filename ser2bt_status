@@ -62,7 +62,6 @@ try:
     image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     draw = ImageDraw.Draw(image)
 
-    time.sleep(0.20)
     draw.text((0, 0), host_name, font = f_top_line_font16, fill = 0)
     draw.line([(0, 17),(250, 17)], fill = 0,width = 2)
     draw.text((0, 20), 'Load:', font = f_title_font16, fill = 0)
@@ -76,7 +75,6 @@ try:
     bat_cap = int(readCapacity(bus))
     while (bat_cap > min_bat_cap):
         #update status:
-        time.sleep(5.00)
         try:
            iface = netifaces.gateways()['default'][netifaces.AF_INET][1]
         except:
@@ -146,7 +144,7 @@ try:
         svmem = psutil.virtual_memory()
         mem = str(svmem.percent)+"%"
 
-        time.sleep(0.20)
+#        time.sleep(0.20)
         epd.displayPartBaseImage(epd.getbuffer(image))
         epd.init(epd.PART_UPDATE)
         draw.rectangle((60, 0, 132, 15), fill = 255)
@@ -154,32 +152,32 @@ try:
         time.sleep(0.20)
         draw.rectangle((133, 0, 250, 15), fill = 255)
         draw.text((133, 0), time.strftime('%D %H:%M'), font = f_top_line_font16, fill = 0) 
-        time.sleep(0.20)
+#        time.sleep(0.20)
         draw.rectangle((83, 20, 250, 37), fill = 255)
         draw.text((48, 20), "CPU", font = f_var_font16, fill = 0)
         draw.text((83, 20), p, font = f_var_font16, fill = 0)
         draw.text((145, 20), "Mem", font = f_var_font16, fill = 0)
         draw.text((185, 20), mem, font = f_var_font16, fill = 0)
-        time.sleep(0.20)
+#        time.sleep(0.20)
         draw.rectangle((46, 40, 250, 57), fill = 255)
         draw.text((46, 40), pi_ssid, font = f_var_font16, fill = 0)
         time.sleep(0.20)
         draw.rectangle((88, 60, 250, 77), fill = 255)
         draw.text((88, 60), host_ip, font = f_var_font16, fill = 0)
-        time.sleep(0.20)
+#        time.sleep(0.20)
         draw.rectangle((73, 80, 104, 97), fill = 255)
         draw.text((73, 80), 'BT', font = f_var_font16, fill = 0)
         draw.text((93, 80), bt_status, font = f_var_spc_char_font16, fill = 0)
         draw.rectangle((105, 80, 250, 97), fill = 255)
         draw.text((110, 80), 'ser2net', font = f_var_font16, fill = 0)
         draw.text((168, 80), ser2net_status, font = f_var_spc_char_font16, fill = 0)
-        time.sleep(0.20)
+#        time.sleep(0.20)
         #setting up the dynamic parts of tty status
         #first, if nothing is connected, then just say that:
         draw.rectangle((49, 100, 250, 117), fill = 255)
         if full_tty_presence_flag  == False:
            draw.text((49, 100), full_tty_status, font = f_var_font16, fill = 0)
-           time.sleep(0.20)
+#           time.sleep(0.20)
         else:
            draw.text((49, 100), bt_serial_port, font = f_var_font16, fill = 0)
            draw.text((122, 100), bt_serial_status, font = f_var_spc_char_font16, fill = 0)
@@ -188,7 +186,7 @@ try:
            time.sleep(0.1)
         epd.displayPartial(epd.getbuffer(image))
         num = num + 1
-        time.sleep(0.20)
+        time.sleep(5)
 #End of while bat_cap > 2 loop...
 #After the loop closes due to the battery reaching minimum capacity, we'll follow the remaining code - to shutdown.
     term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
