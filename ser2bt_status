@@ -50,7 +50,7 @@ def readCapacity(bus):
 try:
     epd = epd2in13_V2.EPD()
     epd.init(epd.FULL_UPDATE)
-    epd.Clear(0xFF)
+#    epd.Clear(0xFF)
 
     # Drawing on the image
     f_title_font16 = ImageFont.truetype("/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Bold.ttf",16)
@@ -62,7 +62,7 @@ try:
     image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     draw = ImageDraw.Draw(image)
 
-    time.sleep(0.15)
+    time.sleep(0.20)
     draw.text((0, 0), host_name, font = f_top_line_font16, fill = 0)
     draw.line([(0, 17),(250, 17)], fill = 0,width = 2)
     draw.text((0, 20), 'Load:', font = f_title_font16, fill = 0)
@@ -70,14 +70,13 @@ try:
     draw.text((0, 60), 'IP Address:', font = f_title_font16, fill = 0)
     draw.text((0, 80), 'Services:', font = f_title_font16, fill = 0)
     draw.text((0, 100), 'TTYs:', font = f_title_font16, fill = 0)
-    epd.display(epd.getbuffer(image))
+#    epd.display(epd.getbuffer(image))
 
-    time.sleep(0.15)
     num = 0
     bat_cap = int(readCapacity(bus))
     while (bat_cap > min_bat_cap):
         #update status:
-        time.sleep(0.15)
+        time.sleep(5.00)
         try:
            iface = netifaces.gateways()['default'][netifaces.AF_INET][1]
         except:
@@ -86,14 +85,14 @@ try:
            host_ip = netifaces.ifaddresses(iface)[netifaces.AF_INET][0]['addr']
         else:
            host_ip = "Not Connected" 
-        time.sleep(0.15)
+#        time.sleep(0.20)
         bt_service_status = subprocess.Popen(['systemctl', 'is-active', 'rfcomm'], stdout=subprocess.PIPE).communicate()[0]
         bt_string_status = bt_service_status.decode(encoding='UTF-8')
 
         ser2net_service_status = subprocess.Popen(['systemctl', 'is-active', 'ser2net'], stdout=subprocess.PIPE).communicate()[0]
         ser2net_string_status = ser2net_service_status.decode(encoding='UTF-8')
 
-        time.sleep(0.15)
+#        time.sleep(0.20)
         if "inactive" in bt_string_status:
            bt_status = "↓" # down arrow
         else:
@@ -104,7 +103,7 @@ try:
         else:
            ser2net_status = "↑" # up arrow
 
-        time.sleep(0.15)
+#        time.sleep(0.20)
         if os.path.exists("/dev/ttyUSB0"):
            wired_serial_port = "USB0"
         elif os.path.exists("/dev/ttyACM0"):
@@ -112,12 +111,12 @@ try:
         else:
            wired_serial_port = "None"
 
-        time.sleep(0.15)
+#        time.sleep(0.20)
         if os.path.exists("/dev/rfcomm0"):
            bt_serial_port = "rfcomm0"
         else:
            bt_serial_port = "None"
-        time.sleep(0.15)
+#        time.sleep(0.20)
         if bt_serial_port == "None" and wired_serial_port == "None":
            bt_serial_status = "✖"
            wired_serial_status = "✖"
@@ -139,7 +138,7 @@ try:
            full_tty_status = ""
            full_tty_presence_flag = True # Something is connected to any of the ttys
 
-        time.sleep(0.15)
+#        time.sleep(0.20)
         pi_ssid = get_ssid()
         bat_cap = int(readCapacity(bus))
         bat_lvl = "Bat:"+str(bat_cap)+"%"
@@ -147,40 +146,40 @@ try:
         svmem = psutil.virtual_memory()
         mem = str(svmem.percent)+"%"
 
-        time.sleep(0.15)
+        time.sleep(0.20)
         epd.displayPartBaseImage(epd.getbuffer(image))
         epd.init(epd.PART_UPDATE)
         draw.rectangle((60, 0, 132, 15), fill = 255)
         draw.text((60, 0), bat_lvl, font = f_top_line_font16, fill = 0)
-        time.sleep(0.15)
+        time.sleep(0.20)
         draw.rectangle((133, 0, 250, 15), fill = 255)
         draw.text((133, 0), time.strftime('%D %H:%M'), font = f_top_line_font16, fill = 0) 
-        time.sleep(0.15)
+        time.sleep(0.20)
         draw.rectangle((83, 20, 250, 37), fill = 255)
         draw.text((48, 20), "CPU", font = f_var_font16, fill = 0)
         draw.text((83, 20), p, font = f_var_font16, fill = 0)
         draw.text((145, 20), "Mem", font = f_var_font16, fill = 0)
         draw.text((185, 20), mem, font = f_var_font16, fill = 0)
-        time.sleep(0.15)
+        time.sleep(0.20)
         draw.rectangle((46, 40, 250, 57), fill = 255)
         draw.text((46, 40), pi_ssid, font = f_var_font16, fill = 0)
-        time.sleep(0.15)
+        time.sleep(0.20)
         draw.rectangle((88, 60, 250, 77), fill = 255)
         draw.text((88, 60), host_ip, font = f_var_font16, fill = 0)
-        time.sleep(0.15)
+        time.sleep(0.20)
         draw.rectangle((73, 80, 104, 97), fill = 255)
         draw.text((73, 80), 'BT', font = f_var_font16, fill = 0)
         draw.text((93, 80), bt_status, font = f_var_spc_char_font16, fill = 0)
         draw.rectangle((105, 80, 250, 97), fill = 255)
         draw.text((110, 80), 'ser2net', font = f_var_font16, fill = 0)
         draw.text((168, 80), ser2net_status, font = f_var_spc_char_font16, fill = 0)
-        time.sleep(0.15)
+        time.sleep(0.20)
         #setting up the dynamic parts of tty status
         #first, if nothing is connected, then just say that:
         draw.rectangle((49, 100, 250, 117), fill = 255)
         if full_tty_presence_flag  == False:
            draw.text((49, 100), full_tty_status, font = f_var_font16, fill = 0)
-           time.sleep(0.15)
+           time.sleep(0.20)
         else:
            draw.text((49, 100), bt_serial_port, font = f_var_font16, fill = 0)
            draw.text((122, 100), bt_serial_status, font = f_var_spc_char_font16, fill = 0)
@@ -189,15 +188,15 @@ try:
            time.sleep(0.1)
         epd.displayPartial(epd.getbuffer(image))
         num = num + 1
-        time.sleep(0.15)
+        time.sleep(0.20)
 #End of while bat_cap > 2 loop...
 #After the loop closes due to the battery reaching minimum capacity, we'll follow the remaining code - to shutdown.
     term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     term_draw = ImageDraw.Draw(term_image)
     epd.init(epd.FULL_UPDATE)
-    epd.Clear(0xFF)
-    term_draw.text((30, 50), 'Shutting Down!', font = f_title_font24, fill = 0)
-    term_draw.text((20, 80), 'Due to Critical Battary level', font = f_title_font16, fill = 0)
+#    epd.Clear(0xFF)
+    term_draw.text((30, 20), 'Shutting Down!', font = f_title_font24, fill = 0)
+    term_draw.text((20, 60), 'Due to Critical Battary level', font = f_title_font16, fill = 0)
     logging.info ("Shutting down has battary has reached critical level")
     logging.info ("Battary is: "+str(bat_cap)+"%")
     epd.display(epd.getbuffer(term_image))
@@ -209,10 +208,11 @@ except (KeyboardInterrupt, SystemExit):
     term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     print ("application is closeing\n")
     term_draw = ImageDraw.Draw(term_image)
+    epd.display(epd.getbuffer(term_image))
     epd.init(epd.FULL_UPDATE)
-    epd.Clear(0xFF)
-    term_draw.text((8, 50), 'Exiting ser2bt_status', font = f_title_font24, fill = 0)
-    term_draw.text((33, 80), 'Due to Quit (SIGINT)', font = f_title_font16, fill = 0)
+#    epd.Clear(0xFF)
+    term_draw.text((8, 30), 'Exiting ser2bt_status', font = f_title_font24, fill = 0)
+    term_draw.text((33, 60), 'Due to Quit (SIGINT)', font = f_title_font16, fill = 0)
     epd.display(epd.getbuffer(term_image))
     epd2in13_V2.epdconfig.module_exit()
     exit()
