@@ -47,7 +47,6 @@ def readCapacity(bus):
     capacity = swapped/256
     return capacity
 
-
 try:
     epd = epd2in13_V2.EPD()
     epd.init(epd.FULL_UPDATE)
@@ -71,7 +70,7 @@ try:
     draw.text((0, 105), 'TTYs:', font=f_title_font18, fill=0)
     epd.displayPartBaseImage(epd.getbuffer(image))
 
-    bat_cap = int(readCapacity(bus))
+    bat_cap = min_bat_cap+1
     while (bat_cap > min_bat_cap):
         # update status:
         try:
