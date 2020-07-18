@@ -1,47 +1,51 @@
 #!/usr/bin/python3
 # -*- coding:utf-8 -*-
-import sys
 import os
 import socket
-#import fcntl
-import struct #Capture battary capacity
+import struct  # Capture battary capacity
 from waveshare_epd import epd2in13_V2
 import time
-from PIL import Image,ImageDraw,ImageFont #Font handeling
-#import traceback
+from PIL import Image, ImageDraw, ImageFont  # Font handeling
 import subprocess
 import netifaces
 import re
 import smbus
-import psutil #Capture cpu and memory values
+import psutil  # Capture cpu and memory values
 import logging
 
-#Variable decleration:
-picdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'pic')
-host_name = socket.gethostname() #define host_name
+# Variable decleration:
+pic_file = os.path.realpath(__file__)
+picdir = os.path.join(os.path.dirname(os.path.dirname(pic_file)), 'pic')
+host_name = socket.gethostname()  # define host_name
 bus = smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
-min_bat_cap = 2 # setting minimum battery capacity before we'll shutdown.
+min_bat_cap = 2  # setting minimum battery capacity before we'll shutdown.
+
 
 def get_ssid():
-    ps = subprocess.Popen(['iwgetid'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    ps = subprocess.Popen(
+         ['iwgetid'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+       )
     try:
-       output = subprocess.check_output(('grep', 'ESSID'), stdin=ps.stdout)
+        output = subprocess.check_output(('grep', 'ESSID'), stdin=ps.stdout)
     except subprocess.CalledProcessError:
-       # grep did not match any lines
-       ssid = "Not Connected"
-       return (ssid)
+        # grep did not match any lines
+        ssid = "Not Connected"
+        return (ssid)
     output_ssid = output.decode(encoding='UTF-8')
-    ssid = re.sub("wlan0 +[A-z]+:\"","", output_ssid)
-    ssid = re.sub("\"","", ssid)
+    ssid = re.sub("wlan0 +[A-z]+:\"", "", output_ssid)
+    ssid = re.sub("\"", "", ssid)
     return (ssid)
 
+
 def readCapacity(bus):
-#     "This function returns as a float the remaining capacity of the battery connected to the Raspi UPS Hat via the pro$
-     address = 0x36
-     read = bus.read_word_data(address, 4)
-     swapped = struct.unpack("<H", struct.pack(">H", read))[0]
-     capacity = swapped/256
-     return capacity
+    # "This function returns as a float the remaining capacity of the battery
+    # connected to the Raspi UPS Hat via the pro$
+    address = 0x36
+    read = bus.read_word_data(address, 4)
+    swapped = struct.unpack("<H", struct.pack(">H", read))[0]
+    capacity = swapped/256
+    return capacity
+
 
 try:
     epd = epd2in13_V2.EPD()
@@ -50,23 +54,23 @@ try:
 #    epd.Clear(0xFF)
 
     # Drawing on the image
-    f_title_font16 = ImageFont.truetype("/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Bold.ttf",18)
-    f_var_spc_char_font16 = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",18)
-    f_title_font24 = ImageFont.truetype("/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Medium.ttf",24)
-    f_var_font16 = ImageFont.truetype("/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Medium.ttf",18)
-    f_top_line_font16 = ImageFont.truetype("/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Medium.ttf",16)
+    f_title_font16 = ImageFont.truetype("/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Bold.ttf", 18)
+    f_var_spc_char_font16 = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 18)
+    f_title_font24 = ImageFont.truetype("/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Medium.ttf", 24)
+    f_var_font16 = ImageFont.truetype("/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Medium.ttf", 18)
+    f_top_line_font16 = ImageFont.truetype("/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Medium.ttf", 16)
 
-    image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
+    image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear frame
     draw = ImageDraw.Draw(image)
 
-    draw.text((0, 0), host_name, font = f_top_line_font16, fill = 0)
-    draw.line([(0, 17),(250, 17)], fill = 0,width = 2)
-    draw.text((0, 20), 'Load:', font = f_title_font16, fill = 0)
-    draw.text((0, 42), 'SSID:', font = f_title_font16, fill = 0)
-    draw.text((0, 63), 'IP Address:', font = f_title_font16, fill = 0)
-    draw.text((0, 84), 'Services:', font = f_title_font16, fill = 0)
-    draw.text((0, 105), 'TTYs:', font = f_title_font16, fill = 0)
-#    epd.display(epd.getbuffer(image))
+    draw.text((0, 0), host_name, font=f_top_line_font16, fill=0)
+    draw.line([(0, 17),(250, 17)], fill=0,width=2)
+    draw.text((0, 20), 'Load:', font=f_title_font16, fill=0)
+    draw.text((0, 42), 'SSID:', font=f_title_font16, fill=0)
+    draw.text((0, 63), 'IP Address:', font=f_title_font16, fill=0)
+    draw.text((0, 84), 'Services:', font=f_title_font16, fill=0)
+    draw.text((0, 105), 'TTYs:', font=f_title_font16, fill=0)
+# epd.display(epd.getbuffer(image))
     epd.displayPartBaseImage(epd.getbuffer(image))
 
     num = 0
@@ -80,15 +84,13 @@ try:
         if iface != "NA":
            host_ip = netifaces.ifaddresses(iface)[netifaces.AF_INET][0]['addr']
         else:
-           host_ip = "Not Connected" 
-#        time.sleep(0.20)
+           host_ip = "Not Connected"
         bt_service_status = subprocess.Popen(['systemctl', 'is-active', 'rfcomm'], stdout=subprocess.PIPE).communicate()[0]
         bt_string_status = bt_service_status.decode(encoding='UTF-8')
 
         ser2net_service_status = subprocess.Popen(['systemctl', 'is-active', 'ser2net'], stdout=subprocess.PIPE).communicate()[0]
         ser2net_string_status = ser2net_service_status.decode(encoding='UTF-8')
 
-#        time.sleep(0.20)
         if "inactive" in bt_string_status:
            bt_status = "↓" # down arrow
         else:
@@ -99,7 +101,6 @@ try:
         else:
            ser2net_status = "↑" # up arrow
 
-#        time.sleep(0.20)
         if os.path.exists("/dev/ttyUSB0"):
            wired_serial_port = "USB0"
         elif os.path.exists("/dev/ttyACM0"):
@@ -107,12 +108,10 @@ try:
         else:
            wired_serial_port = "None"
 
-#        time.sleep(0.20)
         if os.path.exists("/dev/rfcomm0"):
            bt_serial_port = "rfcomm0"
         else:
            bt_serial_port = "None"
-#        time.sleep(0.20)
         if bt_serial_port == "None" and wired_serial_port == "None":
            bt_serial_status = "✖"
            wired_serial_status = "✖"
@@ -134,7 +133,6 @@ try:
            full_tty_status = ""
            full_tty_presence_flag = True # Something is connected to any of the ttys
 
-#        time.sleep(0.20)
         pi_ssid = get_ssid()
         bat_cap = int(readCapacity(bus))
         bat_lvl = "Bat:"+str(bat_cap)+"%"
@@ -142,7 +140,6 @@ try:
         svmem = psutil.virtual_memory()
         mem = str(svmem.percent)+"%"
 
-#        time.sleep(0.20)
         epd.init(epd.PART_UPDATE)
         draw.rectangle((60, 0, 132, 16), fill = 255)
         draw.text((60, 0), bat_lvl, font = f_top_line_font16, fill = 0)
@@ -170,17 +167,15 @@ try:
         #setting up the dynamic parts of tty status
         #first, if nothing is connected, then just say that:
         draw.rectangle((57, 105, 250, 122), fill = 255)
-        if full_tty_presence_flag  == False:
+        if full_tty_presence_flag is False:
            draw.text((57, 105), full_tty_status, font = f_var_font16, fill = 0)
 #           time.sleep(0.20)
         else:
-           draw.text((57, 105), bt_serial_port, font = f_var_font16, fill = 0)
-           draw.text((137, 105), bt_serial_status, font = f_var_spc_char_font16, fill = 0)
-           draw.text((160, 105), wired_serial_port, font = f_var_font16, fill = 0)
-           draw.text((205, 105), wired_serial_status, font = f_var_spc_char_font16, fill = 0)
+           draw.text((57, 105), bt_serial_port, font=f_var_font16, fill = 0)
+           draw.text((137, 105), bt_serial_status, font=f_var_spc_char_font16, fill = 0)
+           draw.text((160, 105), wired_serial_port, font=f_var_font16, fill = 0)
+           draw.text((205, 105), wired_serial_status, font=f_var_spc_char_font16, fill = 0)
         epd.displayPartial(epd.getbuffer(image))
-#        epd.displayPart(epd.getbuffer(image))
-#        num = num + 1
         time.sleep(5)
 #End of while bat_cap > 2 loop...
 #After the loop closes due to the battery reaching minimum capacity, we'll follow the remaining code - to shutdown.
