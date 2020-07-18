@@ -38,8 +38,8 @@ def get_ssid():
 
 
 def readCapacity(bus):
-    # "This function returns as a float the remaining capacity of the battery
-    # connected to the Raspi UPS Hat via the pro$
+# "This function returns as a float the remaining capacity of the battery
+# connected to the Raspi UPS Hat via the pro$
     address = 0x36
     read = bus.read_word_data(address, 4)
     swapped = struct.unpack("<H", struct.pack(">H", read))[0]
@@ -49,11 +49,9 @@ def readCapacity(bus):
 
 try:
     epd = epd2in13_V2.EPD()
-#    epd.init(epd.PART_UPDATE)
     epd.init(epd.FULL_UPDATE)
-#    epd.Clear(0xFF)
 
-    # Drawing on the image
+# Font defenitions
     f_title_font16 = ImageFont.truetype("/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Bold.ttf", 18)
     f_var_spc_char_font16 = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 18)
     f_title_font24 = ImageFont.truetype("/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Medium.ttf", 24)
@@ -70,7 +68,6 @@ try:
     draw.text((0, 63), 'IP Address:', font=f_title_font16, fill=0)
     draw.text((0, 84), 'Services:', font=f_title_font16, fill=0)
     draw.text((0, 105), 'TTYs:', font=f_title_font16, fill=0)
-# epd.display(epd.getbuffer(image))
     epd.displayPartBaseImage(epd.getbuffer(image))
 
     num = 0
@@ -145,31 +142,26 @@ try:
         draw.text((60, 0), bat_lvl, font = f_top_line_font16, fill = 0)
         draw.rectangle((133, 0, 250, 16), fill = 255)
         draw.text((133, 0), time.strftime('%D %H:%M'), font = f_top_line_font16, fill = 0) 
-#        time.sleep(0.20)
         draw.rectangle((90, 20, 250, 41), fill = 255)
         draw.text((53, 20), "CPU", font = f_var_font16, fill = 0)
         draw.text((90, 20), p, font = f_var_font16, fill = 0)
         draw.text((152, 20), "Mem", font = f_var_font16, fill = 0)
         draw.text((197, 20), mem, font = f_var_font16, fill = 0)
-#        time.sleep(0.20)
         draw.rectangle((54, 42, 250, 62), fill = 255)
         draw.text((54, 42), pi_ssid, font = f_var_font16, fill = 0)
         draw.rectangle((101, 63, 250, 83), fill = 255)
         draw.text((101, 63), host_ip, font = f_var_font16, fill = 0)
-#        time.sleep(0.20)
         draw.rectangle((89, 84, 129, 104), fill = 255)
         draw.text((89, 84), 'BT', font = f_var_font16, fill = 0)
         draw.text((110, 84), bt_status, font = f_var_spc_char_font16, fill = 0)
         draw.rectangle((130, 84, 250, 104), fill = 255)
         draw.text((130, 84), 'ser2net', font = f_var_font16, fill = 0)
         draw.text((195, 84), ser2net_status, font = f_var_spc_char_font16, fill = 0)
-#        time.sleep(0.20)
-        #setting up the dynamic parts of tty status
-        #first, if nothing is connected, then just say that:
+#setting up the dynamic parts of tty status
+#first, if nothing is connected, then just say that:
         draw.rectangle((57, 105, 250, 122), fill = 255)
         if full_tty_presence_flag is False:
            draw.text((57, 105), full_tty_status, font = f_var_font16, fill = 0)
-#           time.sleep(0.20)
         else:
            draw.text((57, 105), bt_serial_port, font=f_var_font16, fill = 0)
            draw.text((137, 105), bt_serial_status, font=f_var_spc_char_font16, fill = 0)
@@ -182,7 +174,6 @@ try:
     term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     term_draw = ImageDraw.Draw(term_image)
     epd.init(epd.FULL_UPDATE)
-#    epd.Clear(0xFF)
     draw.text((30, 20), 'Shutting Down!', font = f_title_font24, fill = 0)
     draw.text((20, 50), 'Due to Critical Battary level', font = f_title_font16, fill = 0)
     logging.info ("Shutting down has battary has reached critical level")
@@ -197,7 +188,6 @@ except (KeyboardInterrupt, SystemExit):
     term_draw = ImageDraw.Draw(term_image)
     print ("application is closing\n")
     epd.init(epd.FULL_UPDATE)
- #   epd.Clear(0xFF)
     term_draw.text((8, 20), 'Exiting ser2bt_status', font = f_title_font24, fill = 0)
     term_draw.text((33, 50), 'Due to Quit (SIGINT)', font = f_title_font16, fill = 0)
     epd.display(epd.getbuffer(term_image))
