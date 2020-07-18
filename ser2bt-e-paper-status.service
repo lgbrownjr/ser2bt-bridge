@@ -2,8 +2,8 @@
 Description=Bluetooth to serial status for e-paper
 #Before=sysinit.target shutdown.target
 Before=networking.service bluetooth.service
+#Before=network.target bluetooth.service
 After=sysinit.target
-#DefaultDependencies=no
 
 [Service]
 Type=simple
