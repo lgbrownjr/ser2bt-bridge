@@ -144,9 +144,9 @@ try:
 
 #        time.sleep(0.20)
         epd.init(epd.PART_UPDATE)
-        draw.rectangle((60, 0, 132, 15), fill = 255)
+        draw.rectangle((60, 0, 132, 16), fill = 255)
         draw.text((60, 0), bat_lvl, font = f_top_line_font16, fill = 0)
-        draw.rectangle((133, 0, 250, 15), fill = 255)
+        draw.rectangle((133, 0, 250, 16), fill = 255)
         draw.text((133, 0), time.strftime('%D %H:%M'), font = f_top_line_font16, fill = 0) 
 #        time.sleep(0.20)
         draw.rectangle((90, 20, 250, 41), fill = 255)
@@ -169,15 +169,15 @@ try:
 #        time.sleep(0.20)
         #setting up the dynamic parts of tty status
         #first, if nothing is connected, then just say that:
-        draw.rectangle((54, 105, 250, 122), fill = 255)
+        draw.rectangle((57, 105, 250, 122), fill = 255)
         if full_tty_presence_flag  == False:
-           draw.text((54, 105), full_tty_status, font = f_var_font16, fill = 0)
+           draw.text((57, 105), full_tty_status, font = f_var_font16, fill = 0)
 #           time.sleep(0.20)
         else:
-           draw.text((54, 105), bt_serial_port, font = f_var_font16, fill = 0)
-           draw.text((127, 105), bt_serial_status, font = f_var_spc_char_font16, fill = 0)
-           draw.text((150, 105), wired_serial_port, font = f_var_font16, fill = 0)
-           draw.text((195, 105), wired_serial_status, font = f_var_spc_char_font16, fill = 0)
+           draw.text((57, 105), bt_serial_port, font = f_var_font16, fill = 0)
+           draw.text((137, 105), bt_serial_status, font = f_var_spc_char_font16, fill = 0)
+           draw.text((160, 105), wired_serial_port, font = f_var_font16, fill = 0)
+           draw.text((205, 105), wired_serial_status, font = f_var_spc_char_font16, fill = 0)
         epd.displayPartial(epd.getbuffer(image))
 #        epd.displayPart(epd.getbuffer(image))
 #        num = num + 1
@@ -187,7 +187,7 @@ try:
     term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     term_draw = ImageDraw.Draw(term_image)
     epd.init(epd.FULL_UPDATE)
-    epd.Clear(0xFF)
+#    epd.Clear(0xFF)
     draw.text((30, 20), 'Shutting Down!', font = f_title_font24, fill = 0)
     draw.text((20, 50), 'Due to Critical Battary level', font = f_title_font16, fill = 0)
     logging.info ("Shutting down has battary has reached critical level")
@@ -202,7 +202,7 @@ except (KeyboardInterrupt, SystemExit):
     term_draw = ImageDraw.Draw(term_image)
     print ("application is closing\n")
     epd.init(epd.FULL_UPDATE)
-    epd.Clear(0xFF)
+ #   epd.Clear(0xFF)
     term_draw.text((8, 20), 'Exiting ser2bt_status', font = f_title_font24, fill = 0)
     term_draw.text((33, 50), 'Due to Quit (SIGINT)', font = f_title_font16, fill = 0)
     epd.display(epd.getbuffer(term_image))
