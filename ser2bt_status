@@ -19,7 +19,7 @@ pic_file = os.path.realpath(__file__)
 picdir = os.path.join(os.path.dirname(os.path.dirname(pic_file)), 'pic')
 host_name = socket.gethostname()  # define host_name
 bus = smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
-min_bat_cap = 2  # setting minimum battery capacity before we'll shutdown.
+min_bat_cap = 1  # setting minimum battery capacity before we'll shutdown.
 
 
 def get_ssid():
