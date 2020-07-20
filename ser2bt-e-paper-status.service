@@ -1,9 +1,9 @@
 [Unit]
 Description=Bluetooth to serial status for e-paper
 #Before=sysinit.target shutdown.target
-Before=networking.service bluetooth.service
 #Before=network.target bluetooth.service
-After=sysinit.target
+After=networking.service
+#Requires=rfcomm.service
 
 [Service]
 Type=simple
@@ -17,5 +17,5 @@ RestartSec=10
 #KillMode=mixed
 
 [Install]
-#WantedBy=basic.target
-WantedBy=sysinit.target
+WantedBy=basic.target
+#WantedBy=bluetooth.target.wants
