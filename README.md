@@ -2,7 +2,7 @@
 ## Serial to Bluetooth bridge for raspberry pi zero
 
 ### Introduction:
-This is a set of scripts, that allow a user to connect a raspberry pi zero wh to a serial device (cisco switch), then allow the user to connect to it via serial over bluetooth, and then the pi will bridge the two connections to form a single console from the users pc to the switch without having wires laying on the flooe.
+This is a set of scripts, that allow a user to connect to a raspberry pi zero wh to a serial device (cisco switch), then allow the user to connect to it via serial over bluetooth, and then the pi will bridge the two connections to form a single console from the users pc to the switch without having wires laying on the flooe.
 
 This is probably better to use this than ser2net as a lot of environments will not allow multiple metwork connections to a given device at the same time, so a given laptop could connect to the pi via ip, but would loose access to corperate/govornemt resources while they work.
 
