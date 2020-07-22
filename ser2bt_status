@@ -188,7 +188,7 @@ try:
     epd.init(epd.FULL_UPDATE)
     exit_image=Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     exit_draw=ImageDraw.Draw(exit_image)
-    exit_draw.text((38, 20), 'This device', font=f_title_font24, fill=0)
+    exit_draw.text((43, 20), 'This device', font=f_title_font24, fill=0)
     exit_draw.text((48, 50), 'Has been shutdown ', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(exit_image))
     epd2in13_V2.epdconfig.module_exit()
