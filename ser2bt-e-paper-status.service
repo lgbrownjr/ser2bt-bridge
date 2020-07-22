@@ -8,9 +8,11 @@ After=networking.service
 [Service]
 Type=simple
 KillSignal=SIGINT
-TimeoutStopSec=8
+TimeoutStopSec=60
 SyslogIdentifier=ser2bt-e-paper-status
 ExecStart=nice -15 /usr/local/bin/ser2bt_status
+#TimeoutSec=120
+#ExecStop=/bin/sleep 120
 StandardOutput=inherit
 Restart=on-failure
 RestartSec=10
