@@ -1,13 +1,17 @@
 #!/bin/bash
 #color and other formatting defenitions:
 source $HOME/bin/format.sh
-#variables:
+
+#constants:
 bt_port="/dev/rfcomm0"
 usb_port="/dev/ttyUSB0"
 acm_port="/dev/ttyACM0"
+
+#variables set with default values
 installed_app_count=0
 app_count=0
 declare -a cmds=(stty screen minicom tio)
+
 
 function exit_script () {
 	if [[ $exit_status == 0 ]]; then
@@ -18,6 +22,7 @@ function exit_script () {
 	printf "${nor}Exit Resason is: $exit_status_reason\n"
 	printf "\n${nor}Exiting to shell...\n${end}"
 }
+
 
 #Check to make sure user is logging in through a bluetooth serial port (rfcomm[0-9])
 if [[ $(tty) != $bt_port ]]; then
@@ -33,7 +38,6 @@ printf "${nor}Checking for dependencies:\n"
 for cmd in ${cmds[@]} ; do
 	let app_count++
 	if command -v $cmd > /dev/null 2>&1 ; then
-#		echo "${mag}$cmd${nor} found"
 		let installed_app_count++
 		sleep .1
 	else
@@ -71,11 +75,7 @@ fi
 resize
 printf "Both sides are connected, bridging ${cyn}$bt_port${nor} with ${cyn}$wire_port${nor}...\n\n"
 tio -b 9600 -o 5 $wire_port
-#screen -a -c /etc/bt_2_serial_screenrc
-#screen -S bt2serial -p 0
-#screen -d -m -a -S bt2serial -t link_2_cisco -X stuff "
 printf "You are now connected!\n\nPress ${cyn}CTRL${nor} + ${cyn}A${nor}, then press the ${cyn}\${nor} key.  Finally, press the ${cyn}y${nor} key to agree to exit${end}\r"
-#screen -c /etc/bt_2_serial_screenrc -a
 wait
 clear
 #exit routine.
