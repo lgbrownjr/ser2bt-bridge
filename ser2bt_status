@@ -178,13 +178,13 @@ try:
     term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear frame
     term_draw = ImageDraw.Draw(term_image)
     epd.init(epd.FULL_UPDATE)
-    epd.Clear(0xFF)
+#    epd.Clear(0xFF)
     term_draw.text((35, 20), 'Shutting Down!', font=f_title_font24, fill=0)
     term_draw.text((3, 50), 'Due to Critical Battary level ', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(term_image))
     logging.info("Shutting down - battary has reached critical level")
     logging.info("Battary is: "+str(bat_cap)+"%")
-    time.sleep(3)
+    time.sleep(5)
     epd.init(epd.FULL_UPDATE)
     exit_image=Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     exit_draw=ImageDraw.Draw(exit_image)
@@ -203,7 +203,7 @@ except (KeyboardInterrupt, SystemExit):
     term_draw.text((6, 20), 'Exiting ser2bt_status', font=f_title_font24, fill=0)
     term_draw.text((63, 50), 'Due to SIGINT ', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(term_image))
-    time.sleep(3)
+    time.sleep(5)
     epd.init(epd.FULL_UPDATE)
     exit_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     exit_draw = ImageDraw.Draw(exit_image)
