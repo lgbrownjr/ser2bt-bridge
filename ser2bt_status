@@ -83,12 +83,13 @@ try:
         try:
             iface = netifaces.gateways()['default'][netifaces.AF_INET][1]
         except Exception:
-            iface = "NA"
-        if iface != "NA":
+            iface = "N/A"
+        if iface != "N/A":
             host_ip = netifaces.ifaddresses(iface)[netifaces.AF_INET][0]['addr']
         else:
             host_ip = "Not Connected"
-         #This part grams the status of the various services that we need to monitor.
+
+        #This part grabs the status of the various services that we need to monitor.
         bt_service_status = subprocess.Popen(['systemctl', 'is-active', 'rfcomm'], stdout=subprocess.PIPE).communicate()[0]
         bt_string_status = bt_service_status.decode(encoding='UTF-8')
 
@@ -104,7 +105,8 @@ try:
             ser2net_status = "↓"  # down arrow
         else:
             ser2net_status = "↑"  # up arrow
-        #This part grams the existing  wired serial ports.
+
+        #This part grabs the existing wired serial ports.
         if os.path.exists("/dev/ttyUSB0"):
             wired_serial_port = "USB0"
         elif os.path.exists("/dev/ttyACM0"):
@@ -138,7 +140,7 @@ try:
             wired_serial_status = "✔"
             full_tty_status = ""
             full_tty_presence_flag = True  # Something is connected to any of the ttys
-        
+
         #This part grabs ssid, battery capacity, CPU and memory utilization:
         pi_ssid = get_ssid() #SSID
         bat_cap = int(readCapacity(bus)) #battery level
@@ -152,9 +154,7 @@ try:
         draw.rectangle((60, 0, 132, 15), fill=255)
         draw.text((60, 0), bat_lvl, font=f_top_line_font16, fill=0)
         draw.rectangle((133, 0, 250, 15), fill=255)
-        draw.text((133, 0), time.strftime(
-            '%D %H:%M'), font=f_top_line_font16, fill=0
-           )
+        draw.text((133, 0), time.strftime('%D %H:%M'), font=f_top_line_font16, fill=0)
         draw.rectangle((90, 20, 151, 41), fill=255)
         draw.text((90, 20), p, font=f_var_font18, fill=0)
         draw.rectangle((197, 20, 250, 41), fill=255)
@@ -179,14 +179,13 @@ try:
             draw.text((161, 105), wired_serial_port, font=f_var_font18, fill=0)
             draw.text((206, 105), wired_serial_status, font=f_var_spc_char_font18, fill=0)
         epd.displayPartial(epd.getbuffer(image)) #update the screeen to actually print the above to the e-ink display.
-        time.sleep(5)
-# End of while bat_cap > 2 loop...
+        time.sleep(15)
+# End of while bat_cap > 1 loop...
 
 # if the bat_cap is less that min_bat_cap, then bail out of the loop, and follow the remaining code to shutdown.
     term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear frame
     term_draw = ImageDraw.Draw(term_image)
     epd.init(epd.FULL_UPDATE)
-#    epd.Clear(0xFF)
     term_draw.text((35, 20), 'Shutting Down!', font=f_title_font24, fill=0)
     term_draw.text((3, 50), 'Due to Critical Battary level ', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(term_image))
