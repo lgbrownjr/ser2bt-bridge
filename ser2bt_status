@@ -15,10 +15,10 @@ import psutil  # Capture cpu and memory values
 import logging
 
 # Variable decleration:
-pic_file = os.path.realpath(__file__)
-picdir = os.path.join(os.path.dirname(os.path.dirname(pic_file)), 'pic')
-host_name = socket.gethostname()  # define host_name
-bus = smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
+pic_file=os.path.realpath(__file__)
+picdir=os.path.join(os.path.dirname(os.path.dirname(pic_file)), 'pic')
+host_name=socket.gethostname()  # define host_name
+bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
 min_bat_cap = 1  # setting minimum battery capacity before we'll shutdown.
 
 
@@ -46,6 +46,17 @@ def readCapacity(bus):
     swapped = struct.unpack("<H", struct.pack(">H", read))[0]
     capacity = swapped/256
     return capacity
+
+
+def pre_exit_steps(xl1, yl1, status_l1, xl2, yl2, status_l2):
+    time.sleep(5)
+    epd.init(epd.FULL_UPDATE)
+    exit_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
+    exit_draw = ImageDraw.Draw(exit_image)
+    exit_draw.text((xl1,yl1), status_l1, font=f_title_font24, fill=0)
+    exit_draw.text((xl2, yl2), status_l2, font=f_title_font18, fill=0)
+    epd.display(epd.getbuffer(exit_image))
+    epd2in13_V2.epdconfig.module_exit()
 
 try:
     epd = epd2in13_V2.EPD()
@@ -77,6 +88,7 @@ try:
 
     #Define the initial battery capacity.  This is just enough to get to the first iteration of the loop without dumping out.
     bat_cap = min_bat_cap+1
+    epd.init(epd.PART_UPDATE) #Initialize the partial screen
     while (bat_cap > min_bat_cap):
         # Grab initial information
         #This part grams the active network interface.
@@ -120,14 +132,14 @@ try:
         else:
             bt_serial_port = "None"
         #Defines status for the various tty ports:
-        if bt_serial_port == "None" and wired_serial_port == "None":
+        if bt_serial_port == 'None' and wired_serial_port == 'None':
             bt_serial_status = "✖"
             wired_serial_status = "✖"
             full_tty_status = "No tty connections"
             full_tty_presence_flag = False # Nothing connected to any of the ttys
-        elif bt_serial_port != "None" and wired_serial_port == "None":
+        elif bt_serial_port != 'None' and wired_serial_port == 'None':
             bt_serial_status = "✔"
-            wired_serial_status = "✖"
+            wired_serial_status ='✖'
             full_tty_status = ""
             full_tty_presence_flag = True # Something is connected to any of the ttys
         elif bt_serial_port == "None" and wired_serial_port != "None":
@@ -142,14 +154,13 @@ try:
             full_tty_presence_flag = True  # Something is connected to any of the ttys
 
         #This part grabs ssid, battery capacity, CPU and memory utilization:
-        pi_ssid = get_ssid() #SSID
-        bat_cap = int(readCapacity(bus)) #battery level
-        bat_lvl = "Bat:"+str(bat_cap)+"%" #Formatted battery level
-        p = str(psutil.cpu_percent())+"%" #CPU utlization
-        svmem = psutil.virtual_memory() #memory
-        mem = str(svmem.percent)+"%" #Formatted memory
+        pi_ssid=get_ssid() #SSID
+        bat_cap=int(readCapacity(bus)) #battery level
+        bat_lvl='Bat:'+str(bat_cap)+'%' #Formatted battery level
+        p= str(psutil.cpu_percent())+'%' #CPU utlization
+        svmem=psutil.virtual_memory() #memory
+        mem=str(svmem.percent)+'%' #Formatted memory
 
-        epd.init(epd.PART_UPDATE) #Initialize the partial screen
         #This block draws the rectangles, then places the refreshable text/variables into them.
         draw.rectangle((60, 0, 132, 15), fill=255)
         draw.text((60, 0), bat_lvl, font=f_top_line_font16, fill=0)
@@ -183,22 +194,15 @@ try:
 # End of while bat_cap > 1 loop...
 
 # if the bat_cap is less that min_bat_cap, then bail out of the loop, and follow the remaining code to shutdown.
-    term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear frame
-    term_draw = ImageDraw.Draw(term_image)
+    term_image=Image.new('1', (epd.height, epd.width), 255)  # 255: clear frame
+    term_draw=ImageDraw.Draw(term_image)
     epd.init(epd.FULL_UPDATE)
     term_draw.text((35, 20), 'Shutting Down!', font=f_title_font24, fill=0)
     term_draw.text((3, 50), 'Due to Critical Battary level ', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(term_image))
     logging.info("Shutting down - battary has reached critical level")
     logging.info("Battary is: "+str(bat_cap)+"%")
-    time.sleep(5)
-    epd.init(epd.FULL_UPDATE)
-    exit_image=Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
-    exit_draw=ImageDraw.Draw(exit_image)
-    exit_draw.text((52, 20), 'This device', font=f_title_font24, fill=0)
-    exit_draw.text((48, 50), 'Has been shutdown ', font=f_title_font18, fill=0)
-    epd.display(epd.getbuffer(exit_image))
-    epd2in13_V2.epdconfig.module_exit()
+    pre_exit_steps(52, 20, 'This Device', 53, 50, 'Has been shutdown ') #52,20 and 48,50
     os.system("shutdown -P now")
     exit()
 
@@ -210,12 +214,5 @@ except (KeyboardInterrupt, SystemExit):
     term_draw.text((6, 20), 'Exiting ser2bt_status', font=f_title_font24, fill=0)
     term_draw.text((63, 50), 'Due to SIGINT ', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(term_image))
-    time.sleep(5)
-    epd.init(epd.FULL_UPDATE)
-    exit_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
-    exit_draw = ImageDraw.Draw(exit_image)
-    exit_draw.text((6, 20), 'ser2bt_status service', font=f_title_font24, fill=0)
-    exit_draw.text((48, 50), 'Has been stopped ', font=f_title_font18, fill=0)
-    epd.display(epd.getbuffer(exit_image))
-    epd2in13_V2.epdconfig.module_exit()
+    pre_exit_steps(6, 20, 'ser2bt_status service', 48, 50, 'Has been stopped ')
     exit()
