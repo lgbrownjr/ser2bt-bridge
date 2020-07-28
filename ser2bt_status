@@ -19,8 +19,9 @@ bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
 min_bat_cap = 1  # setting minimum battery capacity before we'll shutdown.
 host_name=socket.gethostname()  # define host_name
 logging.info("ser2bt_status was started  ")
-
-
+roboto_font_dir='/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/'
+dejavu_font_dir='/usr/share/fonts/truetype/dejavu/'
+end_of_loop_pause=15 #15 seconds at the end of each loop to not kill cpu.
 def get_ssid():
     ps = subprocess.Popen(
          ['iwgetid'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
@@ -62,11 +63,11 @@ try:
     epd.init(epd.FULL_UPDATE)
 
     # Declare the fonts to be used:
-    f_title_font18 = ImageFont.truetype("/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Bold.ttf", 18)
-    f_var_spc_char_font18 = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 18)
-    f_title_font24 = ImageFont.truetype("/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Medium.ttf", 24)
-    f_var_font18 = ImageFont.truetype("/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Medium.ttf", 18)
-    f_top_line_font16 = ImageFont.truetype("/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Medium.ttf", 16)
+    f_title_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 18)
+    f_var_spc_char_font18 = ImageFont.truetype(dejavu_font_dir+'DejaVuSans-Bold.ttf', 18)
+    f_title_font24 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 24)
+    f_var_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 18)
+    f_top_line_font16 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 16)
 
     #Define frame size for e-ink display
     image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear frame
@@ -104,8 +105,8 @@ try:
             host_ip = "Not Connected"
 
         #This part grabs the status of the various services that we need to monitor.
-        bt_service_status = subprocess.Popen(['systemctl', 'is-active', 'rfcomm'], stdout=subprocess.PIPE).communicate()[0]
-        bt_string_status = bt_service_status.decode(encoding='UTF-8')
+        bt_service_status=subprocess.Popen(['systemctl', 'is-active', 'rfcomm'], stdout=subprocess.PIPE).communicate()[0]
+        bt_string_status=bt_service_status.decode(encoding='UTF-8')
 
         ser2net_service_status = subprocess.Popen(['systemctl', 'is-active', 'ser2net'], stdout=subprocess.PIPE).communicate()[0]
         ser2net_string_status = ser2net_service_status.decode(encoding='UTF-8')
@@ -192,7 +193,7 @@ try:
             draw.text((161, 105), wired_serial_port, font=f_var_font18, fill=0)
             draw.text((206, 105), wired_serial_status, font=f_var_spc_char_font18, fill=0)
         epd.displayPartial(epd.getbuffer(image)) #update the screeen to actually print the above to the e-ink display.
-        time.sleep(15)
+        time.sleep(end_of_loop_pause)
 # End of while bat_cap > 1 loop...
 
 # if the bat_cap is less that min_bat_cap, then bail out of the loop, and follow the remaining code to shutdown.
@@ -204,7 +205,7 @@ try:
     epd.display(epd.getbuffer(term_image))
     logging.info("Shutting down - battary has reached critical level")
     logging.info("Battary is: "+str(bat_cap)+"%")
-    pre_exit_steps(57, 20, 'This Device', 43, 50, 'Has been shutdown ') #52,20 and 48,50
+    pre_exit_steps(57, 20, 'This Device', 43, 50, 'Has been shutdown ')
     os.system("shutdown -P now")
     exit()
 
