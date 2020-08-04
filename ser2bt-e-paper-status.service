@@ -1,23 +1,24 @@
 [Unit]
-Description=Bluetooth to serial status for e-paper
-#Before=sysinit.target shutdown.target
-#Before=network.target bluetooth.service
-After=networking.service
-#Requires=rfcomm.service
+Description=Serial to Bluetooth status updater for for e-ink displays
+Before=shutdown.target reboot.target halt.target network-pre.target
+Requires=network-pre.target
+#DefaultDependencies=no
 
 [Service]
 Type=simple
 KillSignal=SIGINT
-TimeoutStopSec=60
+TimeoutStopSec=30
 SyslogIdentifier=ser2bt-e-paper-status
 ExecStart=nice -15 /usr/local/bin/ser2bt_status
-#TimeoutSec=120
+TimeoutSec=30
 #ExecStop=/bin/sleep 120
+LimitNPROC=1
 StandardOutput=inherit
 Restart=on-failure
-RestartSec=10
-#KillMode=mixed
+RestartSec=5
+KillMode=mixed
 
 [Install]
-WantedBy=basic.target
-#WantedBy=bluetooth.target.wants
+#WantedBy=basic.target
+#WantedBy=bluetooth.service
+WantedBy=sysinit.target

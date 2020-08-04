@@ -1,6 +1,7 @@
 [Unit]
 Description=Bluetooth serial service
-After=ser2bt-e-paper-status.service
+Before=ser2bt-e-paper-status.service
+After=bluetooth.service
 Requires=bluetooth.service
 
 [Service]
@@ -9,4 +10,4 @@ KillSignal=SIGINT
 ExecStart=/usr/bin/rfcomm watch hci0 1 setsid /sbin/agetty -L rfcomm0 9600 xterm -a pi
 
 [Install]
-WantedBy=bluetooth.service
+WantedBy=multi-user.target

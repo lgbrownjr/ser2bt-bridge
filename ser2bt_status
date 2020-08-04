@@ -49,12 +49,15 @@ def readCapacity(bus):
 
 
 def pre_exit_steps(xl1, yl1, status_l1, xl2, yl2, status_l2):
+    picdir='/usr/local/bin/'
     time.sleep(5)
     epd.init(epd.FULL_UPDATE)
     exit_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
-    exit_draw = ImageDraw.Draw(exit_image)
-    exit_draw.text((xl1,yl1), status_l1, font=f_title_font24, fill=0)
-    exit_draw.text((xl2, yl2), status_l2, font=f_title_font18, fill=0)
+#    exit_draw = ImageDraw.Draw(exit_image)
+#    exit_draw.text((xl1,yl1), status_l1, font=f_title_font24, fill=0)
+#    exit_draw.text((xl2, yl2), status_l2, font=f_title_font18, fill=0)
+    bmp = Image.open(os.path.join(picdir, 'logo.bmp'))
+    exit_image.paste(bmp, (0,0))
     epd.display(epd.getbuffer(exit_image))
     epd2in13_V2.epdconfig.module_exit()
 
