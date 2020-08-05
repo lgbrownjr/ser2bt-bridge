@@ -16,18 +16,18 @@ import logging
 
 # Variable decleration:
 bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
-min_bat_cap = 1  # setting minimum battery capacity before we'll shutdown.
+min_bat_cap=1  # setting in percent minimum battery capacity before we'll shutdown.
 host_name=socket.gethostname()  # define host_name
 logging.info("ser2bt_status was started  ")
 roboto_font_dir='/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/'
 dejavu_font_dir='/usr/share/fonts/truetype/dejavu/'
-end_of_loop_pause=15 #15 seconds at the end of each loop to not kill cpu.
+end_of_loop_pause=15 #sleep time in seconds.  Will be used at the end of the loop so as not to kill the cpu.
 def get_ssid():
     ps = subprocess.Popen(
          ['iwgetid'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
        )
     try:
-        output = subprocess.check_output(('grep', 'ESSID'), stdin=ps.stdout)
+        output=subprocess.check_output(('grep', 'ESSID'), stdin=ps.stdout)
     except subprocess.CalledProcessError:
         # grep did not match any lines
         ssid = "Not Connected"
@@ -53,9 +53,6 @@ def pre_exit_steps(xl1, yl1, status_l1, xl2, yl2, status_l2):
     time.sleep(5)
     epd.init(epd.FULL_UPDATE)
     exit_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
-#    exit_draw = ImageDraw.Draw(exit_image)
-#    exit_draw.text((xl1,yl1), status_l1, font=f_title_font24, fill=0)
-#    exit_draw.text((xl2, yl2), status_l2, font=f_title_font18, fill=0)
     bmp = Image.open(os.path.join(picdir, 'logo.bmp'))
     exit_image.paste(bmp, (0,0))
     epd.display(epd.getbuffer(exit_image))
@@ -97,7 +94,7 @@ try:
     epd.init(epd.PART_UPDATE) #Initialize the partial screen
     while (bat_cap > min_bat_cap):
         # Grab initial information
-        #This part grams the active network interface.
+        #This part grabs the active network interface.
         try:
             iface = netifaces.gateways()['default'][netifaces.AF_INET][1]
         except Exception:
