@@ -1,7 +1,7 @@
 [Unit]
 Description=Serial to Bluetooth status updater for for e-ink displays
 Before=shutdown.target reboot.target halt.target network-pre.target
-Requires=network-pre.target
+#Requires=network-pre.target
 #DefaultDependencies=no
 
 [Service]
@@ -21,4 +21,4 @@ KillMode=mixed
 [Install]
 #WantedBy=basic.target
 #WantedBy=bluetooth.service
-WantedBy=sysinit.target
+#WantedBy=sysinit.target

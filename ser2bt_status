@@ -53,8 +53,10 @@ def pre_exit_steps(xl1, yl1, status_l1, xl2, yl2, status_l2):
     time.sleep(5)
     epd.init(epd.FULL_UPDATE)
     exit_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
+    exit_draw = ImageDraw.Draw(exit_image)
     bmp = Image.open(os.path.join(picdir, 'logo.bmp'))
     exit_image.paste(bmp, (0,0))
+    exit_draw.text((12,5), 'Serial to Bluetooth Bridge  ', font=f_title_font18,fill=0)
     epd.display(epd.getbuffer(exit_image))
     epd2in13_V2.epdconfig.module_exit()
 
@@ -78,8 +80,8 @@ try:
     draw.text((0, 0), host_name, font=f_top_line_font16, fill=0)
     draw.line([(0, 17), (250, 17)], fill=0, width=2)
     draw.text((0, 20), 'Load: ', font=f_title_font18, fill=0)
-    draw.text((53, 20), "CPU", font=f_var_font18, fill=0)
-    draw.text((152, 20), "Mem", font=f_var_font18, fill=0)
+    draw.text((53, 20), 'CPU', font=f_var_font18, fill=0)
+    draw.text((152, 20), 'Mem', font=f_var_font18, fill=0)
     draw.text((0, 42), 'SSID: ', font=f_title_font18, file=0)
     draw.text((0, 63), 'IP Address: ', font=f_title_font18, fill=0)
     draw.text((0, 84), 'Services: ', font=f_title_font18, fill=0)
