@@ -49,9 +49,14 @@ def readCapacity(bus):
 
 
 def pre_exit_steps(xl1, yl1, status_l1, xl2, yl2, status_l2):
-    picdir='/usr/local/bin/'
     time.sleep(5)
     epd.init(epd.FULL_UPDATE)
+    exit_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
+    exit_draw = ImageDraw.Draw(exit_image)
+    epd.display(epd.getbuffer(exit_image))
+
+def exit_steps():
+    picdir='/usr/local/bin/'
     exit_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     exit_draw = ImageDraw.Draw(exit_image)
     bmp = Image.open(os.path.join(picdir, 'logo.bmp'))
@@ -202,13 +207,14 @@ try:
     term_image=Image.new('1', (epd.height, epd.width), 255)  # 255: clear frame
     term_draw=ImageDraw.Draw(term_image)
     epd.init(epd.FULL_UPDATE)
+    os.system("shutdown -P now")
     term_draw.text((35, 20), 'Shutting Down!', font=f_title_font24, fill=0)
     term_draw.text((3, 50), 'Due to Critical Battary level ', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(term_image))
     logging.info("Shutting down - battary has reached critical level")
     logging.info("Battary is: "+str(bat_cap)+"%")
     pre_exit_steps(57, 20, 'This Device', 43, 50, 'Has been shutdown ')
-    os.system("shutdown -P now")
+    exit_steps()
     exit()
 
 except (KeyboardInterrupt, SystemExit):
@@ -216,8 +222,10 @@ except (KeyboardInterrupt, SystemExit):
     term_draw = ImageDraw.Draw(term_image)
     print ("application is closing\n")
     epd.init(epd.FULL_UPDATE)
-    term_draw.text((6, 20), 'Exiting ser2bt_status', font=f_title_font24, fill=0)
-    term_draw.text((63, 50), 'Due to SIGINT ', font=f_title_font18, fill=0)
+    term_draw.text((77, 20), 'Exiting ', font=f_title_font24, fill=0)
+    term_draw.text((12, 50), 'Serial to bluetooth bridge  ', font=f_title_font18, fill=0)
+    term_draw.text((63, 70), 'Due to SIGINT ', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(term_image))
     pre_exit_steps(6, 20, 'ser2bt_status service', 48, 50, 'Has been stopped ')
+    exit_steps()
     exit()

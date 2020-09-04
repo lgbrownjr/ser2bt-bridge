@@ -33,6 +33,7 @@ if [[ $(tty) != $bt_port ]]; then
 	exit_script $exit_status ${exit_status_reason}
 	exit $exit_status # Exit - can only work if being accessed from bluetooth serial.
 fi
+resize
 #Check dependencies:
 printf "${nor}Checking for dependencies:\n"
 for cmd in ${cmds[@]} ; do
