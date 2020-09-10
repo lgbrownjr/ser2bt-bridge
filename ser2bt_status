@@ -207,7 +207,7 @@ try:
     term_image=Image.new('1', (epd.height, epd.width), 255)  # 255: clear frame
     term_draw=ImageDraw.Draw(term_image)
     epd.init(epd.FULL_UPDATE)
-    os.system("shutdown -P now")
+    os.system("poweroff -p")
     term_draw.text((35, 20), 'Shutting Down!', font=f_title_font24, fill=0)
     term_draw.text((3, 50), 'Due to Critical Battary level ', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(term_image))
