@@ -1,6 +1,6 @@
 #!/bin/bash
 #color and other formatting defenitions:
-source $HOME/bin/format.sh
+source /usr/local/bin/format.sh
 
 #constants:
 bt_port="/dev/rfcomm0"
