@@ -1,6 +1,6 @@
 #!/bin/bash
 #color and other formatting defenitions:
-source /usr/local/lib/format.sh
+source /usr/local/bin/format.sh
 
 #constants:
 bt_port="/dev/rfcomm0"
@@ -33,7 +33,7 @@ if [[ $(tty) != $bt_port ]]; then
 	exit_script $exit_status ${exit_status_reason}
 	exit $exit_status # Exit - can only work if being accessed from bluetooth serial.
 fi
-shopt -s checkwinsize
+resize > /dev/null 2>&1
 #Check dependencies:
 printf "${nor}Checking for dependencies:\n"
 for cmd in ${cmds[@]} ; do
@@ -73,7 +73,7 @@ if [[ ! -e $usb_port ]]; then
 else
   wire_port=$usb_port
 fi
-shopt -s checkwinsize
+resize > /dev/null 2>&1
 printf "Both sides are connected, bridging ${cyn}$bt_port${nor} with ${cyn}$wire_port${nor}...\n\n"
 ##io -b 9600 -o 5 $wire_port
 screen $wire_port 9600
