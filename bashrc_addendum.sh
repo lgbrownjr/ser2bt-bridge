@@ -7,7 +7,7 @@
 declare -a cmds=(resize stty ser2bt_bridge format.sh)
 app_count=0
 installed_app_count=0
-source /usr/local/bin/format.sh
+source /usr/local/lib/format.sh
 
 if [ $(tty) = "/dev/rfcomm0" ] ; then
 	for cmd in ${cmds[@]} ; do
