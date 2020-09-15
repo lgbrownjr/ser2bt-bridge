@@ -29,11 +29,12 @@ In order to get the service to work, without any of the two options: UPS backup,
   - Save and close cmdline.txt
 - Save and close /boot/cmdline.txt
 - Add or uncomment the following settings in the /boot/config.txt file:  
-  - enable_uart=1
-  - dtoverlay=dwc2
-- Save and close /boot/config.txt
-- Create an empty file and call it ssh - no extensions, just ssh.
-- Create another file called wpa_supplicant.conf, and open it:
+    `enable_uart=1`
+    
+    `dtoverlay=dwc2`
+- Save and close `/boot/config.txt`
+- Create an empty file and call it `ssh` - no extensions, just `ssh`.
+- Create another file called `wpa_supplicant.conf`, and open it:
   - Insert the following:
   
   ```bash
@@ -118,7 +119,7 @@ Create the following Directories
     cd ser2bt-bridge/
     sudo cp ser2bt_bridge /usr/local/bin/
     cat bashrc_addendum.sh >> ~/.bashrc
-   sudo cp rfcomm.service /etc/systemd/system/
+    sudo cp rfcomm.service /etc/systemd/system/
 ```
   - Copy the rfcomm service to `/systemd/system/` directory and enable the service
 ```bash
@@ -126,7 +127,14 @@ Create the following Directories
     sudo systemctl daemon-reload
     sudo service rfcomm enable
 ```
+- Open `/etc/bluetooth/main.conf`
 
+`sudo nano /etc/bluetooth/main.conf`
+  - Uncomment and/or change the following settings:
+    - `DiscoverableTimeout = 0`
+    - `PairableTimeout = 0`
+  - Save and close `/etc/bluetooth/main.conf`
+- Now, reboot your raspberry pi zero.
   
 
  
