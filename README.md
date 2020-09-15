@@ -56,15 +56,78 @@ sudo apt update && sudo apt full-upgrade -y
 ```
 
 - Setup using raspi-config:
-  - Setup locals.
-  - Set timezone on the Pi.
-  - Keyboard (optional).
-  - Set gpu memory to 16.
-  - Enable SSH.
-  - Enable serial
-  - Change hostname.
-  - Change default password.
-  - Setup wireless network.
+  - Change *Default Password*.
+  - Under *Network Options:*
+    - Disable *Waiting for network on boot*
+    - Change hostname.
+  - Under *Interfacing Options:*
+    - Enable SSH.
+    - Enable serial
+  - Under *localization Options:*
+    - Setup locals.
+    - Set timezone on the Pi.
+    - Keyboard (optional).
+  - Under *Advanced Options:*
+    - Select *Memory Split* and set gpu memory to 16MB.
+- Add the following commands to the terminal:
+
+```bash
+    sudo echo "dwc2" | sudo tee -a /etc/modules
+    sudo echo "g_serial" | sudo tee -a /etc/module
+```
+ - Install the following software:
+ 
+ ```bash
+ sudo apt install screen git minicom tio m4 rfkill xterm
+ ```
+- In the file:/etc/systemd/system/dbus-org.bluez.service
+`sudo nano /etc/systemd/system/dbus-org.bluez.service`
+  - Add `-C` to the end of:`ExecStart=/usr/lib/bluetooth/bluetoothd`, so:
+  
+    `ExecStart=/usr/lib/bluetooth/bluetoothd`
+
+    Becomes:
+
+    `ExecStart=/usr/lib/bluetooth/bluetoothd -C`
+- Then, right below that, add:
+```bash
+    ExecStartPost=/usr/bin/sdptool add SP'
+    ExecStartPost=/bin/hciconfig hci0 piscan
+```
+
+  - Save and close `/etc/systemd/system/dbus-org.bluez.service`
+- Enable the getty@ttyGS0 service:
+```bash
+    sudo systemctl enable getty@ttyGS0.service
+    sudo systemctl daemon-reload
+    sudo systemctl restart bluetooth.service
+```
+Create the following Directories
+```bash
+    mkdir /home/pi/Projects/
+    sudo mkdir /usr/local/lib/ser2bt
+```
+- In the Projects folder, initialize git, and clone the following repository:
+```bash
+    cd $HOME/Projects
+    git init
+    git clone https://github.com/lgbrownjr/ser2bt-bridge.git
+```
+  - Copy files to their respective locations:
+```bash
+    cd ser2bt-bridge/
+    sudo cp ser2bt_bridge /usr/local/bin/
+    cat bashrc_addendum.sh >> ~/.bashrc
+   sudo cp rfcomm.service /etc/systemd/system/
+```
+  - Copy the rfcomm service to `/systemd/system/` directory and enable the service
+```bash
+    sudo systemctl enable rfcomm
+    sudo systemctl daemon-reload
+    sudo service rfcomm enable
+```
+
+  
 
  
 #### So in its base configuration, one only needs the following files:
