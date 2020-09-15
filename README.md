@@ -35,6 +35,7 @@ In order to get the service to work, without any of the two options: UPS backup,
 - Create an empty file and call it ssh - no extensions, just ssh.
 - Create another file called wpa_supplicant.conf, and open it:
   - Insert the following:
+  
   ```bash
   ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
   update_config=1
@@ -45,13 +46,16 @@ In order to get the service to work, without any of the two options: UPS backup,
       psk="passphrase/password"
       key_mgmt=WPA-PSK
   }
+  ```
 
 You are now done with this section, safely eject the SD card, and insert it into you raspberry pi zero
 - Update OS:
+
 ```bash
 sudo apt update && sudo apt full-upgrade -y
+```
 
-- Setup using raspi-config.
+- Setup using raspi-config:
   - Setup locals.
   - Set timezone on the Pi.
   - Keyboard (optional).
