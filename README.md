@@ -52,10 +52,11 @@ You are now done with this section, safely eject the SD card, and insert it into
 
 **Note: Finding the IP address can be painful unless you have a utility on your PC or phone that can scan the network for active devices.  Recommend trying the hostname first.**
 
-##### Update OS:
+##### Update OS and install dependencies:
 ```bash
-sudo apt update && sudo apt full-upgrade -y
-```
+ sudo apt update && sudo apt full-upgrade -y
+ sudo apt install screen git minicom tio m4 rfkill xterm -y
+ ```
 - Reboot your Pi when the upgrade is complete.
 ##### Additional OS Setup:
 - Setup using raspi-config:
@@ -73,16 +74,12 @@ sudo apt update && sudo apt full-upgrade -y
   - Under *Advanced Options:*
     - Select *Memory Split* and set *GPU memory* to 16MB.
   - Under the main menu, select *exit*, and if it asks you to reboot, do so.
-##### Pre-Requisites:
+##### Pre-Requisites to software installation:
 - Add the following commands to the terminal:
 ```bash
     sudo echo "dwc2" | sudo tee -a /etc/modules
     sudo echo "g_serial" | sudo tee -a /etc/module
 ```
- - Install the following software:
- ```bash
- sudo apt install screen git minicom tio m4 rfkill xterm
- ```
 - Open the file: /etc/systemd/system/dbus-org.bluez.service:
 
 `sudo nano /etc/systemd/system/dbus-org.bluez.service`
@@ -99,11 +96,12 @@ sudo apt update && sudo apt full-upgrade -y
     ExecStartPost=/bin/hciconfig hci0 piscan
 ```
   - Save and close `/etc/systemd/system/dbus-org.bluez.service`
-##### Create the following Directories & download the scripts:
+- Create the following Directories:
 ```bash
     mkdir /home/pi/Projects/
     sudo mkdir /usr/local/lib/ser2bt-bash
 ```
+##### Download and setup the serial to bluetooth scripts:
 - In the Projects folder, initialize git, and clone the following repository:
 ```bash
    cd $HOME/Projects
