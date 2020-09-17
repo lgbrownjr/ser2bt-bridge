@@ -21,7 +21,7 @@ host_name=socket.gethostname()  # define host_name
 logging.info("ser2bt_status was started  ")
 roboto_font_dir='/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/'
 dejavu_font_dir='/usr/share/fonts/truetype/dejavu/'
-end_of_loop_pause=15 #sleep time in seconds.  Will be used at the end of the loop so as not to kill the cpu.
+end_of_loop_pause=20 #sleep time in seconds.  Will be used at the end of the loop so as not to kill the cpu.
 def get_ssid():
     ps = subprocess.Popen(
          ['iwgetid'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
