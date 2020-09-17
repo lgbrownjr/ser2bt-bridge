@@ -32,7 +32,7 @@ autodetach off
 
 # turn visual bell on
 vbell off
-vbell_msg "   Wuff  ----  Wuff!!  "
+#vbell_msg "   Wuff  ----  Wuff!!  "
 
 # define a bigger scrollback, default is 100 lines
 defscrollback 40960
@@ -96,6 +96,10 @@ termcapinfo xterm*|linux*|rxvt*|Eterm* OP
 # Enable non-blocking mode to better cope with flaky ssh connections.
 defnonblock 5
 
+# easier scroll by PgUp and PgDown
+#bindkey "^[[5~" eval 'copy' 'stuff ^b' # PgUp | Enter copy/scrollback mode and page up
+#bindkey "^[[6~" eval 'copy' 'stuff ^f' # PgDown | Enter copy/scrollback mode and page down
+
 # ------------------------------------------------------------------------------
 # STARTUP SCREENS
 # ------------------------------------------------------------------------------
@@ -114,7 +118,8 @@ defnonblock 5
 # ------------------------------------------------------------------------------
 # SCREEN LAYOUT
 # ------------------------------------------------------------------------------
-hardstatus string "%{Bk}[ %{R}$USER%{W}@%{y}%H%{B} ][%=%{W}%?%-Lw%?%{+b W}(%{M}%n %{-b g}%t%?(%u)%?%{+b W})%{-b W}%?%+Lw%?%?%=%{B}][ %{+b Y}%m%{+b W}/%{+b Y}%d%{+b W}/%{+b Y}%Y %{-b C}%c %{B}]"
+hardstatus string "%{= kB}[ %{= kR}$USER%{= kW}@%{= ky}%H%{= kB} ][%=%{= kW}%?%-Lw%?%{= kW}(%{kM}%n %{= kg}%t%?(%u)%?%{= kW})%{= kW}%?%+Lw%?%?%=%{= kB}][ %{= kY}%m%{= kW}/%{= kY}%d%{= kW}/%{= kY}%Y %{= kC}%c %{= kB}]"
+#hardstatus string '%{= Kd} %{= Kd}%-w%{= Kr}[%{= KW}%n %t%{= Kr}]%{= Kd}%+w %-= %{KG} %H%{KW}|%{KY}%101`%{KW}|%D %M %d %Y%{= Kc} %C%A%{-}'
 #caption always "%?%F%{= Kk}%:%{=u kR}%?  %h %-024=%{+b} %C%a %D %d %M %Y%{= db}"
-#caption always "%{b}[ %{G}%H::$USER %{b}][ %=%{w}%?%-Lw%?%{b}(%{W}%n %t%?(%u)%?%{b})%{w}%?%+Lw%?%?%= %{b}][%{G} %Y.%m.%d %{W}%1c %{b}]"
+caption always "%{= kB}[ %{= kg}To Exit your console session: %{= kY}<CTRL>%{= kg} +%{= kY} A,%{= kg} then%{= kY} \ %{= kB}]"
 #idle 300 exec termsaver starwars
