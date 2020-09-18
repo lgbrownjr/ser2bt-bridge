@@ -70,21 +70,25 @@ You are now done with this section, safely eject the SD card, and insert it into
  ```
 - Reboot your Pi when the upgrade is complete.
 ##### Additional OS Setup:
-- Setup using raspi-config:
-  - Change *Default Password*.
-  - Under *Network Options:*
+- Setup using raspi-config `sudo raspi-config`:
+  - Under the main menu, select *Change User Password*.
+  - Select*Network Options:*
     - Disable *Waiting for network on boot*.
     - Change hostname.
-  - Under *Interfacing Options:*
+    - Select *Back*
+  - Select *Interfacing Options:*
     - Enable SSH.
     - Enable serial.
-  - Under *localization Options:*
+    - Select *Back*
+  - Select *localization Options*, and verify, or set:
     - Setup locals.
     - Set timezone on the Pi.
     - Keyboard (optional).
-  - Under *Advanced Options:*
+    - Select *Back*
+  - Select *Advanced Options:*
     - Select *Memory Split* and set *GPU memory* to 16MB.
-  - Under the main menu, select *exit*, and if it asks you to reboot, do so.
+    - Select *Back*
+  - Under the *Main Menu*, select *finish*, and if it asks you to reboot, do so.
 ##### Pre-Requisites to software installation:
 - Add the following commands to the terminal:
 ```bash
