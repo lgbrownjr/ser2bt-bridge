@@ -6,9 +6,6 @@ This project a set of scripts, that allow one to use the raspberry pi to "bridge
 Unfortunately, there are many work environments that do not take kindly to raspberry pi's being on their network, and for some environments that simple act would almost certainly cause a resume generating event for the offending administrator.  Bluetooth over serial is better direction as allows a given laptop with these restrictions to still connect to a switches console port wirelessly.
 
 Another benefit of using Bluetooth is that you don't have to worry about finding its IP address, you just open a putty serial connection, and presto, you are connected.
-##### Options - to add a little polish to the bridge:
-- For battery backup, attach a [ups-lite](https://www.ebay.com/itm/UPS-Lite-for-Raspberry-Pi-Zero-/352888138785).
-- For status and system health updates, attach a [waveshare.2.13 e-paper](https://www.waveshare.com/2.13inch-e-Paper-HAT.htm) display.
 #### How it works at a high level:
 Once you complete the installation, one would need to pair their laptop to it, during that process, a com port is assigned to the paired raspberry pi.  Usually, that is saved in a profile, so that going forward, one just needs to open thir favourite terminal program, and select their "bt serial" profile, and they're connected.
 
@@ -24,12 +21,12 @@ Finally, once done, pres <CTRL> + A, then \ to exit GNU Screen, then `sudo power
 Before we begin, please understand that everything in this repository is a work in progress...  :)
 ### Base:
 The following steps will guide you through the process getting this system to work from just after everything is unboxed, to the point where this works in its base form - that is the raspberry pi zero, by itself acting as a bluetooth to serial bridge.  We will be using headless installation method, so you will not need a keyboard, mouse, or monitor.
-#### Pre-requisites:
+#### Parts neeeded for this phase:
 In order to get the service to work, without any of the two options: UPS backup, or status screen, you will need:  
-- A Raspberry Pi Zero *W* - at a minimum, but if you don't like soldering, and have at least a desire to expand, get the A Raspberry Pi Zero *WH* instead
+- A Raspberry Pi Zero *W* - at a minimum, but if you don't like soldering, and have at least a desire to expand, get the Raspberry Pi Zero *WH* instead
 - An SD card with a minimum of 8G.  Actually, you can get smaller, but for the price, 8G or 16G is a good choice.
-- A USB micro to USB type A for power.
-- A USB micro to USB type A Female to connect to a type A to RF45 serial cable to connect to a Cisco rj45 console port.
+- A USB micro to USB type A for power.  [Example](https://www.amazon.com/6in-Micro-USB-Cable-6-inches/dp/B003YKX6WM/ref=sr_1_18?dchild=1&keywords=usb+micro+to+usb+a+male+6+inch+uart+cable&qid=1599147190&s=electronics&sr=1-18)
+- A USB micro to USB type A Female to connect to a USB type A to RF45 serial cable to connect to a Cisco rj45 console port.  USB to RJ45 [Example](https://www.amazon.com/gp/product/B01AFNBC3K/ref=ppx_yo_dt_b_asin_title_o07_s00?ie=UTF8&psc=1); micro to type A [example](https://www.amazon.com/UGREEN-Adapter-Samsung-Controller-Smartphone/dp/B00LN3LQKQ/ref=sr_1_2?dchild=1&keywords=usb%2Bmicro%2Bto%2Busb%2Ba%2Bfemale%2Bcable&qid=1599146495&s=electronics&sr=1-2&th=1).
 - A Micro USB (Pi side) to Mini USB (switch side) to connect between the raspberry pi's serial port to the switches serial port.  Here is an [example](https://www.amazon.com/gp/product/B018M8YNDG/ref=ox_sc_act_title_1?smid=ATVPDKIKX0DER&psc=1)
 - A case to house the pi.  Check this [example](https://www.amazon.com/Flirc-Raspberry-Pi-Zero-Case/dp/B08837L144/ref=sr_1_11_sspa?dchild=1&keywords=raspberry+pi+zero+battery+hat&qid=1600716473&sr=8-11-spons&psc=1&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUE0V0NONk1LS0hLNEEmZW5jcnlwdGVkSWQ9QTA5ODgwMDExTzgzV1hIVUxSQVJEJmVuY3J5cHRlZEFkSWQ9QTAxMTk0NDQySzdKM0UwV1FESTdBJndpZGdldE5hbWU9c3BfbXRmJmFjdGlvbj1jbGlja1JlZGlyZWN0JmRvTm90TG9nQ2xpY2s9dHJ1ZQ==) out for a good example, slightly pricEy, but in my opinion, worth the cost.
 #### OS installation and setup:
@@ -171,4 +168,7 @@ If everything went as planned, your raspberry pi zero should be acting like a se
 - After the raspberry pi has rebooted, use your PC/laptop to pair with it.  The Pi should advertise that it supports serial communications, so you'll be able to associate it with your PC/laptops com/ttyUSBx/ttyACMx ports.
 - Once that's done, go ahead and open your favorite terminal program, and pint it to the com/ttyUSBx/tty/ACMx port, and set it up to connect at 9600 bps, n/8/1, xterm.
 ### Installation of ups-lite & waveshare e-ink screen:
-Coming Shortly.
+The addition of am e-paper screen and ups backup will allow you to continue providing power to the Pi while not being plugged into a power source, and to easiliy tell the status of the bridge (Pi) without having to login to tell:
+#### Psrts needed for this phase:
+- For battery backup, attach a [ups-lite](https://www.ebay.com/itm/UPS-Lite-for-Raspberry-Pi-Zero-/352888138785).
+- For status and system health updates, attach a [waveshare.2.13 e-paper](https://www.waveshare.com/2.13inch-e-Paper-HAT.htm) display.
