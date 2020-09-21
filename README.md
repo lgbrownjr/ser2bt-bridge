@@ -15,11 +15,11 @@ Some things to think about while you are happily administering your switch, rout
 1. Add a battery backup, to allow the pi to weather those reboots:  One of the options is to attatch a ups_lite.  This will allow the pi to be moved around between closets, or devices without powering it down, and back up.
 2. Turn on *Overlay FS*.  This basically, turns your PI's sd card into a read only drive, so the risk of corrupting your sd card goes way, way down.  The down side is that you need to turn *Overlay FS* Off to update it or save files, then turn it back on.  Still testing this feature to see how well it works over the long run.
 
-Finally, once done, pres <CTRL> + A, then \ to exit GNU Screen, then `sudo poweroff -p` to properly shut the bridge down.
+Finally, once done, press <CTRL> + A, then \ to exit GNU Screen, then `sudo poweroff -p` to properly shut the bridge down.
 
-## Installation:
+## Setup:
 Before we begin, please understand that everything in this repository is a work in progress...  :)
-### Base:
+### Base setup:
 The following steps will guide you through the process getting this system to work from just after everything is unboxed, to the point where this works in its base form - that is the raspberry pi zero, by itself acting as a bluetooth to serial bridge.  We will be using headless installation method, so you will not need a keyboard, mouse, or monitor.
 #### Parts neeeded for this phase:
 In order to get the service to work, without any of the two options: UPS backup, or status screen, you will need:  
@@ -29,7 +29,8 @@ In order to get the service to work, without any of the two options: UPS backup,
 - A USB micro to USB type A Female to connect to a USB type A to RF45 serial cable to connect to a Cisco rj45 console port.  USB to RJ45 [Example](https://www.amazon.com/gp/product/B01AFNBC3K/ref=ppx_yo_dt_b_asin_title_o07_s00?ie=UTF8&psc=1); micro to type A [example](https://www.amazon.com/UGREEN-Adapter-Samsung-Controller-Smartphone/dp/B00LN3LQKQ/ref=sr_1_2?dchild=1&keywords=usb%2Bmicro%2Bto%2Busb%2Ba%2Bfemale%2Bcable&qid=1599146495&s=electronics&sr=1-2&th=1).
 - A Micro USB (Pi side) to Mini USB (switch side) to connect between the raspberry pi's serial port to the switches serial port.  Here is an [example](https://www.amazon.com/gp/product/B018M8YNDG/ref=ox_sc_act_title_1?smid=ATVPDKIKX0DER&psc=1)
 - A case to house the pi.  Check this [example](https://www.amazon.com/Flirc-Raspberry-Pi-Zero-Case/dp/B08837L144/ref=sr_1_11_sspa?dchild=1&keywords=raspberry+pi+zero+battery+hat&qid=1600716473&sr=8-11-spons&psc=1&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUE0V0NONk1LS0hLNEEmZW5jcnlwdGVkSWQ9QTA5ODgwMDExTzgzV1hIVUxSQVJEJmVuY3J5cHRlZEFkSWQ9QTAxMTk0NDQySzdKM0UwV1FESTdBJndpZGdldE5hbWU9c3BfbXRmJmFjdGlvbj1jbGlja1JlZGlyZWN0JmRvTm90TG9nQ2xpY2s9dHJ1ZQ==) out for a good example, slightly pricey, but in my opinion, worth the cost.
-#### OS installation and setup:
+#### Installation:
+##### OS installation and setup:
 - insert the SD card into a different computer to perform the first few steps:
   - Download link is [here](https://www.raspberrypi.org/downloads/raspberry-pi-os/).
   - Follow Raspbian’s directions [here](https://www.raspberrypi.org/documentation/installation/installing-images/README.md).
@@ -58,19 +59,19 @@ In order to get the service to work, without any of the two options: UPS backup,
   }
   ```
 You are now done with this section, safely eject the SD card, and insert it into you raspberry pi zero.
-##### First login:
+###### First login:
 - Power on the Pi, and give it about a minute to boot.
  - Using your favorite SSH client, login into your pi: `pi@<[hostname|IP Address]>`, where *hostname*, or *IP Address* are = to your Pi's.
 
 **Note: Finding the IP address can be painful unless you have a utility on your PC or phone that can scan the network for active devices.  Recommend trying the hostname first.**
 
-##### Update OS and install dependencies:
+###### Update OS and install dependencies:
 ```bash
  sudo apt update && sudo apt full-upgrade -y
  sudo apt install screen git minicom tio rfkill xterm -y
  ```
 - Reboot your Pi when the upgrade is complete.
-##### Additional OS Setup:
+###### Additional OS Setup:
 - Setup using raspi-config `sudo raspi-config`:
   - Under the main menu, select *Change User Password*.
   - Select*Network Options:*
@@ -90,7 +91,7 @@ You are now done with this section, safely eject the SD card, and insert it into
     - Select *Memory Split* and set *GPU memory* to 16MB.
     - Select *Back*
   - Under the *Main Menu*, select *finish*, and if it asks you to reboot, do so.
-##### Pre-Requisites to software installation:
+###### Pre-Requisites to software installation:
 - Add the following commands to the terminal:
 ```bash
     sudo echo "dwc2" | sudo tee -a /etc/modules
@@ -117,7 +118,7 @@ You are now done with this section, safely eject the SD card, and insert it into
     mkdir /home/pi/Projects/
     sudo mkdir /usr/local/lib/ser2bt-bash
 ```
-##### Download and setup the serial to bluetooth scripts:
+###### Download and setup the serial to bluetooth scripts:
 - In the Projects folder, initialize git, and clone the following repository:
 ```bash
    cd $HOME/Projects
@@ -131,7 +132,7 @@ You are now done with this section, safely eject the SD card, and insert it into
    cat bashrc_addendum.sh >> ~/.bashrc
    sudo cp rfcomm.service /etc/systemd/system/
 ```
-##### Enable services:
+###### Enable services:
 ```bash
    sudo systemctl enable rfcomm
    sudo systemctl enable getty@ttyGS0.service
@@ -139,7 +140,7 @@ You are now done with this section, safely eject the SD card, and insert it into
    sudo systemctl restart bluetooth.service	
    sudo service rfcomm enable
 ```
-##### Bluetooth setup:
+###### Bluetooth setup:
 - Open `/etc/bluetooth/main.conf`
 
 `sudo nano /etc/bluetooth/main.conf`
@@ -162,13 +163,14 @@ You are now done with this section, safely eject the SD card, and insert it into
     pairable on
 ```
   - Type in `show` to verify, then `exit` to leave bluetooth control
-##### We're Done!
+###### We're Done!
 If everything went as planned, your raspberry pi zero should be acting like a serial to bluetooth bridge, allowing you to connect to a switches console port via bluetooth from your computer.
 - Now, reboot your raspberry pi zero.
 - After the raspberry pi has rebooted, use your PC/laptop to pair with it.  The Pi should advertise that it supports serial communications, so you'll be able to associate it with your PC/laptops com/ttyUSBx/ttyACMx ports.
 - Once that's done, go ahead and open your favorite terminal program, and pint it to the com/ttyUSBx/tty/ACMx port, and set it up to connect at 9600 bps, n/8/1, xterm.
-### Installation of ups-lite & waveshare e-ink screen:
-The addition of am e-paper screen and ups backup will allow you to continue providing power to the Pi while not being plugged into a power source, and to easiliy tell the status of the bridge (Pi) without having to login to tell:
+### Installation of *ups-lite* & *waveshare e-ink screen*:
+The addition of am e-paper screen and ups backup will allow you to continue providing power to the Pi while not being plugged into a power source, and to easiliy tell the status of the bridge (Pi) without having to login to check.
 #### Psrts needed for this phase:
 - For battery backup, attach a [ups-lite](https://www.ebay.com/itm/UPS-Lite-for-Raspberry-Pi-Zero-/352888138785).
 - For status and system health updates, attach a [waveshare.2.13 e-paper](https://www.waveshare.com/2.13inch-e-Paper-HAT.htm) display.
+#### Installation:
