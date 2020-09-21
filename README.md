@@ -5,7 +5,16 @@ This project a set of scripts, that allow one to use the raspberry pi to "bridge
 
 Unfortunately, there are many work environments that do not take kindly to raspberry pi's being on their network, and for some environments that simple act would almost certainly cause a resume generating event for the offending administrator.  Bluetooth over serial is better direction as allows a given laptop with these restrictions to still connect to a switches console port wirelessly.
 
-Another benefit of using Bluetooth is that you don't have to worry about finding its IP address, you just open a putty serial connection, and presto, you are connected.  :)
+Another benefit of using Bluetooth is that you don't have to worry about finding its IP address, you just open a putty serial connection, and presto, you are connected.
+#### Parts Needed:
+- A Raspberry Pi Zero *W* - at a minimum, but if you don't like soldering, and have at least a desire to expand, get the A Raspberry Pi Zero *WH* instead
+- micro USB to USB A female cable to connect to a USB to serial cable.  Check this link out for an example.
+- Micro USB to USB A male to connect from the switch to the Raspberry Pi's power port.  Check this link out for an example.
+- A case to house the pi.  Check this example out for a good example, slightly proicey, but in my opinion, worth the cost.
+##### Options - to add a little polish to the bridge:
+- For battery backup, attach a ups-lite.
+- For status and system health updates, attach a waveshare.2.13 e-paper display.
+- Add additional scripts to monitor the battery's capacity, and to drive the waveshare display.
 #### How it works at a high level:
 Once you complete the installation, one would need to pair their laptop to it, during that process, a com port is assigned to the paired raspberry pi.  Usually, that is saved in a profile, so that going forward, one just needs to open thir favourite terminal program, and select their "bt serial" profile, and they're connected.
 
@@ -16,6 +25,7 @@ Some things to think about while you are happily administering your switch, rout
 2. Turn on *Overlay FS*.  This basically, turns your PI's sd card into a read only drive, so the risk of corrupting your sd card goes way, way down.  The down side is that you need to turn *Overlay FS* Off to update it or save files, then turn it back on.  Still testing this feature to see how well it works over the long run.
 
 Finally, once done, pres <CTRL> + A, then \ to exit GNU Screen, then `sudo poweroff -p` to properly shut the bridge down.
+
 ## Installation:
 Before we begin, please understand that everything in this repository is a work in progress...  :)
 ### Base:
@@ -168,17 +178,3 @@ If everything went as planned, your raspberry pi zero should be acting like a se
 - Once that's done, go ahead and open your favorite terminal program, and pint it to the com/ttyUSBx/tty/ACMx port, and set it up to connect at 9600 bps, n/8/1, xterm.
 ### Installation of ups-lite & waveshare e-ink screen:
 Coming Shortly.
-
- 
-#### So in its base configuration, one only needs the following files:
-- bashrc_addendom - to add launch the ser2bt_bridge utility once a user logs using rfcomm (serial over bluetooth.
-- rfcomm.service - Launches a service that will listed for incoming connection requests from the rfcomm vty port.
-- ser2bt_bridge script - checks to make sure there is a valid connection on rfcomm and either the vtyUSB or vtyamc0, and attempts to bridge them together.
-#### You also need a:
-- micro USB to USB A female cable to connect to a USB to serial cable.
-- Micro USB to USB A male to connect from the switch to the Raspberry Pi's power port.
-- Some cheap case to house the pi.
-### Options - to add a little polish to the bridge:
-- For battery backup, attach a ups-lite.
-- For status and system health updates, attach a waveshare.2.13 e-paper display.
-- Add additional scripts to monitor the battery's capacity, and to drive the waveshare display.
