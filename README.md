@@ -6,15 +6,9 @@ This project a set of scripts, that allow one to use the raspberry pi to "bridge
 Unfortunately, there are many work environments that do not take kindly to raspberry pi's being on their network, and for some environments that simple act would almost certainly cause a resume generating event for the offending administrator.  Bluetooth over serial is better direction as allows a given laptop with these restrictions to still connect to a switches console port wirelessly.
 
 Another benefit of using Bluetooth is that you don't have to worry about finding its IP address, you just open a putty serial connection, and presto, you are connected.
-#### Parts Needed:
-- A Raspberry Pi Zero *W* - at a minimum, but if you don't like soldering, and have at least a desire to expand, get the A Raspberry Pi Zero *WH* instead
-- micro USB to USB A female cable to connect to a USB to serial cable.  Check this link out for an example.
-- Micro USB to USB A male to connect from the switch to the Raspberry Pi's power port.  Check this link out for an example.
-- A case to house the pi.  Check this example out for a good example, slightly proicey, but in my opinion, worth the cost.
 ##### Options - to add a little polish to the bridge:
-- For battery backup, attach a ups-lite.
-- For status and system health updates, attach a waveshare.2.13 e-paper display.
-- Add additional scripts to monitor the battery's capacity, and to drive the waveshare display.
+- For battery backup, attach a [ups-lite](https://www.ebay.com/itm/UPS-Lite-for-Raspberry-Pi-Zero-/352888138785).
+- For status and system health updates, attach a [waveshare.2.13 e-paper](https://www.waveshare.com/2.13inch-e-Paper-HAT.htm) display.
 #### How it works at a high level:
 Once you complete the installation, one would need to pair their laptop to it, during that process, a com port is assigned to the paired raspberry pi.  Usually, that is saved in a profile, so that going forward, one just needs to open thir favourite terminal program, and select their "bt serial" profile, and they're connected.
 
@@ -32,12 +26,12 @@ Before we begin, please understand that everything in this repository is a work 
 The following steps will guide you through the process getting this system to work from just after everything is unboxed, to the point where this works in its base form - that is the raspberry pi zero, by itself acting as a bluetooth to serial bridge.  We will be using headless installation method, so you will not need a keyboard, mouse, or monitor.
 #### Pre-requisites:
 In order to get the service to work, without any of the two options: UPS backup, or status screen, you will need:  
-- raspberry pi zero w, or if you want to expand without having to solder, raspberry pi zero wh.
-- an SD card with a minimum of 8G.  Actually, you can get smaller, but for the price, 8G or 16G is a good choice.
-- a USB micro to USB type A for power.
-- a USB micro to USB type A Female to connect to a type A to RF45 serial cable to connect to a Cisco rj45 console port.
-- a USB mini to USB micro to connect to most Cisco switch USB console ports.
-- A case for said raspberry pi.
+- A Raspberry Pi Zero *W* - at a minimum, but if you don't like soldering, and have at least a desire to expand, get the A Raspberry Pi Zero *WH* instead
+- An SD card with a minimum of 8G.  Actually, you can get smaller, but for the price, 8G or 16G is a good choice.
+- A USB micro to USB type A for power.
+- A USB micro to USB type A Female to connect to a type A to RF45 serial cable to connect to a Cisco rj45 console port.
+- A Micro USB (Pi side) to Mini USB (switch side) to connect between the raspberry pi's serial port to the switches serial port.  Here is an [example](https://www.amazon.com/gp/product/B018M8YNDG/ref=ox_sc_act_title_1?smid=ATVPDKIKX0DER&psc=1)
+- A case to house the pi.  Check this [example](https://www.amazon.com/Flirc-Raspberry-Pi-Zero-Case/dp/B08837L144/ref=sr_1_11_sspa?dchild=1&keywords=raspberry+pi+zero+battery+hat&qid=1600716473&sr=8-11-spons&psc=1&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUE0V0NONk1LS0hLNEEmZW5jcnlwdGVkSWQ9QTA5ODgwMDExTzgzV1hIVUxSQVJEJmVuY3J5cHRlZEFkSWQ9QTAxMTk0NDQySzdKM0UwV1FESTdBJndpZGdldE5hbWU9c3BfbXRmJmFjdGlvbj1jbGlja1JlZGlyZWN0JmRvTm90TG9nQ2xpY2s9dHJ1ZQ==) out for a good example, slightly pricEy, but in my opinion, worth the cost.
 #### OS installation and setup:
 - insert the SD card into a different computer to perform the first few steps:
   - Download link is [here](https://www.raspberrypi.org/downloads/raspberry-pi-os/).
