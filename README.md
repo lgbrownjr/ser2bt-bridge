@@ -2,19 +2,16 @@
 ## Serial to Bluetooth bridge for raspberry pi zero
 Before we begin, please understand that everything in this repository is a work in progress...  :)  Especially as of 9/22/20, my documentation is still trying to keep up with what is working...  :)
 ### Introduction:
-This project a set of scripts, that allow one to use the raspberry pi to "bridge" two serial connections together - one being a bluetooth link from a user to the pi, and the other being a serial connection to a device, such as a Cisco router or switch.  This allows the administrator manage the device while enjoying the benefit of being some distance away from it.
+This project a set of scripts and libraries, that allow one to use a raspberry pi zero w to "bridge" two serial connections together - one being a bluetooth link from a user to the pi, and the other being a serial connection to a device, such as a Cisco router or switch.  This allows the administrator to manage the device while enjoying the benefit of of not having to tethered right up to it.
 
-Unfortunately, there are many work environments that do not take kindly to raspberry pi's being on their network, and for some environments that simple act would almost certainly cause a resume generating event for the offending administrator.  Bluetooth over serial is better direction as allows a given laptop with these restrictions to still connect to a switches console port wirelessly.
-
-Another benefit of using Bluetooth is that you don't have to worry about finding its IP address, you just open a putty serial connection, and presto, you are connected.
 #### How it works at a high level:
-Once you complete the installation, one would need to pair their laptop to it, during that process, a com port is assigned to the paired raspberry pi.  Usually, that is saved in a profile, so that going forward, one just needs to open their favorite terminal program, and select their "bt serial" profile, and they're connected.
+After completing the installation and setup, one would need to pair their laptop to it and then assign a com/tty port to the bridge. Usually, that is saved to a profile within your favourate terminal program (Secure CRT, Putty, etc), so going forward, connecting to the brisge is extremely easy, reguardless of operating system your computer using.
 
-From there, the pi will determine if you are attaching to it via bluetooth, and since you are, it will try to determine if the pi is connected serially to a device, or not.  If the Pi is connected, it will "bridge" you through, using GNU screen.  If not, the pi will politely let you know, and exit to the bash terminal.
+Afer attaching to the bridge, it will determine if you are connecting to it via bluetooth, and since you are, it will then attempt to determine if the pi is also connected serially to a device.  If the Pi is connected, it will "bridge" you through.  If not, the pi will politely let you know, and exit to the bash terminal.
 
-Some things to think about while you are happily administering your switch, router, or whatever.  If you are using that devices USB for power, and decide to reboot the connected device, your pi will most likely un-gracefully reboot along with it.  This is not good as your pi's SD card will eventually become corrupted, and stop working.  There are two ways around this:
+Some things to think about while you are happily administering your switch, router, or whatever:  If you are using that devices USB to ppower your bridge, and decide to reboot the connected device, your pi will most likely un-gracefully reboot along with it.  This is not good as your pi's SD card will eventually become corrupted, and stop working.  There are two ways around this:
 1. Add a battery backup, to allow the pi to weather those reboots.  This will allow the pi to be moved around between closets, or devices without powering it down, and back up.  See below for more details.
-2. Turn on *Overlay FS*.  This basically, turns your PI's sd card into a read only drive, so the risk of corrupting your SD card goes way, way down.  The down side is that you need to turn *Overlay FS* Off to update it or save files, then turn it back on.  Still testing this feature to see how well it works over the long run.
+2. Turn on *Overlay FS*.  This basically, turns your PI's sd card into a read only drive, so the risk of corrupting your SD card goes way, way down.  The down side is that you need to turn *Overlay FS* Off to update it or save files, then turn it back on.  I'm till testing this feature to see how well it works over the long run.
 
 Finally, once done, press `<CTRL>` + `A`, then `\` to exit GNU Screen, then `sudo poweroff -p` to properly shut the bridge down.
 
@@ -168,7 +165,8 @@ If everything went as planned, your raspberry pi zero should be acting like a se
 - Now, reboot your raspberry pi zero.
 - After the raspberry pi has rebooted, use your PC/laptop to pair with it.  The Pi should advertise that it supports serial communications, so you'll be able to associate it with your PC's com/ttyUSBx/ttyACMx ports.
 - Once that's done, go ahead and open your favorite terminal program, and point it to the com/ttyUSBx/tty/ACMx port, and set it up to connect at 9600 bps, n/8/1, xterm.
-### Installation of *ups-lite* & *waveshare e-ink screen*:
+### Extended setup:
+#### Installation of *ups-lite* & *waveshare e-ink screen*:
 The addition of am e-paper screen and ups backup will allow you to continue providing power to the Pi while not being plugged into a power source, and to easily tell the status of the bridge (Pi) without having to login to check.
 #### Parts needed for this phase:
 - For battery backup, attach a [ups-lite](https://www.ebay.com/itm/UPS-Lite-for-Raspberry-Pi-Zero-/352888138785).
