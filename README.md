@@ -128,6 +128,8 @@ You are now done with this section, safely eject the SD card, and insert it into
    sudo cp ser2bt_bridge /usr/local/bin/
    cat bashrc_addendum.sh >> ~/.bashrc
    sudo cp rfcomm.service /etc/systemd/system/
+   sudo cp format.sh /usr/local/lib/
+   sudo cp ser2bt_bridge.screenrc /etc/
 ```
 ###### Enable services:
 ```bash
