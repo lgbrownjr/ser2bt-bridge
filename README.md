@@ -136,9 +136,9 @@ You are now done with this section, safely eject the SD card, and insert it into
 ```
 ###### Enable services:
 ```bash
+   sudo systemctl daemon-reload
    sudo systemctl enable rfcomm
    sudo systemctl enable getty@ttyGS0.service
-   sudo systemctl daemon-reload
    sudo systemctl restart bluetooth.service	
    sudo service rfcomm enable
 ```
