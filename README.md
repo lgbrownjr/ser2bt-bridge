@@ -176,7 +176,7 @@ The addition of am e-paper screen and ups backup will allow you to continue prov
 #### Installation:
 Coming soon:
 ## Known Bugs:
-- With respect to full installation, I can't get the services to load in a manner where the e-paper screen does not wake up soon enough in the boot sequence.  In face, What I have done seems to have slowed down the booting of the pi.  Stability, or functionality is not impacted, its just that it takes 40 seconds for the pi to completely boot - and start the status screen.
+- With respect to full installation, I can't get the services to load in a manner where the e-paper screen does not wake up soon enough in the boot sequence.  In face, What I have done seems to have slowed down the booting of the pi.  Stability, and functionality are not impacted, its just that it takes 40 seconds for the pi to completely boot - and start the status screen.
 ## Improvements:
 - Build an installation script to automate most of the installation steps.
 - Update the scripts to support USB micro to multiple serial ports to support connectivity to more than one switch at a time.
