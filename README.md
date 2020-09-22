@@ -109,7 +109,7 @@ You are now done with this section, safely eject the SD card, and insert it into
     `ExecStart=/usr/lib/bluetooth/bluetoothd -C`
 - Then, right below that, add the following configurations:
 ```bash
-    ExecStartPost=/usr/bin/sdptool add SP'
+    ExecStartPost=/usr/bin/sdptool add SP
     ExecStartPost=/bin/hciconfig hci0 piscan
 ```
   - Save and close `/etc/systemd/system/dbus-org.bluez.service`
