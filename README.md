@@ -1,5 +1,6 @@
 # ser2bt-bridge
 ## Serial to Bluetooth bridge for raspberry pi zero
+Before we begin, please understand that everything in this repository is a work in progress...  :)  Especially as of 9/22/20, my documentation is still trying to keep up with what is working...  :)
 ### Introduction:
 This project a set of scripts, that allow one to use the raspberry pi to "bridge" two serial connections together - one being a bluetooth link from a user to the pi, and the other being a serial connection to a device, such as a Cisco router or switch.  This allows the administrator manage the device while enjoying the benefit of being some distance away from it.
 
@@ -7,21 +8,20 @@ Unfortunately, there are many work environments that do not take kindly to raspb
 
 Another benefit of using Bluetooth is that you don't have to worry about finding its IP address, you just open a putty serial connection, and presto, you are connected.
 #### How it works at a high level:
-Once you complete the installation, one would need to pair their laptop to it, during that process, a com port is assigned to the paired raspberry pi.  Usually, that is saved in a profile, so that going forward, one just needs to open thir favourite terminal program, and select their "bt serial" profile, and they're connected.
+Once you complete the installation, one would need to pair their laptop to it, during that process, a com port is assigned to the paired raspberry pi.  Usually, that is saved in a profile, so that going forward, one just needs to open their favorite terminal program, and select their "bt serial" profile, and they're connected.
 
-From there, the pi will determin if you are attatching to it via bluetooth, and since you are, it will try to determin if the pi is connected serially to a device, or not.  If the Pi is, it will "bridge" you through, using GNU screen.  If not, the pi will politly let you know, and exit to the bash terminal.
+From there, the pi will determine if you are attaching to it via bluetooth, and since you are, it will try to determine if the pi is connected serially to a device, or not.  If the Pi is connected, it will "bridge" you through, using GNU screen.  If not, the pi will politely let you know, and exit to the bash terminal.
 
-Some things to think about while you are happily administering your switch, router, or whatever.  If you are using that devices USB for power, and decide to reboot it, your pi will most likely un-graciously reboot as well.  This is not good as your pi's sd card will eventaully become corrupted, and stop working.  There are two ways around this:
-1. Add a battery backup, to allow the pi to weather those reboots:  One of the options is to attatch a ups_lite.  This will allow the pi to be moved around between closets, or devices without powering it down, and back up.
-2. Turn on *Overlay FS*.  This basically, turns your PI's sd card into a read only drive, so the risk of corrupting your sd card goes way, way down.  The down side is that you need to turn *Overlay FS* Off to update it or save files, then turn it back on.  Still testing this feature to see how well it works over the long run.
+Some things to think about while you are happily administering your switch, router, or whatever.  If you are using that devices USB for power, and decide to reboot the connected device, your pi will most likely un-gracefully reboot along with it.  This is not good as your pi's SD card will eventually become corrupted, and stop working.  There are two ways around this:
+1. Add a battery backup, to allow the pi to weather those reboots.  This will allow the pi to be moved around between closets, or devices without powering it down, and back up.  See below for more details.
+2. Turn on *Overlay FS*.  This basically, turns your PI's sd card into a read only drive, so the risk of corrupting your SD card goes way, way down.  The down side is that you need to turn *Overlay FS* Off to update it or save files, then turn it back on.  Still testing this feature to see how well it works over the long run.
 
-Finally, once done, press <CTRL> + A, then \ to exit GNU Screen, then `sudo poweroff -p` to properly shut the bridge down.
+Finally, once done, press `<CTRL>` + `A`, then `\` to exit GNU Screen, then `sudo poweroff -p` to properly shut the bridge down.
 
 ## Setup:
-Before we begin, please understand that everything in this repository is a work in progress...  :)
 ### Base setup:
 The following steps will guide you through the process getting this system to work from just after everything is unboxed, to the point where this works in its base form - that is the raspberry pi zero, by itself acting as a bluetooth to serial bridge.  We will be using headless installation method, so you will not need a keyboard, mouse, or monitor.
-#### Parts neeeded for this phase:
+#### Parts needed for this phase:
 In order to get the service to work, without any of the two options: UPS backup, or status screen, you will need:  
 - A Raspberry Pi Zero *W* - at a minimum, but if you don't like soldering, and have at least a desire to expand, get the Raspberry Pi Zero *WH* instead
 - An SD card with a minimum of 8G.  Actually, you can get smaller, but for the price, 8G or 16G is a good choice.
@@ -166,11 +166,21 @@ You are now done with this section, safely eject the SD card, and insert it into
 ###### We're Done!
 If everything went as planned, your raspberry pi zero should be acting like a serial to bluetooth bridge, allowing you to connect to a switches console port via bluetooth from your computer.
 - Now, reboot your raspberry pi zero.
-- After the raspberry pi has rebooted, use your PC/laptop to pair with it.  The Pi should advertise that it supports serial communications, so you'll be able to associate it with your PC/laptops com/ttyUSBx/ttyACMx ports.
-- Once that's done, go ahead and open your favorite terminal program, and pint it to the com/ttyUSBx/tty/ACMx port, and set it up to connect at 9600 bps, n/8/1, xterm.
+- After the raspberry pi has rebooted, use your PC/laptop to pair with it.  The Pi should advertise that it supports serial communications, so you'll be able to associate it with your PC's com/ttyUSBx/ttyACMx ports.
+- Once that's done, go ahead and open your favorite terminal program, and point it to the com/ttyUSBx/tty/ACMx port, and set it up to connect at 9600 bps, n/8/1, xterm.
 ### Installation of *ups-lite* & *waveshare e-ink screen*:
-The addition of am e-paper screen and ups backup will allow you to continue providing power to the Pi while not being plugged into a power source, and to easiliy tell the status of the bridge (Pi) without having to login to check.
-#### Psrts needed for this phase:
+The addition of am e-paper screen and ups backup will allow you to continue providing power to the Pi while not being plugged into a power source, and to easily tell the status of the bridge (Pi) without having to login to check.
+#### Parts needed for this phase:
 - For battery backup, attach a [ups-lite](https://www.ebay.com/itm/UPS-Lite-for-Raspberry-Pi-Zero-/352888138785).
 - For status and system health updates, attach a [waveshare.2.13 e-paper](https://www.waveshare.com/2.13inch-e-Paper-HAT.htm) display.
 #### Installation:
+Coming soon:
+## Known Bugs:
+- With respect to full installation, I can't get the services to load in a manner where the e-paper screen does not wake up soon enough in the boot sequence.  In face, What I have done seems to have slowed down the booting of the pi.  Stability, or functionality is not impacted, its just that it takes 40 seconds for the pi to completely boot - and start the status screen.
+## Improvements:
+- Build an installation script to automate most of the installation steps.
+- Update the scripts to support USB micro to multiple serial ports to support connectivity to more than one switch at a time.
+- I'm not sure if this even doable, but attempt to allow multiple concurrent bluetooth connections, esxpecially if the item listed above is completed.
+- Continue testing *Overlay FS* as a means to protect the SD cards from corruption.
+
+Again, will be constantly updating the documentation, so check back for more.
