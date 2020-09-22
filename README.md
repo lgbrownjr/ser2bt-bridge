@@ -65,6 +65,9 @@ You are now done with this section, safely eject the SD card, and insert it into
 ###### Update OS and install dependencies:
 ```bash
  sudo apt update && sudo apt full-upgrade -y
+ ```
+ 
+ ```bash
  sudo apt install screen git minicom tio rfkill xterm -y
  ```
 - Reboot your Pi when the upgrade is complete.
