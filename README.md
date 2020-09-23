@@ -115,13 +115,13 @@ You are now done with this section, safely eject the SD card, and insert it into
   - Save and close `/etc/systemd/system/dbus-org.bluez.service`
 - Create the following Directories:
 ```bash
-    mkdir /home/pi/Projects/
-    sudo mkdir /usr/local/lib/ser2bt-bash
+    mkdir -p /home/pi/Projects/support/
+    sudo mkdir /usr/local/lib/ser2bt-bridge/
 ```
 ###### Download and setup the serial to bluetooth scripts:
 - In the Projects folder, initialize git, and clone the following repository:
 ```bash
-   cd $HOME/Projects
+   cd $HOME/Projects/
    git init
    git clone https://github.com/lgbrownjr/ser2bt-bridge.git
 ```
@@ -129,18 +129,28 @@ You are now done with this section, safely eject the SD card, and insert it into
 ```bash
    cd ser2bt-bridge/
    sudo cp ser2bt_bridge /usr/local/bin/
-   cat bashrc_addendum.sh >> ~/.bashrc
    sudo cp rfcomm.service /etc/systemd/system/
    sudo cp format.sh /usr/local/lib/
    sudo cp ser2bt_bridge.screenrc /etc/
 ```
+- Add configurations to your `.bashrc`:
+```bash
+   cat bashrc_addendum.sh >> ~/.bashrc
+```
 ###### Enable services:
 ```bash
-   sudo systemctl daemon-reload
    sudo systemctl enable rfcomm
+   sudo systemctl daemon-reload
    sudo systemctl restart bluetooth.service	
-   sudo service rfcomm enable
 ```
+###### Resolve serial bug (preventing the pi from shutting down and/or rebooting):
+```bash
+   sudo mkdir -p /etc/systemd/system/getty@ttyGS0.service.d
+   sudo bash -c 'echo -e "[Service]\nTTYReset=no\nTTYVHangup=no\nTTYVTDisallocate=no" > /etc/systemd/system/getty@ttyGS0.service.d/override.conf'
+   sudo systemctl daemon-reload
+   sudo systemctl enable getty@ttyGS0.service
+```
+
 ###### Bluetooth setup:
 - Open `/etc/bluetooth/main.conf`
 
