@@ -1,0 +1,36 @@
+#!/bin/bash
+
+#color and other formatting defenitions:
+source /usr/local/lib/format.sh
+
+#Location settings:
+project_folder="$HOME/Projects/ser2bt-bridge/"
+bin_folder="/usr/local/bin/"
+etc_folder="/etc/"
+service_folder="/etc/systemd/system/"
+
+#File list:
+base_bin_files=(ser2bt-bridge)
+base_lib_files=(format.sh)
+base_service_files=(rfcomm.service)
+etc_files=(ser2bt_bridge.screenrc)
+
+#Starting script here:
+#Upgrade system files
+printf "${white}Update package manager:\n"
+apt update > /dev/null 2>&1 && apt full-upgrade -y > /dev/null 2>&1
+if [ ${?} -gt 0 ]; then
+	printf "${red}Update failed, exiting to shell\n"
+	exit 1 #apt update or apt full-upgrade failed"
+fi
+
+#make directorys:
+mkdir -p ${HOME}/Projects/support/
+
+#make sure we're in the proper directory:
+cd ${projects_folder}
+
+#copy files to proper directories:
+#cp
+cd ~
+exit 0
