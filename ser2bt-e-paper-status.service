@@ -1,6 +1,6 @@
 [Unit]
 Description=Serial to Bluetooth status updater for for e-ink displays
-Before=bluetooth.target network-pre.target network.target network-online.target poweroff.target
+Before=dbus.service bluetooth.target network-pre.target network.target network-online.target poweroff.target
 #After=network-pre.target network-online.target
 #DefaultDependencies=no
 
