@@ -77,8 +77,8 @@ else
 fi
 resize > /dev/null 2>&1
 printf "Both sides are connected, bridging ${cyn}${bt_port}${nor} with ${cyn}${wire_port}${nor}...\n\n"
-##io -b 9600 -o 5 $wire_port
-screen -c ${screen_config} ${wire_port} -L ${baad}
+##tio -b 9600 -o 5 $wire_port
+screen -c ${screen_config} ${wire_port} -L ${baud}
 printf "You are now connected!\n\nPress ${cyn}CTRL${nor} + ${cyn}A${nor}, then press the ${cyn}\${nor} key.  Finally, press the ${cyn}y${nor} key to agree to exit${end}\r"
 wait
 clear
