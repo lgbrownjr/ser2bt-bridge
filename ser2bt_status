@@ -49,17 +49,15 @@ def readCapacity(bus):
 
 
 def pre_exit_steps(xl1, yl1, status_l1, xl2, yl2, status_l2):
-    time.sleep(5)
-    epd.init(epd.FULL_UPDATE)
-    exit_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
-    exit_draw = ImageDraw.Draw(exit_image)
-    epd.display(epd.getbuffer(exit_image))
-
-def exit_steps():
     picdir='/usr/local/bin/'
+    bmp = Image.open(os.path.join(picdir, 'logo.bmp'))
     exit_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     exit_draw = ImageDraw.Draw(exit_image)
-    bmp = Image.open(os.path.join(picdir, 'logo.bmp'))
+    time.sleep(3)
+    exit_draw.text((xl1,yl1), status_l1, font=f_title_font24, fill=0)
+    exit_draw.text((xl2,yl2), status_l2, font=f_title_font18, fill=0)
+    epd.display(epd.getbuffer(exit_image))
+    time.sleep(2)
     exit_image.paste(bmp, (0,0))
     exit_draw.text((12,5), 'Serial to Bluetooth Bridge  ', font=f_title_font18,fill=0)
     epd.display(epd.getbuffer(exit_image))
@@ -68,6 +66,7 @@ def exit_steps():
 try:
     epd = epd2in13_V2.EPD()
     epd.init(epd.FULL_UPDATE)
+    epd.Clear(0xFF)
 
     # Declare the fonts to be used:
     f_title_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 18)
@@ -76,6 +75,7 @@ try:
     f_var_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 18)
     f_top_line_font16 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 16)
 
+    
     #Define frame size for e-ink display
     image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear frame
     draw = ImageDraw.Draw(image)
@@ -87,13 +87,14 @@ try:
     draw.text((0, 20), 'Load: ', font=f_title_font18, fill=0)
     draw.text((53, 20), 'CPU', font=f_var_font18, fill=0)
     draw.text((152, 20), 'Mem', font=f_var_font18, fill=0)
-    draw.text((0, 42), 'SSID: ', font=f_title_font18, file=0)
-    draw.text((0, 63), 'IP Address: ', font=f_title_font18, fill=0)
-    draw.text((0, 84), 'Services: ', font=f_title_font18, fill=0)
-    draw.text((89, 84), 'BT', font=f_var_font18, fill=0)
-    draw.text((131, 84), 'ser2net', font=f_var_font18, fill=0)
-    draw.text((0, 105), 'TTYs: ', font=f_title_font18, fill=0)
+    draw.text((0, 40), 'SSID: ', font=f_title_font18, file=0)
+    draw.text((0, 60), 'IP Address: ', font=f_title_font18, fill=0)
+    draw.text((0, 80), 'Services: ', font=f_title_font18, fill=0)
+    draw.text((89, 80), 'BT', font=f_var_font18, fill=0)
+    draw.text((131, 80), 'ser2net', font=f_var_font18, fill=0)
+    draw.text((0, 100), 'TTYs: ', font=f_title_font18, fill=0)
     epd.displayPartBaseImage(epd.getbuffer(image)) #This is the command to actually place the above to the e-ink display.
+    epd.sleep()
 
 
     #Define the initial battery capacity.  This is just enough to get to the first iteration of the loop without dumping out.
@@ -172,41 +173,41 @@ try:
         mem=str(svmem.percent)+'%' #Formatted memory
 
         #This block draws the rectangles, then places the refreshable text/variables into them.
-        draw.rectangle((60, 0, 132, 15), fill=255)
+        draw.rectangle((60, 0, 132, 16), fill=255)
         draw.text((60, 0), bat_lvl, font=f_top_line_font16, fill=0)
-        draw.rectangle((133, 0, 250, 15), fill=255)
+        draw.rectangle((133, 0, 250, 16), fill=255)
         draw.text((133, 0), time.strftime('%D %H:%M'), font=f_top_line_font16, fill=0)
-        draw.rectangle((90, 20, 151, 41), fill=255)
+        draw.rectangle((90, 20, 151, 39), fill=255)
         draw.text((90, 20), p, font=f_var_font18, fill=0)
-        draw.rectangle((197, 20, 250, 41), fill=255)
+        draw.rectangle((197, 20, 250, 39), fill=255)
         draw.text((197, 20), mem, font=f_var_font18, fill=0)
-        draw.rectangle((54, 42, 250, 62), fill=255)
-        draw.text((54, 42), pi_ssid, font=f_var_font18, fill=0)
-        draw.rectangle((103, 63, 250, 83), fill=255)
-        draw.text((103, 63), host_ip, font=f_var_font18, fill=0)
-        draw.rectangle((111, 84, 130, 104), fill=255)
-        draw.text((111, 84), bt_status, font=f_var_spc_char_font18, fill=0)
-        draw.rectangle((196, 84, 250, 104), fill=255)
-        draw.text((196, 84), ser2net_status, font=f_var_spc_char_font18, fill=0)
+        draw.rectangle((54, 40, 250, 59), fill=255)
+        draw.text((54, 40), pi_ssid, font=f_var_font18, fill=0)
+        draw.rectangle((103, 60, 250, 79), fill=255)
+        draw.text((103, 60), host_ip, font=f_var_font18, fill=0)
+        draw.rectangle((111, 80, 130, 99), fill=255)
+        draw.text((111, 80), bt_status, font=f_var_spc_char_font18, fill=0)
+        draw.rectangle((196, 80, 250, 99), fill=255)
+        draw.text((196, 80), ser2net_status, font=f_var_spc_char_font18, fill=0)
         # setting up the dynamic parts of tty status
         # first, if nothing is connected, then just say that:
-        draw.rectangle((57, 105, 250, 122), fill=255)
+        draw.rectangle((57, 100, 250, 122), fill=255)
         #IF there are no tty connections, then display full_tty_status variable (saying nothing is attached.
         if full_tty_presence_flag is False:
-            draw.text((57, 105), full_tty_status, font=f_var_font18, fill=0)
+            draw.text((57, 100), full_tty_status, font=f_var_font18, fill=0)
         else: #Otherwise, display the inidividual state of the ttys.
-            draw.text((57, 105), bt_serial_port, font=f_var_font18, fill=0)
-            draw.text((138, 105), bt_serial_status, font=f_var_spc_char_font18, fill=0)
-            draw.text((161, 105), wired_serial_port, font=f_var_font18, fill=0)
-            draw.text((206, 105), wired_serial_status, font=f_var_spc_char_font18, fill=0)
+            draw.text((57, 100), bt_serial_port, font=f_var_font18, fill=0)
+            draw.text((138, 100), bt_serial_status, font=f_var_spc_char_font18, fill=0)
+            draw.text((161, 100), wired_serial_port, font=f_var_font18, fill=0)
+            draw.text((206, 100), wired_serial_status, font=f_var_spc_char_font18, fill=0)
         epd.displayPartial(epd.getbuffer(image)) #update the screeen to actually print the above to the e-ink display.
         time.sleep(end_of_loop_pause)
 # End of while bat_cap > 1 loop...
 
 # if the bat_cap is less that min_bat_cap, then bail out of the loop, and follow the remaining code to shutdown.
+    epd.init(epd.FULL_UPDATE)
     term_image=Image.new('1', (epd.height, epd.width), 255)  # 255: clear frame
     term_draw=ImageDraw.Draw(term_image)
-    epd.init(epd.FULL_UPDATE)
     os.system("poweroff -p")
     term_draw.text((35, 20), 'Shutting Down!', font=f_title_font24, fill=0)
     term_draw.text((3, 50), 'Due to Critical Battary level ', font=f_title_font18, fill=0)
@@ -214,18 +215,16 @@ try:
     logging.info("Shutting down - battary has reached critical level")
     logging.info("Battary is: "+str(bat_cap)+"%")
     pre_exit_steps(57, 20, 'This Device', 43, 50, 'Has been shutdown ')
-    exit_steps()
     exit()
 
 except (KeyboardInterrupt, SystemExit):
+    epd.init(epd.FULL_UPDATE)
     term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     term_draw = ImageDraw.Draw(term_image)
     print ("application is closing\n")
-    epd.init(epd.FULL_UPDATE)
     term_draw.text((77, 20), 'Exiting ', font=f_title_font24, fill=0)
     term_draw.text((12, 50), 'Serial to bluetooth bridge  ', font=f_title_font18, fill=0)
     term_draw.text((63, 70), 'Due to SIGINT ', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(term_image))
     pre_exit_steps(6, 20, 'ser2bt_status service', 48, 50, 'Has been stopped ')
-    exit_steps()
     exit()

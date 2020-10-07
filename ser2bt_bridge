@@ -11,6 +11,7 @@ acm_port="/dev/ttyACM0"
 installed_app_count=0
 app_count=0
 baud="9600"
+terminal="xterm"
 screen_config="/etc/ser2bt_bridge.screenrc"
 declare -a cmds=(stty screen minicom tio)
 
@@ -78,7 +79,7 @@ fi
 resize > /dev/null 2>&1
 printf "Both sides are connected, bridging ${cyn}${bt_port}${nor} with ${cyn}${wire_port}${nor}...\n\n"
 ##tio -b 9600 -o 5 $wire_port
-screen -c ${screen_config} ${wire_port} -L ${baud}
+screen -c ${screen_config} ${wire_port} -L ${baud} -T ${terminal}
 printf "You are now connected!\n\nPress ${cyn}CTRL${nor} + ${cyn}A${nor}, then press the ${cyn}\${nor} key.  Finally, press the ${cyn}y${nor} key to agree to exit${end}\r"
 wait
 clear

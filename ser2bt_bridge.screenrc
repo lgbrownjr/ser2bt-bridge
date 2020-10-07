@@ -85,7 +85,7 @@ termcapinfo xterm*|linux*|rxvt*|Eterm* OP
 # Change the xterm initialization string from is2=\E[!p\E[?3;4l\E[4l\E>
 # (This fixes the "Aborted because of window size change" konsole symptoms found
 #  in bug #134198)
-#termcapinfo xterm 'is=\E[r\E[m\E[2J\E[H\E[?7h\E[?1;4;6l'
+termcapinfo xterm 'is=\E[r\E[m\E[2J\E[H\E[?7h\E[?1;4;6l'
 
 # To get screen to add lines to xterm's scrollback buffer, uncomment the
 # following termcapinfo line which tells xterm to use the normal screen buffer
@@ -97,8 +97,8 @@ termcapinfo xterm*|linux*|rxvt*|Eterm* OP
 defnonblock 5
 
 # easier scroll by PgUp and PgDown
-#bindkey "^[[5~" eval 'copy' 'stuff ^b' # PgUp | Enter copy/scrollback mode and page up
-#bindkey "^[[6~" eval 'copy' 'stuff ^f' # PgDown | Enter copy/scrollback mode and page down
+bindkey "^[[5~" eval 'copy' 'stuff ^b' # PgUp | Enter copy/scrollback mode and page up
+bindkey "^[[6~" eval 'copy' 'stuff ^f' # PgDown | Enter copy/scrollback mode and page down
 
 # ------------------------------------------------------------------------------
 # STARTUP SCREENS
