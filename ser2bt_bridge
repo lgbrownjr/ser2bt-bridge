@@ -18,7 +18,7 @@ declare -a cmds=(stty screen minicom tio)
 
 function exit_script () {
 	if [[ ${exit_status} == 0 ]]; then
-		printf "\n${nor}Exit Status is: ${grn}${exit_status}${end}\n"
+		printf "\n${nor}Exit Status is: ${drk_grn}${exit_status}${end}\n"
 	else
 		printf "\n${nor}Exit Status is: ${red}${exit_status}${end}\n"
 	fi
@@ -27,9 +27,9 @@ function exit_script () {
 }
 
 
-#Check to make sure user is logging in through a bluetooth serial port (rfcomm[0-9])
+#Check to determine if the user is logging in through a bluetooth serial port (rfcomm[0-9]), if not, then state the reason, and exit.
 if [[ $(tty) != ${bt_port} ]]; then
-	printf "\n${yel}${0}${nor} is only designed to work from a ${blu}bluetooth${nor} vty.  Please\nlogin to ${mag}${HOSTNAME}${nor}"
+	printf "\n\n${yel}${0}${nor} is only designed to work from a ${blu}bluetooth${nor} vty.  Please\nlogin to ${mag}${HOSTNAME}${nor}"
 	printf "through a ${blu}bluetooth${nor} vty, to activate the serial passthrough\nfunction.\n"
 	exit_status=2
 	exit_status_reason="${bro}Can only work if being accessed from ${blu}bluetooth${bro} serial."
@@ -38,33 +38,27 @@ if [[ $(tty) != ${bt_port} ]]; then
 fi
 resize > /dev/null 2>&1
 #Check dependencies:
-printf "${nor}Checking for dependencies:\n"
 for cmd in ${cmds[@]} ; do
 	let app_count++
 	if command -v ${cmd} > /dev/null 2>&1 ; then
 		let installed_app_count++
-		sleep .1
 	else
 		printf "${red}${cmd}${nor} not found, please use: \"${yel}sudo apt install ${cmd}${nor}\"\n"
-		sleep .1
 	fi
 done
 if [[ ${app_count} != ${installed_app_count} ]]; then
-	printf "\n"
 	exit_status=3
 	exit_status_reason="${bro}Dependancies need to be met.${nor}"
 	exit_script ${exit_status} ${exit_status_reason}
 	exit $exit_status # Exit as dependancies need to be met.
-else
-	printf "${grn}Done${nor}\n\n"
 fi
 #set the bluetooth port, and assign the usb and acm ports.
-printf "Checking to make sure we are connected to a serial device...\n"
+printf "\n${nor}Checking to make sure we are connected to a serial device...\n"
 sleep 1
 if [[ ! -e ${usb_port} ]]; then
-   printf "${cyn}${usb_port}${nor} is ${red}not${nor} available - Stamdby, checking for ACM port insted...\n"
+   printf "${cyn}${usb_port}${nor} is ${red}not${nor} available - Stamdby, checking for ${gre}ACM${nor} port insted...\n"
 	if [[ ! -e ${acm_port} ]]; then
-		printf "${cyn}${acm_port}${nor} is ${red}not${nor} available.\nPlease run \"${yel}${0}${nor}\" once the serial connection to the device is established.\n"
+		printf "${cyn}${acm_port}${nor} is ${red}not${nor} available.\n${drk_red}Unable${nor} to locate any connected serial device.\nPlease run \"${yel}${0}${nor}\" once the serial connection to the device is established.\n"
 		exit_status=4
 		exit_status_reason="${bro}There is no device connected via serial.${nor}"
 		exit_script ${exit_status} ${exit_status_reason}
