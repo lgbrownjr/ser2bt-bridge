@@ -106,7 +106,7 @@ You are now done with this section, safely eject the SD card, and insert it into
     
     Becomes:
 
-    `ExecStart=/usr/lib/bluetooth/bluetoothd -C`
+    `ExecStart=/usr/lib/bluetooth/bluetoothd -C --noplugin=sap`
 - Then, right below that, add the following configurations:
 ```bash
     ExecStartPost=/usr/bin/sdptool add SP
