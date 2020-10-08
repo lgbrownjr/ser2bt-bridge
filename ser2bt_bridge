@@ -66,7 +66,7 @@ if [[ ! -e ${usb_port} ]]; then
 	if [[ ! -e ${acm_port} ]]; then
 		printf "${cyn}${acm_port}${nor} is ${red}not${nor} available.\nPlease run \"${yel}${0}${nor}\" once the serial connection to the device is established.\n"
 		exit_status=4
-		exit_status_reason="${bro}There is no device connected via serial..${nor}"
+		exit_status_reason="${bro}There is no device connected via serial.${nor}"
 		exit_script ${exit_status} ${exit_status_reason}
 		exit ${exit_status} # Exit as there is no device connected via serial.
 	else
