@@ -13,4 +13,4 @@ RestartSec=5s
 RemainAfterExit=yes
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=bluetooth.service
