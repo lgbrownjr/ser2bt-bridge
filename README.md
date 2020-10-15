@@ -35,7 +35,6 @@ In order to get the service to work, without any of the two options: UPS backup,
   - Add the following to the end of the first line in /boot/cmdline.txt:
     - modules-load=dwc2,g_serial
   - Save and close cmdline.txt
-- Save and close /boot/cmdline.txt
 - Add or uncomment the following settings in the /boot/config.txt file:  
     `enable_uart=1`
     
