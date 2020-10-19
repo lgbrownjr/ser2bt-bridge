@@ -35,7 +35,6 @@ In order to get the service to work, without any of the two options: UPS backup,
   - Add the following to the end of the first line in /boot/cmdline.txt:
     - modules-load=dwc2,g_serial
   - Save and close cmdline.txt
-- Save and close /boot/cmdline.txt
 - Add or uncomment the following settings in the /boot/config.txt file:  
     `enable_uart=1`
     
@@ -95,18 +94,18 @@ You are now done with this section, safely eject the SD card, and insert it into
 - Add the following commands to the terminal:
 ```bash
     sudo echo "dwc2" | sudo tee -a /etc/modules
-    sudo echo "g_serial" | sudo tee -a /etc/module
+    sudo echo "g_serial" | sudo tee -a /etc/modules
 ```
 - Open the file: /etc/systemd/system/dbus-org.bluez.service:
 
 `sudo nano /etc/systemd/system/dbus-org.bluez.service`
-  - Add `-C` to the end of:`ExecStart=/usr/lib/bluetooth/bluetoothd`, so:
+  - Add `-C --noplugin=sap` to the end of:`ExecStart=/usr/lib/bluetooth/bluetoothd`, so:
   
     `ExecStart=/usr/lib/bluetooth/bluetoothd`
-
+    
     Becomes:
 
-    `ExecStart=/usr/lib/bluetooth/bluetoothd -C`
+    `ExecStart=/usr/lib/bluetooth/bluetoothd -C --noplugin=sap`
 - Then, right below that, add the following configurations:
 ```bash
     ExecStartPost=/usr/bin/sdptool add SP
