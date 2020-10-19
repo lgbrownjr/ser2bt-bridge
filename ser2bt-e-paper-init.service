@@ -1,0 +1,24 @@
+[Unit]
+Description=Serial to Bluetooth init for e-ink displays - ser2bt:
+#Before=poweroff.target reboot.target halt.target shutdown.target
+#After= basic.target
+#Conflicts=shutdown.target
+#Wants=sysinit.target
+#After=network-pre.target network-online.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+SyslogIdentifier=ser2bt-e-paper-init
+WorkingDirectory=/usr/local/bin/
+ExecStart=/usr/local/bin/init_scr
+TimeoutSec=20
+LimitNPROC=1
+RemainAfterExit=true
+#StandardOutput=inherit
+#Restart=on-failure
+#RestartSec=10
+#KillMode=mixed
+
+[Install]
+WantedBy=bluetooth.target

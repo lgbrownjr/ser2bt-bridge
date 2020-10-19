@@ -4,7 +4,7 @@
 source /usr/local/lib/format.sh
 
 #Location settings:
-project_folder="$HOME/Projects/ser2bt-bridge/"
+project_folder="${HOME}/Projects/ser2bt-bridge"
 bin_folder="/usr/local/bin/"
 etc_folder="/etc/"
 service_folder="/etc/systemd/system/"
@@ -16,21 +16,40 @@ base_service_files=(rfcomm.service)
 etc_files=(ser2bt_bridge.screenrc)
 
 #Starting script here:
-#Upgrade system files
-printf "${white}Update package manager:\n"
-apt update > /dev/null 2>&1 && apt full-upgrade -y > /dev/null 2>&1
-if [ ${?} -gt 0 ]; then
-	printf "${red}Update failed, exiting to shell\n"
-	exit 1 #apt update or apt full-upgrade failed"
+# Make sure the script is run with superuser privelages
+if [[ ${UID} -ne 0 ]]; then
+	printf "you do not have the permissions to successfully run this script.\n"
+	exit 1
 fi
 
+#Upgrade system files
+#printf "${white}Update package manager:\n"
+#apt update > /dev/null 2>&1
+#if [ ${?} -gt 0 ]; then
+#	printf "${red}Update failed, exiting to shell\n"
+#	exit 1 #apt update or apt full-upgrade failed"
+#fi
+#apt full-upgrade -y > /dev/null 2>&1
+#if [ ${?} -gt 0 ]; then
+#	printf "${red}Upgrade failed, exiting to shell\n"
+#	exit 1 #apt update or apt full-upgrade failed"
+#fi
+
 #make directorys:
-mkdir -p ${HOME}/Projects/support/
+printf "check to make sure the Projects/support/ directories exist\n"
+if [ ! -d "${HOME}/Projects/support" ]; then
+	printf "directory does not exist, creating...\n"
+	mkdir -p ${HOME}/Projects/support
+else
+	printf "Directorys already exist, moving on.\n"
+fi
 
 #make sure we're in the proper directory:
-cd ${projects_folder}
+printf "Make sure we are in the correct directory.\n"
+eval "cd ${projects_folder}"
 
 #copy files to proper directories:
 #cp
-cd ~
+printf "go home\n"
+eval "cd ${HOME}"
 exit 0

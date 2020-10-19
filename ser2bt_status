@@ -113,14 +113,11 @@ try:
     draw.text((0, 100), 'TTY: ', font=f_title_font18, fill=0)
 
     epd.displayPartBaseImage(epd.getbuffer(image)) #This is the command to actually place the above to the e-ink display.
-#    epd.sleep()
-
-    epd.init(epd.PART_UPDATE) #Initialize the partial screen
-
 
     #Define the initial battery capacity.  This is just enough to get to the first iteration of the loop without dumping out.
     bat_cap = min_bat_cap+1
     while (bat_cap > min_bat_cap):
+        epd.sleep()
         bt_services = 0
         # Grab initial information
         #This part grabs the active network interface.
@@ -215,25 +212,27 @@ try:
             svmem=psutil.virtual_memory() #memory
             mem=str(svmem.percent)+'%' #Formatted memory
 
+            epd.init(epd.PART_UPDATE) #Initialize the partial screen
+
             #This block draws the rectangles, then places the refreshable text/variables into them.
             draw.rectangle((90, 0, 132, 16), fill=255)
             draw.text((90, 0), bat_lvl, font=f_top_line_font16, fill=0)
             draw.rectangle((133, 0, 250, 16), fill=255)
             draw.text((133, 0), time.strftime('%D %H:%M'), font=f_top_line_font16, fill=0)
-            draw.rectangle((93, 20, 151, 39), fill=255)
-            draw.text((93, 20), p, font=f_var_font18, fill=0)
-            draw.rectangle((197, 20, 250, 39), fill=255)
-            draw.text((197, 20), mem, font=f_var_font18, fill=0)
-            draw.rectangle((54, 40, 250, 59), fill=255)
+            draw.rectangle((93, 19, 151, 39), fill=255)
+            draw.text((93, 19), p, font=f_var_font18, fill=0)
+            draw.rectangle((197, 19, 250, 39), fill=255)
+            draw.text((197, 19), mem, font=f_var_font18, fill=0)
+            draw.rectangle((54, 39, 250, 59), fill=255)
             draw.text((54, 40), pi_ssid, font=f_var_font18, fill=0)
-            draw.rectangle((103, 60, 250, 79), fill=255)
+            draw.rectangle((103, 59, 250, 79), fill=255)
             draw.text((103, 60), host_ip, font=f_var_font18, fill=0)
-            draw.rectangle((111, 80, 130, 99), fill=255)
+            draw.rectangle((111, 79, 130, 99), fill=255)
             draw.text((111, 80), bt_status, font=f_var_spc_char_font18, fill=0)
-            draw.rectangle((191, 80, 250, 99), fill=255)
+            draw.rectangle((191, 79, 210, 99), fill=255)
             draw.text((191, 80), ser2net_status, font=f_var_spc_char_font18, fill=0)
             # Setting up the dynamic parts of tty status
-            draw.rectangle((54, 100, 250, 122), fill=255)
+            draw.rectangle((54, 99, 240, 122), fill=255)
             # first, if nothing is connected, then just say that:
             #IF there are no tty connections, then display full_tty_status variable (saying nothing is attached).
             if full_tty_presence_flag is False:
@@ -247,7 +246,7 @@ try:
             epd.displayPartial(epd.getbuffer(image)) #update the screeen to actually print the above to the e-ink display.
 #            time.sleep(2)
 
-#            epd.sleep()
+            epd.sleep()
 
         except IOError as e:
             print ('traceback.format_exc():\n%s',traceback.format_exc())
