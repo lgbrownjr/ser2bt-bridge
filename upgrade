@@ -4,13 +4,15 @@
 source /usr/local/lib/format.sh
 
 #Location settings:
-project_folder="${HOME}/Projects/ser2bt-bridge"
+project_folder="${HOME}/Projects/ser2bt-bridge/"
+support_folder="${HOME}/Projects/Support/"
 bin_folder="/usr/local/bin/"
+lib_folder="/usr/local/lib/"
 etc_folder="/etc/"
 service_folder="/etc/systemd/system/"
 
 #File list:
-base_bin_files=(ser2bt-bridge)
+base_bin_files=(ser2bt_bridge)
 base_lib_files=(format.sh)
 base_service_files=(rfcomm.service)
 etc_files=(ser2bt_bridge.screenrc)
@@ -37,19 +39,32 @@ fi
 
 #make directorys:
 printf "check to make sure the Projects/support/ directories exist\n"
-if [ ! -d "${HOME}/Projects/support" ]; then
+if [ ! -d ${support_folder} ]; then
 	printf "directory does not exist, creating...\n"
-	mkdir -p ${HOME}/Projects/support
+	mkdir -p ${support_folder}
 else
 	printf "Directorys already exist, moving on.\n"
 fi
 
-#make sure we're in the proper directory:
-printf "Make sure we are in the correct directory.\n"
-eval "cd ${projects_folder}"
-
 #copy files to proper directories:
-#cp
-printf "go home\n"
-eval "cd ${HOME}"
+printf "Copy to bin directory\n"
+for file in ${base_bin_files[@]} ; do
+	cp ${projects_folder}${file} ${bin_folder}
+done
+
+printf "Copy to lib directory\n"
+for file in ${base_lib_files[@]} ; do
+	cp ${projects_folder}${file} ${lib_folder}
+done
+
+printf "Copy configurations to etc directory\n"
+for file in ${base_etc_files[@]} ; do
+	cp ${projects_folder}${file} ${etc_folder}
+done
+
+printf "Copy services to service directory\n"
+for file in ${base_service_files[@]} ; do
+	cp ${projects_folder}${file} ${service_folder}
+done
+
 exit 0
