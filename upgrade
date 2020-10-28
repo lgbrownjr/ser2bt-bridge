@@ -48,23 +48,27 @@ fi
 
 #copy files to proper directories:
 printf "Copy to bin directory\n"
-for file in ${base_bin_files[@]} ; do
-	cp ${projects_folder}${file} ${bin_folder}
-done
+brk=0
+#while [ ${brk} -eq 0 ]; do
+	for file in ${base_bin_files[@]} ; do
+		cp ${projects_folder}${file} ${bin_folder} && echo SUCCESS || break
+	done
 
-printf "Copy to lib directory\n"
-for file in ${base_lib_files[@]} ; do
-	cp ${projects_folder}${file} ${lib_folder}
-done
+	printf "Copy to lib directory\n"
+	for file in ${base_lib_files[@]} ; do
+		cp ${projects_folder}${file} ${lib_folder} && echo SUCCESS || break
+	done
 
-printf "Copy configurations to etc directory\n"
-for file in ${base_etc_files[@]} ; do
-	cp ${projects_folder}${file} ${etc_folder}
-done
+	printf "Copy configurations to etc directory\n"
+	for file in ${base_etc_files[@]} ; do
+		cp ${projects_folder}${file} ${etc_folder} && echo SUCCESS || break
+	done
 
-printf "Copy services to service directory\n"
-for file in ${base_service_files[@]} ; do
-	cp ${projects_folder}${file} ${service_folder}
-done
-
+	printf "Copy services to service directory, then resetting the services.\n"
+	for file in ${base_service_files[@]} ; do
+		cp ${projects_folder}${file} ${service_folder} && echo SUCCESS || break
+		systemctl disable ${file} && echo SUCCESS || break
+		systemctl enable ${file} && echo SUCCESS || break
+	done
+	systemctl daemon-reload && echo SUCCESS || echo Failed
 exit 0
