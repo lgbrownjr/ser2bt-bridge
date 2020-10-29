@@ -123,8 +123,6 @@ bindkey "^[[6~" eval 'copy' 'stuff ^F' # PgDown | Enter copy/scrollback mode and
 # ------------------------------------------------------------------------------
 # SCREEN LAYOUT
 # ------------------------------------------------------------------------------
-hardstatus string "%{= kB}[ %{= kR}$USER%{= kW}@%{= ky}%H%{= kB} ][%=%{= kW}%?%-Lw%?%{= kW}(%{kM}%n %{= kg}%t%?(%u)%?%{= kW})%{= kW}%?%+Lw%?%?%=%{= kB}][ %{= kY}%m%{= kW}/%{= kY}%d%{= kW}/%{= kY}%Y %{= kC}%c %{= kB}]"
-#hardstatus string '%{= Kd} %{= Kd}%-w%{= Kr}[%{= KW}%n %t%{= Kr}]%{= Kd}%+w %-= %{KG} %H%{KW}|%{KY}%101`%{KW}|%D %M %d %Y%{= Kc} %C%A%{-}'
-#caption always "%?%F%{= Kk}%:%{=u kR}%?  %h %-024=%{+b} %C%a %D %d %M %Y%{= db}"
-caption always "%{= kB}[ %{= kW}To exit console session, press: %{= kY}<CTRL>%{= kW} +%{= kY} a%{= kW}, then%{= kY} \%{= kW}.%{= kB} ]"
+hardstatus alwaysfirstline "%{= kb}[%{= kr}$USER%{+ kw}@%{+ ky}%H%{+ kb}][%=%{= kK}(%{+ km}%n %{+ kg}%t%{+ kK})%=%{+ kb}][%{+ ky}%m%{+ kw}/%{-}%d%{+ kw}/%{-}%Y %{+ kc}%c%{+ kb}]"
+caption always "%{+ Bk}[ %{+ Wk}To exit console session, press: %{+ Yk}<CTRL>%{-} +%{+ Yk} a%{-}, then%{+ Yk} \%{-}.%{+ Bk}]"
 #idle 300 exec termsaver starwars
