@@ -4,13 +4,14 @@
 source /usr/local/lib/format.sh
 
 #Location settings:
-project_folder="${HOME}/Projects/ser2bt-bridge/"
-support_folder="${HOME}/Projects/Support/"
+home="/home/${SUDO_USER}"
+project_folder="${home}/Projects/ser2bt-bridge/"
+support_folder="${home}/Projects/support/"
+logging_folder="${home}/console_logs/"
 bin_folder="/usr/local/bin/"
 lib_folder="/usr/local/lib/"
 etc_folder="/etc/"
 service_folder="/etc/systemd/system/"
-
 #File list:
 base_bin_files=(ser2bt_bridge)
 base_lib_files=(format.sh)
@@ -42,6 +43,14 @@ printf "check to make sure the Projects/support/ directories exist\n"
 if [ ! -d ${support_folder} ]; then
 	printf "directory does not exist, creating...\n"
 	mkdir -p ${support_folder}
+else
+	printf "Directorys already exist, moving on.\n"
+fi
+
+printf "\ncheck to make sure the ${logging_folder} directories exist\n"
+if [ ! -d ${logging_folder} ]; then
+	printf "directory does not exist, creating...\n"
+	mkdir -p ${logging_folder}
 else
 	printf "Directorys already exist, moving on.\n"
 fi
