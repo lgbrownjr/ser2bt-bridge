@@ -69,7 +69,7 @@ brk=0
 	done
 
 	printf "Copy configurations to etc directory\n"
-	for file in ${base_etc_files[@]} ; do
+	for file in ${etc_files[@]} ; do
 		cp ${projects_folder}${file} ${etc_folder} && echo SUCCESS || break
 	done
 
