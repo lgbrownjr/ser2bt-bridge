@@ -15,16 +15,33 @@ service_folder="/etc/systemd/system/"
 
 #File list:
 base_bin_files=(ser2bt_bridge)
+enhanc_bin_files=(ser2bt_status init_scr shutdown_scr)
+full_bin_files=( "${base_bin_files[@]}" "${enhanc_bin_files[@]}" )
+#echo  "${full_bin_files[@]}"
+#exit 0
 base_lib_files=(format.sh)
-base_service_files=(rfcomm.service)
+enhanc_lib_files=(logo.bmp)
+full_lib_files=( "${base_lib_files[@]}" "${enhanc_lib_files[@]}" )
 etc_files=(ser2bt_bridge.screenrc)
-
+base_service_files=(rfcomm.service)
+enhanc_service_files=(ser2bt-e-paper.service ser2bt-e-paper-init.service ser2bt-e-paper-shut.service)
+full_service_files=( "${base_service_files[@]}" "${enhanc_service_files[@]}" )
 #Checks before begining:
 # Make sure the script is run with superuser privelages
 if [[ ${UID} -ne 0 ]]; then
 	printf "\n${nor}You do ${drk_red}not ${nor}have the permissions to successfully run this script.\n"
 	exit 1
 fi
+
+#check for minimum arguements:
+if [[ "${#}" -lt 1 ]]; then
+	echo "Usage: ${0} UPGRADE_PATH [BASIC|ENHANCED|FULL]."
+	echo "Upgrade ser2bt-bridge, and choose either basic, enhanced, or full."
+	exit 2
+fi
+#assign the username to the first argument
+upgrade_path="${1}"
+shift
 
 #Starting script here:
 
@@ -41,27 +58,45 @@ fi
 #	exit 1 #apt update or apt full-upgrade failed"
 #fi
 
+if [ "${upgrade_path}" = "basic" ] ; then
+	bin_files=${base_bin_files[@]}
+	lib_files=${base_lib_files[@]}
+	service_files=${base_service_files[@]}
+fi
+
+if [ "${upgrade_path}" = "enhanced" ] ; then
+	bin_files=${enhanc_bin_files[@]}
+	lib_files=${enhanc_lib_files[@]}
+	service_files=${enhanc_service_files[@]}
+fi
+
+if [ "${upgrade_path}" = "full" ] ; then
+	bin_files=${full_bin_files[@]}
+	lib_files=${full_lib_files[@]}
+	service_files=${full_service_files[@]}
+fi
+
 #make directorys:
-printf "${nor}Check to make sure the ${cyn}${support_folder} ${nor}directories exist\n"
-if [ ! -d ${support_folder} ]; then
-	printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
-	mkdir -p ${support_folder}
-else
-	printf " ${nor}Directory ${drk_grn}already ${nor}exist, moving on.\n"
-fi
+	printf "${nor}Check to make sure the ${cyn}${support_folder} ${nor}directories exist\n"
+	if [ ! -d ${support_folder} ]; then
+		printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
+		mkdir -p ${support_folder}
+	else
+		printf " ${nor}Directory ${drk_grn}already ${nor}exist, moving on.\n"
+	fi
 
-printf "\n${nor}check to make sure the ${cyn}${logging_folder} ${nor}directories exist\n"
-if [ ! -d ${logging_folder} ]; then
-	printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
-	mkdir -p ${logging_folder}
-else
-	printf " ${nor}Directory ${drk_grn}already ${nor}exist, moving on.\n"
-fi
+	printf "\n${nor}check to make sure the ${cyn}${logging_folder} ${nor}directories exist\n"
+	if [ ! -d ${logging_folder} ]; then
+		printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
+		mkdir -p ${logging_folder}
+	else
+		printf " ${nor}Directory ${drk_grn}already ${nor}exist, moving on.\n"
+	fi
 
-#copy files to proper directories:
-printf "\nCopying files to the ${cyn}${bin_folder} ${nor}directory:\n"
-brk=0
-	for file in ${base_bin_files[@]} ; do
+	#copy files to proper directories:
+	printf "\nCopying files to the ${cyn}${bin_folder} ${nor}directory:\n"
+	brk=0
+	for file in ${bin_files[@]} ; do
 		if cmp --silent "${bin_folder}${file}" "${project_folder}${file}" ; then
 			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
 		else
@@ -70,7 +105,7 @@ brk=0
 	done
 
 	printf "\nCopying files to the ${cyn}${lib_folder} ${nor}directory:\n"
-	for file in ${base_lib_files[@]} ; do
+	for file in ${lib_files[@]} ; do
 		if cmp --silent "${lib_folder}${file}" "${project_folder}${file}" ; then
 			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
 		else
@@ -89,7 +124,7 @@ brk=0
 
 	printf "\nCopy service files to the ${cyn}${service_folder} ${nor}directory, then resetting copied services:\n"
 	svc_count=0
-	for file in ${base_service_files[@]} ; do
+	for file in ${service_files[@]} ; do
 		if cmp --silent "${service_folder}${file}" "${project_folder}${file}" ; then
 			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
 			let svc_count++
