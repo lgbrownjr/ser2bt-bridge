@@ -12,18 +12,21 @@ bin_folder="/usr/local/bin/"
 lib_folder="/usr/local/lib/"
 etc_folder="/etc/"
 service_folder="/etc/systemd/system/"
+
 #File list:
 base_bin_files=(ser2bt_bridge)
 base_lib_files=(format.sh)
 base_service_files=(rfcomm.service)
 etc_files=(ser2bt_bridge.screenrc)
 
-#Starting script here:
+#Checks before begining:
 # Make sure the script is run with superuser privelages
 if [[ ${UID} -ne 0 ]]; then
-	printf "you do not have the permissions to successfully run this script.\n"
+	printf "\n${nor}You do ${drk_red}not ${nor}have the permissions to successfully run this script.\n"
 	exit 1
 fi
+
+#Starting script here:
 
 #Upgrade system files
 #printf "${white}Update package manager:\n"
@@ -39,45 +42,64 @@ fi
 #fi
 
 #make directorys:
-printf "check to make sure the Projects/support/ directories exist\n"
+printf "${nor}Check to make sure the ${cyn}${support_folder} ${nor}directories exist\n"
 if [ ! -d ${support_folder} ]; then
-	printf "directory does not exist, creating...\n"
+	printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
 	mkdir -p ${support_folder}
 else
-	printf "Directorys already exist, moving on.\n"
+	printf " ${nor}Directory ${drk_grn}already ${nor}exist, moving on.\n"
 fi
 
-printf "\ncheck to make sure the ${logging_folder} directories exist\n"
+printf "\n${nor}check to make sure the ${cyn}${logging_folder} ${nor}directories exist\n"
 if [ ! -d ${logging_folder} ]; then
-	printf "directory does not exist, creating...\n"
+	printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
 	mkdir -p ${logging_folder}
 else
-	printf "Directorys already exist, moving on.\n"
+	printf " ${nor}Directory ${drk_grn}already ${nor}exist, moving on.\n"
 fi
 
 #copy files to proper directories:
-printf "Copy to bin directory\n"
+printf "\nCopying files to the ${cyn}${bin_folder} ${nor}directory:\n"
 brk=0
-#while [ ${brk} -eq 0 ]; do
 	for file in ${base_bin_files[@]} ; do
-		cp ${projects_folder}${file} ${bin_folder} && echo SUCCESS || break
+		if cmp --silent "${bin_folder}${file}" "${project_folder}${file}" ; then
+			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
+		else
+			cp ${project_folder}${file} ${bin_folder} && printf "${yel}${file} ${nor}copied." || break
+		fi
 	done
 
-	printf "Copy to lib directory\n"
+	printf "\nCopying files to the ${cyn}${lib_folder} ${nor}directory:\n"
 	for file in ${base_lib_files[@]} ; do
-		cp ${projects_folder}${file} ${lib_folder} && echo SUCCESS || break
+		if cmp --silent "${lib_folder}${file}" "${project_folder}${file}" ; then
+			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
+		else
+			cp ${project_folder}${file} ${lib_folder} && printf "${yel}${file} ${nor}copied.\n" || break
+		fi
 	done
 
-	printf "Copy configurations to etc directory\n"
+	printf "\nCopying files to the ${cyn}${etc_folder} ${nor}directory:\n"
 	for file in ${etc_files[@]} ; do
-		cp ${projects_folder}${file} ${etc_folder} && echo SUCCESS || break
+		if cmp --silent "${etc_folder}${file}" "${project_folder}${file}" ; then
+			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
+		else
+			cp ${project_folder}${file} ${etc_folder} && printf "${yel}${file} ${nor}copied.\n" || break
+		fi
 	done
 
-	printf "Copy services to service directory, then resetting the services.\n"
+	printf "\nCopy service files to the ${cyn}${service_folder} ${nor}directory, then resetting copied services:\n"
+	svc_count=0
 	for file in ${base_service_files[@]} ; do
-		cp ${projects_folder}${file} ${service_folder} && echo SUCCESS || break
-		systemctl disable ${file} && echo SUCCESS || break
-		systemctl enable ${file} && echo SUCCESS || break
+		if cmp --silent "${service_folder}${file}" "${project_folder}${file}" ; then
+			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
+			let svc_count++
+		else
+			cp ${project_folder}${file} ${service_folder} && printf "${yel}${file} ${nor}copied.\n" || break
+			systemctl disable ${file} && echo SUCCESS || break
+			systemctl enable ${file} && echo SUCCESS || break
+		fi
 	done
-	systemctl daemon-reload && echo SUCCESS || echo Failed
+	if [ $svc_count} == ${#base_service_files[@]} ] ; then
+		systemctl daemon-reload && printf "${nor}systemctl daemon-reload was ${drk_grn}Successfull${nor}." || printf "${nor}systemctl daemon-reload was ${drk_red}not ${nor}successfull."
+	fi
 exit 0

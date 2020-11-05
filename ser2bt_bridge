@@ -37,6 +37,7 @@ if [[ $(tty) != ${bt_port} ]]; then
 	exit ${exit_status} # Exit - can only work if being accessed from bluetooth serial.
 fi
 resize > /dev/null 2>&1
+
 #Check dependencies:
 for cmd in ${cmds[@]} ; do
 	let app_count++
