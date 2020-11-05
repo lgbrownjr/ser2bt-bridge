@@ -147,22 +147,6 @@ def read_bat_capacity(bus):
     capacity = swapped/256
     return (capacity)
 
-def pre_exit_steps(xl1, yl1, status_l1, xl2, yl2, status_l2):
-    picdir='/usr/local/lib/ser2bt-bridge/'
-    bmp = Image.open(os.path.join(picdir, 'logo.bmp'))
-    exit_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
-    exit_draw = ImageDraw.Draw(exit_image)
-    time.sleep(1)
-    exit_draw.text((xl1, yl1), status_l1, font = f_title_font24, fill = 0)
-    exit_draw.text((xl2, yl2), status_l2, font = f_title_font18, fill = 0)
-    epd.display(epd.getbuffer(exit_image))
-    time.sleep(2)
-    exit_image.paste(bmp, (0,0))
-    exit_draw.text((19,5), 'Serial to Bluetooth Bridge  ', font=f_title_font18,fill=0)
-    epd.display(epd.getbuffer(exit_image))
-    time.sleep(1)
-    epd2in13_V2.epdconfig.module_exit()
-
 if sys.version_info[0] < 3:
     raise Exception("Must be using Python 3")
 
@@ -275,7 +259,9 @@ try:
     epd.display(epd.getbuffer(term_image))
     logging.info('Shutting down - battary has reached critical level')
     logging.info('Battary is: '+bat_lvl+'%')
-    pre_exit_steps(57, 20, 'This Device', 43, 50, 'Has been shutdown ')
+#    pre_exit_steps(57, 20, 'This Device', 43, 50, 'Has been shutdown ')
+    epd2in13_V2.epdconfig.module_init()
+    epd2in13_V2.epdconfig.module_exit()
     exit()
 
 except (KeyboardInterrupt, SystemExit):
@@ -288,7 +274,8 @@ except (KeyboardInterrupt, SystemExit):
     term_draw.text((63, 70), 'Due to SIGINT ', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(term_image))
     logging.info("Shutting Down/Restarting service - interupted by SIGINT or Control C")
-    pre_exit_steps(6, 20, 'ser2bt_status service', 48, 50, 'Has been stopped ')
+    epd2in13_V2.epdconfig.module_init()
+    epd2in13_V2.epdconfig.module_exit()
     exit()
 
 except IOError as e:
