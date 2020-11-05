@@ -1,0 +1,35 @@
+#!/usr/bin/python3
+
+# -*- coding:utf-8 -*-
+from PIL import Image, ImageDraw, ImageFont  # Font handeling
+from waveshare_epd import epd2in13_V2
+import os
+import time
+
+# Variable decleration
+epd = epd2in13_V2.EPD()
+picdir='/usr/local/lib/ser2bt-bridge/'
+roboto_font_dir='/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/'
+f_title_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 18)
+f_title_font24 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 24)
+bmp = Image.open(os.path.join(picdir, 'logo.bmp'))
+exit_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
+exit_draw = ImageDraw.Draw(exit_image)
+
+#Clear the Screen:
+epd.init(epd.FULL_UPDATE)
+epd.Clear(0xFF)
+
+#Draw out the boot screen
+exit_draw.text((6, 20), 'ser2bt_status service', font=f_title_font24, fill=0)
+exit_draw.text((48, 50), 'Has been stopped', font=f_title_font18, fill=0)
+epd.display(epd.getbuffer(exit_image))
+time.sleep(2)
+epd.init(epd.FULL_UPDATE)
+exit_image.paste(bmp, (0,0))
+exit_draw.text((19,5), 'Serial to Bluetooth Bridge  ', font=f_title_font18,fill=0)
+epd.display(epd.getbuffer(exit_image))
+
+#Exit:
+epd2in13_V2.epdconfig.module_exit()
+exit()
