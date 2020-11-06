@@ -4,11 +4,12 @@
 
 
 #Main Variable & declorations
+source /usr/local/lib/format.sh
 declare -a cmds=(resize stty ser2bt_bridge)
 app_count=0
 installed_app_count=0
-source /usr/local/lib/format.sh
 
+#Check if the incomming connection is from rfcomm
 if [ $(tty) = "/dev/rfcomm0" ] ; then
 	for cmd in ${cmds[@]} ; do
 		let app_count++
