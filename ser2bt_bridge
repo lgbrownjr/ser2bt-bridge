@@ -10,7 +10,7 @@ acm_port="/dev/ttyACM0"
 #variables set with default values
 installed_app_count=0
 app_count=0
-baud="9600"
+baud="115200"
 terminal="xterm"
 screen_config="/etc/ser2bt_bridge.screenrc"
 declare -a cmds=(stty screen minicom tio)
