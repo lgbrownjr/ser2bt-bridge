@@ -29,6 +29,10 @@ acm_ser_port='tty'+acm_ser_label
 roboto_font_dir='/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/'
 dejavu_font_dir='/usr/share/fonts/truetype/dejavu/'
 end_of_loop_pause=20 #sleep time in seconds.  Will be used at the end of the loop so as not to kill the cpu.
+old_ssid="XX"
+old_host_ip="XX"
+old_ser2net_status="XX"
+old_bt_status="XX"
 logging.info('ser2bt_status was started ')
 # Declare the fonts to be used:
 f_title_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 18)
@@ -38,51 +42,60 @@ f_var_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 18)
 f_top_line_font16 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 16)
 
 def capture_service_status():
-    services = [ 'bluetooth', 'hciuart', 'rfcomm', 'ser2net' ]
-    bt_services = 0
+    global old_bt_status
+    global old_ser2net_status
+    bt_services = [ 'bluetooth', 'hciuart', 'rfcomm' ]
+    bt_services_count = 0
+    lan_service = 'ser2net'
     svc = []
     inactive = 'inactive'
-    for service in services:
-        svc.append(subprocess.Popen(['systemctl', 'is-active', service], stdout=subprocess.PIPE).communicate()[0].decode(encoding='UTF-8'))
+    for bt_service in bt_services:
+        bt_service = subprocess.Popen(['systemctl', 'is-active', bt_service], stdout=subprocess.PIPE).communicate()[0].decode(encoding='UTF-8')
+        if inactive in bt_service:
+            bt_services_count = bt_services_count
+        else:
+            bt_services_count = bt_services_count + 1
 
-    bluet_string_status, hci_string_status, rfcomm_string_status, ser2net_string_status = svc
-
-    if inactive in bluet_string_status:
-        bt_services = bt_services
-    else:
-        bt_services = bt_services + 1
-
-    if inactive in hci_string_status:
-        bt_services = bt_services
-    else:
-        bt_services = bt_services + 1
-
-    if inactive in rfcomm_string_status:
-        bt_services = bt_services
-    else:
-        bt_services = bt_services + 1
-
-    if bt_services == 3:
+    if bt_services_count == 3:
         bt_status = "↑"  # up arrow
     else:
         bt_status = "↓"  # down arrow
 
-    if inactive in ser2net_string_status:
+    lan_service = subprocess.Popen(['systemctl', 'is-active', lan_service], stdout=subprocess.PIPE).communicate()[0].decode(encoding='UTF-8')
+    if inactive in lan_service:
         ser2net_status = "↓"  # down arrow
     else:
         ser2net_status = "↑"  # up arrow
 
+    if old_bt_status != bt_status:
+        old_bt_status = bt_status
+    else:
+        bt_status = False
+
+    if old_ser2net_status != ser2net_status:
+        old_ser2net_status = ser2net_status
+    else:
+        ser2net_status = False
+
     return [ bt_status, ser2net_status ]
 
 def get_ssid():
+    global old_ssid
     try:
         ssid = subprocess.check_output("iwgetid -r", shell = True).decode(encoding='UTF-8')
+        ssid = ssid.strip()
     except subprocess.CalledProcessError:
         # grep did not match any lines
         ssid = "Not Connected"
-    return (ssid)
+
+    if old_ssid != ssid:
+        old_ssid = ssid
+        ssid = False
+
+    return ssid
 
 def get_ip():
+    global old_host_ip
     try:
         iface = netifaces.gateways()['default'][netifaces.AF_INET][1]
     except Exception:
@@ -92,29 +105,41 @@ def get_ip():
         host_ip = netifaces.ifaddresses(iface)[netifaces.AF_INET][0]['addr']
     else:
         host_ip = "Not Connected"
-    return (host_ip)
+
+    if old_host_ip != host_ip:
+        old_host_ip = host_ip
+        host_ip = False
+
+    return host_ip
 
 def cap_wired_serial_port():
 #Capturess the existing wired serial port in use.
     if os.path.exists(dev_dir + usb_ser_port):
         wired_serial_port = usb_ser_label
-    if os.path.exists(dev_dir + acm_ser_port):
+        wired_serial_status_pos = 196
+
+    elif os.path.exists(dev_dir + acm_ser_port):
         wired_serial_port = acm_ser_label
+        wired_serial_status_pos = 204
     else:
         wired_serial_port = "None"
-    return wired_serial_port
+        wired_serial_status_pos = 194
+
+    return [wired_serial_port, wired_serial_status_pos]
 
 def cap_bt_serial_port():
 # Grabs existing bluetooth serial ports:
     if os.path.exists(dev_dir + bt_ser_port):
         bt_serial_port = bt_ser_label
+        bt_serial_status_pos = 127
     else:
         bt_serial_port = "None"
-    return bt_serial_port
+        bt_serial_status_pos = 94
+    return [bt_serial_port, bt_serial_status_pos]
 
 def serial_port_status():
-    wired_serial_port = cap_wired_serial_port()
-    bt_serial_port = cap_bt_serial_port()
+    wired_serial_port, wired_serial_status_pos = cap_wired_serial_port()
+    bt_serial_port, bt_serial_status_pos = cap_bt_serial_port()
     #Defines status for the various tty ports:
     if bt_serial_port == 'None' and wired_serial_port == 'None':
         bt_serial_status = "✖"
@@ -136,7 +161,7 @@ def serial_port_status():
         wired_serial_status = "✔"
         full_tty_status = ""
         full_tty_presence_flag = True  # Something is connected to any of the ttys
-    return [bt_serial_port, wired_serial_port, bt_serial_status, wired_serial_status, full_tty_status, full_tty_presence_flag]
+    return [bt_serial_port, wired_serial_port, bt_serial_status, bt_serial_status_pos, wired_serial_status, wired_serial_status_pos, full_tty_status, full_tty_presence_flag]
 
 def read_bat_capacity(bus):
     # "This function returns as a float the remaining capacity of the battery
@@ -182,62 +207,62 @@ try:
         # Grab initial information
         #This part grabs the active network interface.
         try:
-            if turn <=3:
-                epd.init(epd.PART_UPDATE) #Initialize the partial screen
-                bat_cap=int(read_bat_capacity(bus)) #Formatted battery level
-                bat_lvl=str(bat_cap)+'%' #Formatted battery level
-                draw.rectangle((82, 0, 120, 16), fill=255)
-                draw.text((82, 0), bat_lvl, font=f_top_line_font16, fill=0)
-                draw.rectangle((137, 0, 250, 16), fill=255)
-                draw.text((137, 0), time.strftime('%D %H:%M'), font=f_top_line_font16, fill=0)
-                draw.rectangle((91, 19, 149, 39), fill=255)
-                draw.text((91, 20), str(psutil.cpu_percent())+'%', font=f_var_font18, fill=0)
-                draw.rectangle((195, 19, 250, 39), fill=255)
-                draw.text((195, 20), str(psutil.virtual_memory().percent)+'%', font=f_var_font18, fill=0)
+#            if turn <= 3:
+            epd.init(epd.PART_UPDATE) #Initialize the partial screen
+            bat_cap=int(read_bat_capacity(bus)) #Formatted battery level
+            bat_lvl=str(bat_cap)+'%' #Formatted battery level
+            draw.rectangle((82, 0, 120, 16), fill=255)
+            draw.text((82, 0), bat_lvl, font=f_top_line_font16, fill=0)
+            draw.rectangle((137, 0, 250, 16), fill=255)
+            draw.text((137, 0), time.strftime('%D %H:%M'), font=f_top_line_font16, fill=0)
+            draw.rectangle((91, 19, 149, 39), fill=255)
+            draw.text((91, 20), str(psutil.cpu_percent())+'%', font=f_var_font18, fill=0)
+            draw.rectangle((195, 19, 250, 39), fill=255)
+            draw.text((195, 20), str(psutil.virtual_memory().percent)+'%', font=f_var_font18, fill=0)
 
-            if turn <= 1:
-                # Capture service status for rfcomm, bluetooth, hci, and ser2net.
-                bt_status, ser2net_status = capture_service_status()
+#            if turn <= 3:
+            # Capture service status for rfcomm, bluetooth, hci, and ser2net.
+            bt_status, ser2net_status = capture_service_status()
+            if bt_status is not False:
                 draw.rectangle((74, 79, 84, 99), fill=255)
                 draw.text((74, 80), bt_status, font=f_var_spc_char_font18, fill=0)
-                draw.rectangle((212, 79, 222, 99), fill=255)
-                draw.text((212, 80), ser2net_status, font=f_var_spc_char_font18, fill=0)
-
-                # This section checkes the tree primary bluetooth services, to make sure they are all up.  if so, then we produce an up arrow.
-
-            if turn == 0 or turn == 2:
+            if ser2net_status is not False:
+                 draw.rectangle((212, 79, 222, 99), fill=255)
+                 draw.text((212, 80), ser2net_status, font=f_var_spc_char_font18, fill=0)
+              # This section checkes the tree primary bluetooth services, to make sure they are all up.  if so, then we produce an up arrow.
+#               if turn == 0 or turn <= 3:
+            if get_ssid() is False and get_ip() is False:
                 draw.rectangle((52, 39, 200, 59), fill=255)
                 draw.text((52, 40), get_ssid(), font=f_var_font18, fill=0)
                 draw.rectangle((52, 59, 200, 79), fill=255)
                 draw.text((52, 60), get_ip(), font=f_var_font18, fill=0)
 
-            if turn == 0 or turn == 3:
-                # Setting up the dynamic parts of tty status
-                bt_serial_port, wired_serial_port, bt_serial_status, wired_serial_status, full_tty_status, full_tty_presence_flag = serial_port_status()
-                draw.rectangle((52, 99, 220, 122), fill=255)
-                # first, if nothing is connected, then just say that:
-                #IF there are no tty connections, then display full_tty_status variable (saying nothing is attached).
-                if full_tty_presence_flag is False:
-                    draw.text((52, 100), full_tty_status, font=f_var_font18, fill=0)
-                else: #Otherwise, display the inidividual state of the ttys.
-                    draw.text((52, 100), bt_serial_port, font=f_var_font18, fill=0)
-                    draw.text((127, 100), bt_serial_status, font=f_var_spc_char_font18, fill=0)
-                    draw.text((150, 100), wired_serial_port, font=f_var_font18, fill=0)
-                    draw.text((194, 100), wired_serial_status, font=f_var_spc_char_font18, fill=0)
-
+#            if turn == 0 or turn <= 3:
+            # Setting up the dynamic parts of tty status
+            bt_serial_port, wired_serial_port, bt_serial_status, bt_serial_status_pos, wired_serial_status, wired_serial_status_pos, full_tty_status, full_tty_presence_flag = serial_port_status()
+            draw.rectangle((52, 99, 220, 122), fill=255)
+            # first, if nothing is connected, then just say that:
+            #IF there are no tty connections, then display full_tty_status variable (saying nothing is attached).
+            if full_tty_presence_flag is False:
+                draw.text((52, 100), full_tty_status, font=f_var_font18, fill=0)
+            else: #Otherwise, display the inidividual state of the ttys.
+                draw.text((52, 100), bt_serial_port, font=f_var_font18, fill=0)
+                draw.text((bt_serial_status_pos, 100), bt_serial_status, font=f_var_spc_char_font18, fill=0)
+                draw.text((150, 100), wired_serial_port, font=f_var_font18, fill=0)
+                draw.text((wired_serial_status_pos, 100), wired_serial_status, font=f_var_spc_char_font18, fill=0)
             #This block draws the rectangles, then places the refreshable text/variables into them.
 
             epd.displayPartial(epd.getbuffer(image)) #update the screeen to actually print the above to the e-ink display.
             epd.sleep()
 
-            if turn == 0:
-                turn = 1
-            elif turn == 1:
-                turn = 2
-            elif turn == 2:
-                turn = 3
-            elif turn == 3:
-                turn = 1
+#            if turn == 0:
+#                turn = 1
+#            elif turn == 1:
+#                turn = 2
+#            elif turn == 2:
+#                turn = 3
+#            elif turn == 3:
+#                turn = 1
 
         except IOError as e:
             print ('traceback.format_exc():\n%s',traceback.format_exc())
