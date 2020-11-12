@@ -140,7 +140,7 @@ fi
 
 #refreshing .bashrc:
 printf "\nAdding the ${yel}.bashrc${nor} addon (if it's already on, it will be removed and replaced):\n"
-sed -i '/${begin_bashrc_addon_string}/Q' ${home}/.bashrc
+sed -i '/#Add the following at the end to each user/Q' ${home}/.bashrc
 cat bashrc_addendum.sh >> ${home}/.bashrc && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
 
 exit 0
