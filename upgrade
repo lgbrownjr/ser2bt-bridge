@@ -17,8 +17,6 @@ service_folder="/etc/systemd/system/"
 base_bin_files=(ser2bt_bridge)
 enhanc_bin_files=(ser2bt_status init_scr shutdown_scr)
 full_bin_files=( "${base_bin_files[@]}" "${enhanc_bin_files[@]}" )
-#echo  "${full_bin_files[@]}"
-#exit 0
 base_lib_files=(format.sh)
 enhanc_lib_files=(logo.bmp)
 full_lib_files=( "${base_lib_files[@]}" "${enhanc_lib_files[@]}" )
@@ -26,6 +24,7 @@ etc_files=(ser2bt_bridge.screenrc)
 base_service_files=(rfcomm.service)
 enhanc_service_files=(ser2bt-e-paper.service ser2bt-e-paper-init.service ser2bt-e-paper-shut.service)
 full_service_files=( "${base_service_files[@]}" "${enhanc_service_files[@]}" )
+begin_bashrc_addon_string="#Add the following at the end to each user"
 #Checks before begining:
 # Make sure the script is run with superuser privelages
 if [[ ${UID} -ne 0 ]]; then
@@ -39,14 +38,15 @@ if [[ "${#}" -lt 1 ]]; then
 	echo "Upgrade ser2bt-bridge, and choose either basic, enhanced, or full."
 	exit 2
 fi
-#assign the username to the first argument
+#assign the upgrade path to the first argument
 upgrade_path="${1}"
 shift
 
 #Starting script here:
+printf "\n\n${nor}Beginning ${upgrade_path} upgrade of ${yel}ser2bt-bridge${nor}:\n"
 
 #Upgrade system files
-#printf "${white}Update package manager:\n"
+#printf "${nor}Update package manager:\n"
 #apt update > /dev/null 2>&1
 #if [ ${?} -gt 0 ]; then
 #	printf "${red}Update failed, exiting to shell\n"
@@ -77,7 +77,7 @@ if [ "${upgrade_path}" = "full" ] ; then
 fi
 
 #make directorys:
-	printf "${nor}Check to make sure the ${cyn}${support_folder} ${nor}directories exist\n"
+	printf "${nor}Check to make sure the ${cyn}${support_folder} ${nor}directories exist:\n"
 	if [ ! -d ${support_folder} ]; then
 		printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
 		mkdir -p ${support_folder}
@@ -85,7 +85,7 @@ fi
 		printf " ${nor}Directory ${drk_grn}already ${nor}exist, moving on.\n"
 	fi
 
-	printf "\n${nor}check to make sure the ${cyn}${logging_folder} ${nor}directories exist\n"
+	printf "\n${nor}check to make sure the ${cyn}${logging_folder} ${nor}directories exist:\n"
 	if [ ! -d ${logging_folder} ]; then
 		printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
 		mkdir -p ${logging_folder}
@@ -135,6 +135,12 @@ fi
 		fi
 	done
 	if [ $svc_count} == ${#base_service_files[@]} ] ; then
-		systemctl daemon-reload && printf "${nor}systemctl daemon-reload was ${drk_grn}Successfull${nor}." || printf "${nor}systemctl daemon-reload was ${drk_red}not ${nor}successfull."
+		systemctl daemon-reload && printf "${yel}systemctl daemon-reload${nor} was ${drk_grn}Successfull${nor}." || printf "${nor}systemctl daemon-reload was ${drk_red}not ${nor}successfull."
 	fi
+
+#refreshing .bashrc:
+printf "\nAdding the ${yel}.bashrc${nor} addon (if it's already on, it will be removed and replaced):\n"
+sed -i '/${begin_bashrc_addon_string}/Q' ${home}/.bashrc
+cat bashrc_addendum.sh >> ${home}/.bashrc && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
+
 exit 0

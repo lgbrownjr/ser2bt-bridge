@@ -8,6 +8,7 @@ source /usr/local/lib/format.sh
 declare -a cmds=(resize stty ser2bt_bridge)
 app_count=0
 installed_app_count=0
+TMOUT=300
 
 #Check if the incomming connection is from rfcomm
 if [ $(tty) = "/dev/rfcomm0" ] ; then
@@ -28,5 +29,7 @@ if [ $(tty) = "/dev/rfcomm0" ] ; then
 #Check if the incomming connection is from rfcomm
 	resize > /dev/null 2>&1 #Resize the screen.
 	printf "\n${nor}Launching ${blu}bluetooth${nor} to serial bridging utility...${end}\n" #notify the user that ser2bt_bridge is about to be launched
+#	readonly TMOUT
+	export TMOUT #Exporting the auto logout timeout.
 	/usr/local/bin/ser2bt_bridge #Launch ser2bt_bridge.
 fi
