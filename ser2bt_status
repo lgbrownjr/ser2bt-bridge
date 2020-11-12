@@ -134,7 +134,7 @@ def cap_bt_serial_port():
         bt_serial_status_pos = 127
     else:
         bt_serial_port = "None"
-        bt_serial_status_pos = 94
+        bt_serial_status_pos = 96
     return [bt_serial_port, bt_serial_status_pos]
 
 def serial_port_status():
