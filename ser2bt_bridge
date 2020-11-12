@@ -54,7 +54,7 @@ if [[ ${app_count} != ${installed_app_count} ]]; then
 	exit $exit_status # Exit as dependancies need to be met.
 fi
 #set the bluetooth port, and assign the usb and acm ports.
-printf "\n${nor}Checking to make sure we are connected to a serial device...\n"
+printf "\n${nor}Checking to make sure we are connected to a serial device:\n"
 sleep 1
 if [[ ! -e ${usb_port} ]]; then
    printf "${cyn}${usb_port}${nor} is ${red}not${nor} available - Stamdby, checking for ${gre}ACM${nor} port insted...\n"
