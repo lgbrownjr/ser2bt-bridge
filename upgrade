@@ -4,7 +4,7 @@
 source /usr/local/lib/format.sh
 
 #Location settings:
-home="/home/${SUDO_USER}"
+home="/home/${SUDO_USER}/"
 project_folder="${home}/Projects/ser2bt-bridge/"
 support_folder="${home}/Projects/support/"
 logging_folder="${home}/console_logs/"
@@ -24,7 +24,8 @@ etc_files=(ser2bt_bridge.screenrc)
 base_service_files=(rfcomm.service)
 enhanc_service_files=(ser2bt-e-paper.service ser2bt-e-paper-init.service ser2bt-e-paper-shut.service)
 full_service_files=( "${base_service_files[@]}" "${enhanc_service_files[@]}" )
-begin_bashrc_addon_string="#Add the following at the end to each user"
+begin_bashrc_addon_mark="#BEGIN ser2b-bridge .bashrc add-in"
+end_bashrc_addon_mark="#END ser2b-bridge .bashrc add-in"
 #Checks before begining:
 # Make sure the script is run with superuser privelages
 if [[ ${UID} -ne 0 ]]; then
@@ -140,7 +141,14 @@ fi
 
 #refreshing .bashrc:
 printf "\nAdding the ${yel}.bashrc${nor} addon (if it's already on, it will be removed and replaced):\n"
-sed -i '/#Add the following at the end to each user/Q' ${home}/.bashrc
-cat bashrc_addendum.sh >> ${home}/.bashrc && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
-
+#First compare whats in bashrc matches the addendum:
+existing_ver=$(awk '/^#BEGIN/,/^#END/ { print }' ${home}.bashrc)
+official_ver=$(awk '/^#BEGIN/,/^#END/ { print }' ${project_folder}bashrc_addendum.sh)
+if [ "${existing_ver}" != "${official_ver}" ] ; then
+	printf " ${nor}There is a difference between what is supposed to be in ${yel}.bashrc${nor}, will clean and re-apply ${yel}ser2bt-bridge${nor} related configurations:\n" 
+	sed -i '/^#BEGIN ser2b-bridge .bashrc add-in/, /^#END ser2b-bridge .bashrc add-in/d' ${home}.bashrc
+	cat bashrc_addendum.sh >> ${home}.bashrc && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
+else
+	printf " ${nor}Both versions are the same, skipping...\n"
+fi
 exit 0
