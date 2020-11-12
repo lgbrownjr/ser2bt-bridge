@@ -100,7 +100,7 @@ fi
 		if cmp --silent "${bin_folder}${file}" "${project_folder}${file}" ; then
 			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
 		else
-			cp ${project_folder}${file} ${bin_folder} && printf "${yel}${file} ${nor}copied." || break
+			cp ${project_folder}${file} ${bin_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
 		fi
 	done
 
@@ -109,7 +109,7 @@ fi
 		if cmp --silent "${lib_folder}${file}" "${project_folder}${file}" ; then
 			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
 		else
-			cp ${project_folder}${file} ${lib_folder} && printf "${yel}${file} ${nor}copied.\n" || break
+			cp ${project_folder}${file} ${lib_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
 		fi
 	done
 
@@ -118,7 +118,7 @@ fi
 		if cmp --silent "${etc_folder}${file}" "${project_folder}${file}" ; then
 			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
 		else
-			cp ${project_folder}${file} ${etc_folder} && printf "${yel}${file} ${nor}copied.\n" || break
+			cp ${project_folder}${file} ${etc_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
 		fi
 	done
 
@@ -129,7 +129,7 @@ fi
 			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
 			let svc_count++
 		else
-			cp ${project_folder}${file} ${service_folder} && printf "${yel}${file} ${nor}copied.\n" || break
+			cp ${project_folder}${file} ${service_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
 			systemctl disable ${file} && echo SUCCESS || break
 			systemctl enable ${file} && echo SUCCESS || break
 		fi
