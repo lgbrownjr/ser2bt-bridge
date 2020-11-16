@@ -18,7 +18,7 @@ exit_draw = ImageDraw.Draw(exit_image)
 
 #Clear the Screen:
 epd.init(epd.FULL_UPDATE)
-epd.Clear(0xFF)
+#epd.Clear(0xFF)
 
 #Draw out the boot screen
 exit_draw.text((6, 20), 'ser2bt_status service', font=f_title_font24, fill=0)
