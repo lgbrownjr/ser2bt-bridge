@@ -10,7 +10,7 @@ Requires= ser2bt-e-paper-init.service
 
 [Service]
 Type=simple
-KillSignal=SIGINT
+#KillSignal=SIGINT
 TimeoutStopSec=120
 SyslogIdentifier=ser2bt-e-paper
 ExecStart=nice -15 /usr/local/bin/ser2bt_status
