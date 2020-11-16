@@ -28,7 +28,7 @@ if [ $(tty) = "/dev/rfcomm0" ] ; then
 
 #resize the screen, the export the inactivity timeout, then launch the ser2bt_bridge script:
 	resize > /dev/null 2>&1 #Resize the screen.
-	printf "\n${nor}Launching ${blu}bluetooth${nor} to serial bridging utility...${end}\n" #notify the user that ser2bt_bridge is about to be launched
+	printf "${nor}Launching ${blu}bluetooth${nor} to serial bridging utility...${end}\n" #notify the user that ser2bt_bridge is about to be launched
 #	readonly TMOUT
 	export TMOUT #Exporting the inactivity autologout timeout.
 	/usr/local/bin/ser2bt_bridge #Launch ser2bt_bridge.
