@@ -22,10 +22,12 @@ enhanc_lib_files=(logo.bmp)
 full_lib_files=( "${base_lib_files[@]}" "${enhanc_lib_files[@]}" )
 etc_files=(ser2bt_bridge.screenrc)
 base_service_files=(rfcomm.service)
-enhanc_service_files=(ser2bt-e-paper.service ser2bt-e-paper-init.service ser2bt-e-paper-shut.service)
+enhanc_service_files=(ser2bt-e-paper-init.service ser2bt-e-paper-shut.service ser2bt-e-paper.service)
 full_service_files=( "${base_service_files[@]}" "${enhanc_service_files[@]}" )
 begin_bashrc_addon_mark="#BEGIN ser2b-bridge .bashrc add-in"
 end_bashrc_addon_mark="#END ser2b-bridge .bashrc add-in"
+bin_flag=0
+
 #Checks before begining:
 # Make sure the script is run with superuser privelages
 if [[ ${UID} -ne 0 ]]; then
@@ -96,12 +98,12 @@ fi
 
 	#copy files to proper directories:
 	printf "\nCopying files to the ${cyn}${bin_folder} ${nor}directory:\n"
-	brk=0
 	for file in ${bin_files[@]} ; do
 		if cmp --silent "${bin_folder}${file}" "${project_folder}${file}" ; then
 			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
 		else
 			cp ${project_folder}${file} ${bin_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
+			bin_flag=1
 		fi
 	done
 
@@ -131,12 +133,14 @@ fi
 			let svc_count++
 		else
 			cp ${project_folder}${file} ${service_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
-			systemctl disable ${file} && echo SUCCESS || break
-			systemctl enable ${file} && echo SUCCESS || break
+			systemctl disable ${file} > /dev/null && printf "${drk_grn}SUCCESS${nor}\n" || break
+			systemctl enable ${file} > /dev/null && printf "${drk_grn}SUCCESS${nor}\n" || break
 		fi
+		#If the bin_flag is  > 0, then disable and enable all of the services as this indicates that ser2bt_status has changed.
 	done
-	if [ $svc_count} == ${#base_service_files[@]} ] ; then
-		systemctl daemon-reload && printf "${yel}systemctl daemon-reload${nor} was ${drk_grn}Successfull${nor}." || printf "${nor}systemctl daemon-reload was ${drk_red}not ${nor}successfull."
+	if [ ${svc_count} == ${#base_service_files[@]} ] || [ ${bin_flag} > 0 ] ; then
+		systemctl restart ser2bt-e-paper.service >> /dev/null && printf "${drk_grn}SUCCESS${nor}\n" || break
+		systemctl daemon-reload && printf "\n${yel}systemctl daemon-reload${nor} was ${drk_grn}Successfull${nor}." || printf "${nor}systemctl daemon-reload was ${drk_red}not ${nor}successfull."
 	fi
 
 #refreshing .bashrc:
