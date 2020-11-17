@@ -1,6 +1,7 @@
 #!/usr/bin/python3
-
 # -*- coding:utf-8 -*-
+
+#import modules
 import os #hostname
 import sys #check python version.
 import struct  # Capture battary capacity
@@ -46,6 +47,7 @@ f_title_font24 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 24)
 f_var_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 18)
 f_top_line_font16 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 16)
 
+
 def handler(signum, frame):
     print ('Got SIGTERM!')
     sys.exit(0) # raises a SystemExit exception
@@ -78,6 +80,7 @@ def get_bt_service_status():
 
     return (bt_status)
 
+
 def get_lan_service_status():
     global old_lan_status
     lan_service = 'ser2net'
@@ -96,6 +99,7 @@ def get_lan_service_status():
         print ("Status of lan service no diff:"+str(lan_status))
 
     return (lan_status)
+
 
 def get_ssid():
     global old_ssid
@@ -118,6 +122,7 @@ def get_ssid():
 
     return ssid
 
+
 def get_ip():
     global old_host_ip
     try:
@@ -138,6 +143,7 @@ def get_ip():
         print ("Status of ip no diff:"+str(host_ip))
 
     return host_ip
+
 
 def cap_wired_serial_port():
 #Capturess the existing wired serial port in use.
@@ -161,6 +167,7 @@ def cap_wired_serial_port():
 
     return [wired_serial_port, wired_serial_status_pos, wired_serial_connect, wired_serial_status]
 
+
 def cap_bt_serial_port():
 # Grabs existing bluetooth serial ports:
     global old_bt_serial_port
@@ -176,6 +183,7 @@ def cap_bt_serial_port():
         bt_serial_status_pos = 127
 
     return [bt_serial_port, bt_serial_status_pos, bt_serial_connect, bt_serial_status]
+
 
 def read_bat_capacity(bus):
     # "This function returns as a float the remaining capacity of the battery

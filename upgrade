@@ -30,7 +30,7 @@ bin_flag=0
 
 #Checks before begining:
 # Make sure the script is run with superuser privelages
-if [[ ${UID} -ne 0 ]]; then
+if [[ "${UID}" -ne 0 ]]; then
 	printf "\n${nor}You do ${drk_red}not ${nor}have the permissions to successfully run this script.\n"
 	exit 1
 fi
@@ -102,8 +102,8 @@ fi
 		if cmp --silent "${bin_folder}${file}" "${project_folder}${file}" ; then
 			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
 		else
-			cp ${project_folder}${file} ${bin_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
 			bin_flag=1
+			cp ${project_folder}${file} ${bin_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
 		fi
 	done
 
@@ -125,7 +125,7 @@ fi
 		fi
 	done
 
-	printf "\nCopy service files to the ${cyn}${service_folder} ${nor}directory, then resetting copied services:\n"
+	printf "\nCopy service files to the ${cyn}${service_folder} ${nor}directory, then disable and enable copied services:\n"
 	svc_count=0
 	for file in ${service_files[@]} ; do
 		if cmp --silent "${service_folder}${file}" "${project_folder}${file}" ; then
@@ -133,14 +133,18 @@ fi
 			let svc_count++
 		else
 			cp ${project_folder}${file} ${service_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
-			systemctl disable ${file} > /dev/null && printf "${drk_grn}SUCCESS${nor}\n" || break
-			systemctl enable ${file} > /dev/null && printf "${drk_grn}SUCCESS${nor}\n" || break
+			systemctl disable ${file} && printf " ${nor}${file} ${drk_grn}successfully ${nor}disabeled.\n" || break
+			systemctl enable ${file} && printf " ${nor}${file} ${drk_grn}successfully ${nor}enabeled.\n" || break
 		fi
-		#If the bin_flag is  > 0, then disable and enable all of the services as this indicates that ser2bt_status has changed.
 	done
-	if [ ${svc_count} == ${#base_service_files[@]} ] || [ ${bin_flag} > 0 ] ; then
-		systemctl restart ser2bt-e-paper.service >> /dev/null && printf "${drk_grn}SUCCESS${nor}\n" || break
-		systemctl daemon-reload && printf "\n${yel}systemctl daemon-reload${nor} was ${drk_grn}Successfull${nor}." || printf "${nor}systemctl daemon-reload was ${drk_red}not ${nor}successfull."
+	if [[ "${bin_flag}" -gt 0 ]] ; then
+		printf "\n${nor}Restarting any pertiant services (as needed):${nor}\n"
+		systemctl restart ser2bt-e-paper.service && printf " ${nor}e-paper service ${drk_grn}Successfully ${nor}Restarted.\n" || break
+	fi
+
+	if [ ${svc_count} == ${#base_service_files[@]} ] || [[ ${bin_flag} -gt 0 ]] ; then
+		printf "\n${nor}Restarting systemctl (as needed):${nor}\n"
+		systemctl daemon-reload && printf " \n${yel}systemctl daemon-reload${nor} was ${drk_grn}Successfull${nor}\n." || printf " ${nor}systemctl daemon-reload was ${drk_red}not ${nor}successfull.\n"
 	fi
 
 #refreshing .bashrc:
