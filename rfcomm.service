@@ -5,7 +5,7 @@ Wants=bluetooth.target
 
 [Service]
 Type=simple
-ExecStart=nice -15 /usr/bin/rfcomm watch hci0 1 setsid /sbin/agetty -a pi -L rfcomm0 115200 xterm
+ExecStart=nice -15 /usr/bin/rfcomm watch hci0 1 setsid /sbin/agetty -L rfcomm0 115200 xterm -a pi
 Restart=on-failure
 RestartSec=5
 

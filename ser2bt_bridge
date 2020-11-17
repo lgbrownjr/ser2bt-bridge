@@ -15,7 +15,6 @@ terminal="xterm"
 screen_config="/etc/ser2bt_bridge.screenrc"
 declare -a cmds=(stty screen minicom tio)
 
-
 function exit_script () {
 	if [[ ${exit_status} == 0 ]]; then
 		printf "\n${nor}Exit Status is: ${drk_grn}${exit_status}${end}\n"

@@ -46,7 +46,7 @@ upgrade_path="${1}"
 shift
 
 #Starting script here:
-printf "\n\n${nor}Beginning ${upgrade_path} upgrade of ${yel}ser2bt-bridge${nor}:\n"
+printf "\n\n${nor}Beginning ${upgrade_path} upgrade of ${yel}ser2bt-bridge${nor}:\n\n"
 
 #Upgrade system files
 #printf "${nor}Update package manager:\n"
@@ -142,9 +142,9 @@ fi
 		systemctl restart ser2bt-e-paper.service && printf " ${nor}e-paper service ${drk_grn}Successfully ${nor}Restarted.\n" || break
 	fi
 
-	if [ ${svc_count} == ${#base_service_files[@]} ] || [[ ${bin_flag} -gt 0 ]] ; then
+	if [ ${svc_count} != ${#service_files[@]} ] || [[ ${bin_flag} -gt 0 ]] ; then
 		printf "\n${nor}Restarting systemctl (as needed):${nor}\n"
-		systemctl daemon-reload && printf " \n${yel}systemctl daemon-reload${nor} was ${drk_grn}Successfull${nor}\n." || printf " ${nor}systemctl daemon-reload was ${drk_red}not ${nor}successfull.\n"
+		systemctl daemon-reload && printf " ${yel}systemctl daemon-reload${nor} was ${drk_grn}Successfull${nor}.\n" || printf " ${nor}systemctl daemon-reload was ${drk_red}not ${nor}successfull.\n"
 	fi
 
 #refreshing .bashrc:
