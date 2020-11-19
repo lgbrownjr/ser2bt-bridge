@@ -15,6 +15,7 @@ terminal="xterm"
 screen_config="/etc/ser2bt_bridge.screenrc"
 declare -a cmds=(stty screen minicom tio)
 
+#Functions:
 function exit_script () {
 	if [[ ${exit_status} == 0 ]]; then
 		printf "\n${nor}Exit Status is: ${drk_grn}${exit_status}${end}\n"
@@ -25,7 +26,7 @@ function exit_script () {
 	printf "\n${nor}Exiting to shell...\n${end}"
 }
 
-
+#Script starts here:
 #Check to determine if the user is logging in through a bluetooth serial port (rfcomm[0-9]), if not, then state the reason, and exit.
 if [[ $(tty) != ${bt_port} ]]; then
 	printf "\n\n${yel}${0}${nor} is only designed to work from a ${blu}bluetooth${nor} vty.  Please\nlogin to ${mag}${HOSTNAME}${nor}"

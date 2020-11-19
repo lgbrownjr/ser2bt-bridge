@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # -*- coding:utf-8 -*-
 
-
 #import modules
 import os #hostname
 import sys #check python version.
@@ -31,13 +30,13 @@ acm_ser_label='ACM0'
 acm_ser_port='tty'+acm_ser_label
 roboto_font_dir='/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/'
 dejavu_font_dir='/usr/share/fonts/truetype/dejavu/'
-end_of_loop_pause=25 #sleep time in seconds.  Will be used at the end of the loop so as not to kill the cpu.
+end_of_loop_pause = 25 #sleep time in seconds.  Will be used at the end of the loop so as not to kill the cpu.
 full_tty_status = "No tty Connections"
-old_ssid="XX"
-old_host_ip="XX"
-old_lan_status="XX"
-old_bt_status="XX"
-old_full_tty_status="XX"
+old_ssid = "XX"
+old_host_ip = "XX"
+old_lan_status = "XX"
+old_bt_status = "XX"
+old_full_tty_status = "XX"
 old_bt_serial_port = "XX"
 old_wired_serial_port = "XX"
 logging.info('ser2bt_status was started')
@@ -50,7 +49,7 @@ f_top_line_font16 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 16)
 
 
 def handler(signum, frame):
-    print ('Got SIGTERM!')
+#    print ('Got SIGTERM!')
     sys.exit(0) # raises a SystemExit exception
 
 
@@ -138,10 +137,10 @@ def get_ip():
 
     if old_host_ip != host_ip:
         old_host_ip = host_ip
-        print ("Status of ip after diff:"+host_ip)
+        print ("Status of ip after diff:" + host_ip)
     else:
         host_ip = False
-        print ("Status of ip no diff:"+str(host_ip))
+        print ("Status of ip no diff:" + str(host_ip))
 
     return host_ip
 
@@ -195,7 +194,7 @@ def read_bat_capacity(bus):
     capacity = swapped/256
     return (capacity)
 
-if sys.version_info[0] < 3:
+if sys.version_info[0] <  3:
     raise Exception("Must be using Python 3")
 
 # Register a handler (function) for the SIGTERM signal
@@ -210,18 +209,18 @@ try:
     draw = ImageDraw.Draw(image)
 
     #Draw the non variablers to the to the screen
-    draw.text((0, 0), host_name, font=f_top_line_font16, fill=0)
-    draw.text((52, 0), 'Bat:', font=f_top_line_font16, fill=0)
-    draw.line([(0, 17), (250, 17)], fill=0, width=2)
-    draw.text((0, 20), 'Load:', font=f_title_font18, fill=0)
-    draw.text((52, 20), 'CPU', font=f_var_font18, fill=0)
-    draw.text((150, 20), 'Mem', font=f_var_font18, fill=0)
-    draw.text((0, 40), 'SSID:', font=f_title_font18, file=0)
-    draw.text((0, 60), 'IP:', font=f_title_font18, fill=0)
-    draw.text((0, 80), 'Svcs:', font=f_title_font18, fill=0)
-    draw.text((52, 80), 'BT', font=f_var_font18, fill=0)
-    draw.text((150, 80), 'ser2net', font=f_var_font18, fill=0)
-    draw.text((0, 100), 'TTY:', font=f_title_font18, fill=0)
+    draw.text((0, 0), host_name, font = f_top_line_font16, fill = 0)
+    draw.text((52, 0), 'Bat:', font = f_top_line_font16, fill = 0)
+    draw.line([(0, 17), (250, 17)], fill = 0, width = 2)
+    draw.text((0, 20), 'Load:', font = f_title_font18, fill = 0)
+    draw.text((52, 20), 'CPU', font = f_var_font18, fill = 0)
+    draw.text((150, 20), 'Mem', font = f_var_font18, fill = 0)
+    draw.text((0, 40), 'SSID:', font = f_title_font18, file = 0)
+    draw.text((0, 60), 'IP:', font = f_title_font18, fill = 0)
+    draw.text((0, 80), 'Svcs:', font = f_title_font18, fill = 0)
+    draw.text((52, 80), 'BT', font = f_var_font18, fill = 0)
+    draw.text((150, 80), 'ser2net', font = f_var_font18, fill = 0)
+    draw.text((0, 100), 'TTY:', font = f_title_font18, fill = 0)
 
     epd.displayPartBaseImage(epd.getbuffer(image)) #This is the command to actually place the above to the e-ink display.
 
@@ -291,7 +290,8 @@ try:
             epd.sleep()
 
         except IOError as e:
-            print ('traceback.format_exc():\n%s',traceback.format_exc())
+#           print ('traceback.format_exc():\n%s',traceback.format_exc())
+            logging.info('Shutting Down ser2bt_status - traceback.format_exc():\n%s' ,traceback.format_exc())
             epd2in13_V2.epdconfig.module_init()
             epd2in13_V2.epdconfig.module_exit()
             exit()
@@ -317,26 +317,26 @@ try:
     exit()
 
 except KeyboardInterrupt:
-    print (" Quit (SIGINT)")
+#    print (" Quit (SIGINT)")
     epd.init(epd.FULL_UPDATE)
     term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     term_draw = ImageDraw.Draw(term_image)
-    print ("application is closing due to keyboard interrupt\n")
     term_draw.text((25, 20), 'Serial to bluetooth', font=f_title_font24, fill=0)
     term_draw.text((90, 50), 'bridge', font=f_title_font24, fill=0)
     term_draw.text((15, 80), 'Has Stopped due to SIGINT', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(term_image))
-    logging.info("Shutting Down  service - interupted by Control C")
+#    print ("application is closing due to keyboard interrupt\n")
+    logging.info("Shutting Down ser2bt_status - interupted by Control C")
     epd2in13_V2.epdconfig.module_init()
     epd2in13_V2.epdconfig.module_exit()
     exit()
 
 except SystemExit:
-    print (" Quit (SIGTERM)")
+#    print (" Quit (SIGTERM)")
     epd.init(epd.FULL_UPDATE)
     term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     term_draw = ImageDraw.Draw(term_image)
-    print ("application is closing due to signal from service.\n")
+#    print ("application is closing due to signal from service.\n")
     term_draw.text((25, 20), 'Serial to bluetooth', font=f_title_font24, fill=0)
     term_draw.text((90, 50), 'bridge', font=f_title_font24, fill=0)
     term_draw.text((15, 80), 'Is exiting Due to SIGTERM', font=f_title_font18, fill=0)
@@ -345,9 +345,10 @@ except SystemExit:
     epd2in13_V2.epdconfig.module_init()
     epd2in13_V2.epdconfig.module_exit()
     exit()
- 
+
 except IOError as e:
-    print ('traceback.format_exc():\n%s',traceback.format_exc())
+#    print ('traceback.format_exc():\n%s',traceback.format_exc())
+    logging.info('Shutting Down ser2bt_status - traceback.format_exc():\n%s' ,traceback.format_exc())
     epd2in13_V2.epdconfig.module_init()
     epd2in13_V2.epdconfig.module_exit()
     exit()
