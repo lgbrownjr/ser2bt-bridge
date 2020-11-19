@@ -30,7 +30,9 @@ begin_bashrc_addon_mark="#BEGIN ser2b-bridge .bashrc add-in"
 end_bashrc_addon_mark="#END ser2b-bridge .bashrc add-in"
 bin_flag=0
 
-#printf "${full_service_assoc[0]}\n"
+printf "${full_service_assoc[0]}\n"
+printf "${full_bin_files[@]}\n"
+
 #exit 0
 #Checks before begining:
 # Make sure the script is run with superuser privelages
@@ -45,6 +47,10 @@ if [[ "${#}" -lt 1 ]]; then
 	echo "Upgrade ser2bt-bridge, and choose either basic, enhanced, or full."
 	exit 2
 fi
+#assign the upgrade path to the first argument
+upgrade_path="${1}"
+shift
+
 
 if [ "${upgrade_path}" = "basic" ] ; then
 	bin_files=( "${base_bin_files[@]}" )
@@ -65,10 +71,6 @@ if [ "${upgrade_path}" = "full" ] ; then
 	service_files=(${full_service_files[@]})
 	service_assoc=(${full_service_assoc[@]})
 fi
-
-#assign the upgrade path to the first argument
-upgrade_path="${1}"
-shift
 
 #Starting script here:
 printf "\n\n${nor}Beginning ${upgrade_path} upgrade of ${yel}ser2bt-bridge${nor}:\n\n"
@@ -105,7 +107,7 @@ printf "\n\n${nor}Beginning ${upgrade_path} upgrade of ${yel}ser2bt-bridge${nor}
 
 	#copy files to proper directories:
 	printf "\nCopying files to the ${cyn}${bin_folder} ${nor}directory:\n"
-	for file in ${bin_files[@]} ; do
+	for file in "${bin_files[@]}" ; do
 #		printf "${service_assoc[1]}\n"
 		if cmp --silent "${bin_folder}${file}" "${project_folder}${file}" ; then
 			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
@@ -118,7 +120,7 @@ printf "\n\n${nor}Beginning ${upgrade_path} upgrade of ${yel}ser2bt-bridge${nor}
 	done
 
 	printf "\nCopying files to the ${cyn}${lib_folder} ${nor}directory:\n"
-	for file in ${lib_files[@]} ; do
+	for file in "${lib_files[@]}" ; do
 		if cmp --silent "${lib_folder}${file}" "${project_folder}${file}" ; then
 			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
 		else
@@ -127,7 +129,7 @@ printf "\n\n${nor}Beginning ${upgrade_path} upgrade of ${yel}ser2bt-bridge${nor}
 	done
 
 	printf "\nCopying files to the ${cyn}${etc_folder} ${nor}directory:\n"
-	for file in ${etc_files[@]} ; do
+	for file in "${etc_files[@]}" ; do
 		if cmp --silent "${etc_folder}${file}" "${project_folder}${file}" ; then
 			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
 		else
