@@ -14,20 +14,25 @@ etc_folder="/etc/"
 service_folder="/etc/systemd/system/"
 
 #File list:
-base_bin_files=(ser2bt_bridge)
-enhanc_bin_files=(ser2bt_status init_scr shutdown_scr)
-full_bin_files=( "${base_bin_files[@]}" "${enhanc_bin_files[@]}" )
-base_lib_files=(format.sh)
-enhanc_lib_files=(logo.bmp)
-full_lib_files=( "${base_lib_files[@]}" "${enhanc_lib_files[@]}" )
-etc_files=(ser2bt_bridge.screenrc)
-base_service_files=(rfcomm.service)
-enhanc_service_files=(ser2bt-e-paper-init.service ser2bt-e-paper-shut.service ser2bt-e-paper.service)
-full_service_files=( "${base_service_files[@]}" "${enhanc_service_files[@]}" )
+service_assoc=()
+declare -a base_bin_files=(ser2bt_bridge)
+declare -a enhanc_bin_files=(ser2bt_status init_scr shutdown_scr)
+declare -a full_bin_files=( "${base_bin_files[@]}" "${enhanc_bin_files[@]}" )
+declare -a base_lib_files=(format.sh)
+declare -a enhanc_lib_files=(logo.bmp)
+declare -a full_lib_files=( "${base_lib_files[@]}" "${enhanc_lib_files[@]}" )
+declare -a etc_files=(ser2bt_bridge.screenrc)
+declare -a base_service_files=(rfcomm.service)
+declare -a enhanc_service_files=(ser2bt-e-paper.service ser2bt-e-paper-init.service ser2bt-e-paper-shut.service)
+declare -a full_service_files=( "${base_service_files[@]}" "${enhanc_service_files[@]}" )
+declare -a enhanc_service_assoc=(ser2bt_status ser2bt-e-paper.service)
+declare -a full_service_assoc=( "${enhanc_service_assoc[@]}" )
 begin_bashrc_addon_mark="#BEGIN ser2b-bridge .bashrc add-in"
 end_bashrc_addon_mark="#END ser2b-bridge .bashrc add-in"
 bin_flag=0
 
+#printf "${full_service_assoc[0]}\n"
+#exit 0
 #Checks before begining:
 # Make sure the script is run with superuser privelages
 if [[ "${UID}" -ne 0 ]]; then
@@ -71,12 +76,14 @@ if [ "${upgrade_path}" = "enhanced" ] ; then
 	bin_files=${enhanc_bin_files[@]}
 	lib_files=${enhanc_lib_files[@]}
 	service_files=${enhanc_service_files[@]}
+	service_assoc=(${enhanc_service_assoc[@]})
 fi
 
 if [ "${upgrade_path}" = "full" ] ; then
 	bin_files=${full_bin_files[@]}
 	lib_files=${full_lib_files[@]}
-	service_files=${full_service_files[@]}
+	service_files=(${full_service_files[@]})
+	service_assoc=(${full_service_assoc[@]})
 fi
 
 #make directorys:
@@ -99,10 +106,13 @@ fi
 	#copy files to proper directories:
 	printf "\nCopying files to the ${cyn}${bin_folder} ${nor}directory:\n"
 	for file in ${bin_files[@]} ; do
+#		printf "${service_assoc[1]}\n"
 		if cmp --silent "${bin_folder}${file}" "${project_folder}${file}" ; then
 			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
 		else
-			bin_flag=1
+			if [ "${file}" == "${service_assoc[0]}" ] ; then
+				bin_flag=1
+			fi
 			cp ${project_folder}${file} ${bin_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
 		fi
 	done
@@ -127,22 +137,24 @@ fi
 
 	printf "\nCopy service files to the ${cyn}${service_folder} ${nor}directory, then disable and enable copied services:\n"
 	svc_count=0
-	for file in ${service_files[@]} ; do
-		if cmp --silent "${service_folder}${file}" "${project_folder}${file}" ; then
-			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
+#	printf "service count:${service_files[2]}\n"
+	for svc_file in ${service_files[@]} ; do
+		if cmp --silent "${service_folder}${svc_file}" "${project_folder}${svc_file}" ; then
+			printf " ${nor}Both versions of ${yel}${svc_file} ${nor}are the same, Skipping...\n"
 			let svc_count++
 		else
-			cp ${project_folder}${file} ${service_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
-			systemctl disable ${file} && printf " ${nor}${file} ${drk_grn}successfully ${nor}disabeled.\n" || break
-			systemctl enable ${file} && printf " ${nor}${file} ${drk_grn}successfully ${nor}enabeled.\n" || break
+			cp ${project_folder}${svc_file} ${service_folder} && printf " ${yel}${svc_file} ${nor}copied.\n" || break
+			systemctl disable ${svc_file} && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}disabeled.\n" || break
+			systemctl enable ${svc_file} && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}enabeled.\n" || break
 		fi
 	done
+
 	if [[ "${bin_flag}" -gt 0 ]] ; then
-		printf "\n${nor}Restarting any pertiant services (as needed):${nor}\n"
-		systemctl restart ser2bt-e-paper.service && printf " ${nor}e-paper service ${drk_grn}Successfully ${nor}Restarted.\n" || break
+		printf "\n${nor}Restarting ${service_assoc[1]} (as needed):${nor}\n"
+		systemctl restart "${service_assoc[1]}" && printf " ${nor}e-paper service ${drk_grn}Successfully ${nor}Restarted.\n" || printf "${drk_red}Failed ${yellow}${svc_file}${nor}!\n"
 	fi
 
-	if [ ${svc_count} != ${#service_files[@]} ] ; then
+	if [ ${svc_count} != ${#service_files[@]} ] || [[ "${bin_flag}" -gt 0 ]] ; then
 		printf "\n${nor}Restarting systemctl (as needed):${nor}\n"
 		systemctl daemon-reload && printf " ${yel}systemctl daemon-reload${nor} was ${drk_grn}Successfull${nor}.\n" || printf " ${nor}systemctl daemon-reload was ${drk_red}not ${nor}successfull.\n"
 	fi
