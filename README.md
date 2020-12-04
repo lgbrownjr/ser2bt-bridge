@@ -1,4 +1,5 @@
-# ser2bt-bridge - Serial to Bluetooth bridge for raspberry pi zero w
+# ser2bt-bridge
+## Serial to Bluetooth bridge for raspberry pi zero w
 Before we begin, please understand that everything in this repository is a work in progress...  :)  Especially as of 9/22/20, my documentation is still trying to keep up with what is working...  :)
 ### Definitions:
 - the terms *pi*, *bridge*, *ser2bt* all refer to the *raspberry pi zero w* that is being used to run this program.
