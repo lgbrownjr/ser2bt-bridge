@@ -141,7 +141,7 @@ You are now done with this section, safely eject the SD card, and insert it into
   - Save and close `/etc/systemd/system/dbus-org.bluez.service`
 - Create the following Directories:
 ```bash
-    mkdir -p /home/pi/Projects/support/
+    mkdir -p /home/pi/Projects/
 ```
 ###### Download and setup the serial to bluetooth scripts:
 - In the Projects folder, initialize git, and clone the following repository:
