@@ -49,7 +49,7 @@ f_top_line_font16 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 16)
 
 
 def handler(signum, frame):
-#    print ('Got SIGTERM!')
+    logging.info ('Got SIGTERM!')
     sys.exit(0) # raises a SystemExit exception
 
 
@@ -73,10 +73,8 @@ def get_bt_service_status():
 #Check if tje bt_status has changed, or if its the samw
     if old_bt_status != bt_status:
         old_bt_status = bt_status
-        print ("Status of bt service after diff:"+bt_status)
     else:
         bt_status = False
-        print ("Status of bt service after no diff:"+str(bt_status))
 
     return (bt_status)
 
@@ -93,10 +91,8 @@ def get_lan_service_status():
 
     if old_lan_status != lan_status:
         old_lan_status = lan_status
-        print ("Status of lan service after diff:"+lan_status)
     else:
         lan_status = False
-        print ("Status of lan service no diff:"+str(lan_status))
 
     return (lan_status)
 
@@ -115,10 +111,8 @@ def get_ssid():
 
     if old_ssid != ssid:
         old_ssid = ssid
-        print ("Status of ssid after diff:"+ssid+":")
     else:
         ssid = False
-        print ("Status of ssid no diff:"+str(ssid)+":")
 
     return ssid
 
@@ -137,10 +131,8 @@ def get_ip():
 
     if old_host_ip != host_ip:
         old_host_ip = host_ip
-        print ("Status of ip after diff:" + host_ip)
     else:
         host_ip = False
-        print ("Status of ip no diff:" + str(host_ip))
 
     return host_ip
 
@@ -202,7 +194,6 @@ signal.signal(signal.SIGTERM, handler)
 
 try:
     epd.init(epd.FULL_UPDATE)
-#    epd.Clear(0xFF)
 
     #Define frame size for e-ink display
     image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear frame
@@ -290,7 +281,7 @@ try:
             epd.sleep()
 
         except IOError as e:
-#           print ('traceback.format_exc():\n%s',traceback.format_exc())
+            logging.info ('traceback.format_exc():\n%s',traceback.format_exc())
             logging.info('Shutting Down ser2bt_status - traceback.format_exc():\n%s' ,traceback.format_exc())
             epd2in13_V2.epdconfig.module_init()
             epd2in13_V2.epdconfig.module_exit()
@@ -317,7 +308,7 @@ try:
     exit()
 
 except KeyboardInterrupt:
-#    print (" Quit (SIGINT)")
+    logging.info (" Quit (SIGINT) Due to Keyboard interrupt when not being run as a service")
     epd.init(epd.FULL_UPDATE)
     term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     term_draw = ImageDraw.Draw(term_image)
@@ -325,18 +316,16 @@ except KeyboardInterrupt:
     term_draw.text((90, 50), 'bridge', font=f_title_font24, fill=0)
     term_draw.text((15, 80), 'Has Stopped due to SIGINT', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(term_image))
-#    print ("application is closing due to keyboard interrupt\n")
     logging.info("Shutting Down ser2bt_status - interupted by Control C")
     epd2in13_V2.epdconfig.module_init()
     epd2in13_V2.epdconfig.module_exit()
     exit()
 
 except SystemExit:
-#    print (" Quit (SIGTERM)")
+    logging.info (" Quit (SIGTERM) from service telling us to terminare")
     epd.init(epd.FULL_UPDATE)
     term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     term_draw = ImageDraw.Draw(term_image)
-#    print ("application is closing due to signal from service.\n")
     term_draw.text((25, 20), 'Serial to bluetooth', font=f_title_font24, fill=0)
     term_draw.text((90, 50), 'bridge', font=f_title_font24, fill=0)
     term_draw.text((15, 80), 'Is exiting Due to SIGTERM', font=f_title_font18, fill=0)
@@ -347,9 +336,6 @@ except SystemExit:
     exit()
 
 except IOError as e:
-#    print ('traceback.format_exc():\n%s',traceback.format_exc())
     logging.info('Shutting Down ser2bt_status - traceback.format_exc():\n%s' ,traceback.format_exc())
     epd2in13_V2.epdconfig.module_init()
     epd2in13_V2.epdconfig.module_exit()
-    exit()
-
