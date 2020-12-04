@@ -30,50 +30,55 @@ begin_bashrc_addon_mark="#BEGIN ser2b-bridge .bashrc add-in"
 end_bashrc_addon_mark="#END ser2b-bridge .bashrc add-in"
 bin_flag=0
 
-printf "${full_service_assoc[0]}\n"
-printf "${full_bin_files[@]}\n"
-
-#exit 0
 #Checks before begining:
+#Check to make sure this is a rpi zero:
+if grep -q 'Zero' /proc/device-tree/model; then
 # Make sure the script is run with superuser privelages
-if [[ "${UID}" -ne 0 ]]; then
-	printf "\n${nor}You do ${drk_red}not ${nor}have the permissions to successfully run this script.\n"
-	exit 1
-fi
+	if [[ "${UID}" -ne 0 ]]; then
+		printf "\n${nor}You do ${drk_red}not ${nor}have the permissions to successfully run this script.\n"
+		exit 1
+	fi
 
 #check for minimum arguements:
-if [[ "${#}" -lt 1 ]]; then
-	echo "Usage: ${0} UPGRADE_PATH [BASIC|ENHANCED|FULL]."
-	echo "Upgrade ser2bt-bridge, and choose either basic, enhanced, or full."
-	exit 2
-fi
+	if [[ "${#}" -lt 1 ]]; then
+		echo "Usage: ${0} UPGRADE_PATH [BASIC|ENHANCED|FULL]."
+		echo "Upgrade ser2bt-bridge, and choose either basic, enhanced, or full."
+		exit 2
+	fi
 #assign the upgrade path to the first argument
-upgrade_path="${1}"
-shift
+	upgrade_path="${1}"
+	shift
+	if [ "${upgrade_path}" = "basic" ] ; then
+		bin_files=( "${base_bin_files[@]}" )
+		lib_files=( "${base_lib_files[@]}" )
+		service_files=( "${base_service_files[@]}" )
+	fi
 
+	if [ "${upgrade_path}" = "enhanced" ] ; then
+		bin_files=(${enhanc_bin_files[@]})
+		lib_files=(${enhanc_lib_files[@]})
+		service_files=(${enhanc_service_files[@]})
+		service_assoc=(${enhanc_service_assoc[@]})
+	fi
 
-if [ "${upgrade_path}" = "basic" ] ; then
-	bin_files=( "${base_bin_files[@]}" )
-	lib_files=( "${base_lib_files[@]}" )
-	service_files=( "${base_service_files[@]}" )
-fi
-
-if [ "${upgrade_path}" = "enhanced" ] ; then
-	bin_files=(${enhanc_bin_files[@]})
-	lib_files=(${enhanc_lib_files[@]})
-	service_files=(${enhanc_service_files[@]})
-	service_assoc=(${enhanc_service_assoc[@]})
-fi
-
-if [ "${upgrade_path}" = "full" ] ; then
-	bin_files=(${full_bin_files[@]})
-	lib_files=(${full_lib_files[@]})
-	service_files=(${full_service_files[@]})
-	service_assoc=(${full_service_assoc[@]})
-fi
+	if [ "${upgrade_path}" = "full" ] ; then
+		bin_files=(${full_bin_files[@]})
+		lib_files=(${full_lib_files[@]})
+		service_files=(${full_service_files[@]})
+		service_assoc=(${full_service_assoc[@]})
+	fi
 
 #Starting script here:
-printf "\n\n${nor}Beginning ${upgrade_path} upgrade of ${yel}ser2bt-bridge${nor}:\n\n"
+	printf "\n\n${nor}Beginning ${upgrade_path} upgrade of ${yel}ser2bt-bridge${nor}:\n\n"
+
+#checking and adding modules as needed into /etc/modules:
+	printf "${nor}Check to make sure the the relevent modules are loaded:\n"
+	grep -e "^g_serial" /etc/modules && (printf "module already loaded\n") || (sudo bash -c "echo 'g_serial' >> /etc/modules"; printf "Module added\n")
+	grep -e "dwc2" /etc/modules && (printf "module already loaded\n") || (sudo bash -c "echo 'g_serial' >> /etc/modules"; printf "Module added\n")
+
+#checking and adding modules as needed into /boot/config.txt and /boot/cmdline.txt:
+#	printf "${nor}Check to make sure the the relevent modules are loaded in the boot files:\n"
+#sed -i -e 's/#/maxmemory 26gb/g' /etc/redis/redis.conf
 
 #Upgrade system files
 #printf "\r${nor}Update package manager:\n"
@@ -162,15 +167,18 @@ printf "\n\n${nor}Beginning ${upgrade_path} upgrade of ${yel}ser2bt-bridge${nor}
 	fi
 
 #refreshing .bashrc:
-printf "\nAdding the ${yel}.bashrc${nor} addon (if it's already on, it will be removed and replaced):\n"
+	printf "\nAdding the ${yel}.bashrc${nor} addon (if it's already on, it will be removed and replaced):\n"
 #First compare whats in bashrc matches the addendum:
-existing_ver=$(awk '/^#BEGIN/,/^#END/ { print }' ${home}.bashrc)
-official_ver=$(awk '/^#BEGIN/,/^#END/ { print }' ${project_folder}bashrc_addendum.sh)
-if [ "${existing_ver}" != "${official_ver}" ] ; then
-	printf " ${nor}There is a difference between what is supposed to be in ${yel}.bashrc${nor}, will clean and re-apply ${yel}ser2bt-bridge${nor} related configurations:\n" 
-	sed -i '/^#BEGIN ser2b-bridge .bashrc add-in/, /^#END ser2b-bridge .bashrc add-in/d' ${home}.bashrc
-	cat bashrc_addendum.sh >> ${home}.bashrc && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
+	existing_ver=$(awk '/^#BEGIN/,/^#END/ { print }' ${home}.bashrc)
+	official_ver=$(awk '/^#BEGIN/,/^#END/ { print }' ${project_folder}bashrc_addendum.sh)
+	if [ "${existing_ver}" != "${official_ver}" ] ; then
+		printf " ${nor}There is a difference between what is supposed to be in ${yel}.bashrc${nor}, will clean and re-apply ${yel}ser2bt-bridge${nor} related configurations:\n" 
+		sed -i '/^#BEGIN ser2b-bridge .bashrc add-in/, /^#END ser2b-bridge .bashrc add-in/d' ${home}.bashrc
+		cat bashrc_addendum.sh >> ${home}.bashrc && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
+	else
+		printf " ${nor}Both versions are the same, skipping...\n"
+	fi
 else
-	printf " ${nor}Both versions are the same, skipping...\n"
+	echo 'This is not a Raspberry Zero, skip this step.'
 fi
 exit 0
