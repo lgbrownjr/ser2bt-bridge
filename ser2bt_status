@@ -18,7 +18,11 @@ import signal # Check for incomming signals from the service and react if there 
 # Variable decleration:
 sys.path.append(r'lib')
 epd = epd2in13_V2.EPD()
-bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
+try:
+    bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
+except:
+   bus="error"
+
 min_bat_cap=1  # setting in percent minimum battery capacity before we'll shutdown.
 host_name=os.uname()[1]  # define host_name
 dev_dir='/dev/'
@@ -181,9 +185,13 @@ def read_bat_capacity(bus):
     # "This function returns as a float the remaining capacity of the battery
     # connected to the Raspi UPS Hat via the pro$
     address = 0x36
-    read = bus.read_word_data(address, 4)
-    swapped = struct.unpack("<H", struct.pack(">H", read))[0]
-    capacity = swapped/256
+    try:
+        read = bus.read_word_data(address, 4)
+        swapped = struct.unpack("<H", struct.pack(">H", read))[0]
+        capacity = swapped/256
+    except:
+        capacity = 100
+
     return (capacity)
 
 if sys.version_info[0] <  3:
