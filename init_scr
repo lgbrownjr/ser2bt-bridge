@@ -18,7 +18,7 @@ epd.Clear(0xFF)
 boot_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
 boot_draw = ImageDraw.Draw(boot_image)
 boot_draw.text((77, 20), 'Loading ', font=f_title_font24, fill=0)
-boot_draw.text((12, 50), 'Serial to bluetooth bridge  ', font=f_title_font18, fill=0)
+boot_draw.text((22, 50), 'Serial to bluetooth bridge  ', font=f_title_font18, fill=0)
 #Display the screen
 epd.display(epd.getbuffer(boot_image))
 
