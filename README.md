@@ -94,7 +94,7 @@ You are now done with this section, safely eject the SD card, and insert it into
  ```
  
  ```bash
- sudo apt install screen git minicom tio rfkill xterm -y
+ sudo apt install screen git minicom tio rfkill xterm ser2net -y
  ```
 - Reboot your Pi when the upgrade is complete and the dependacies have been installed.
 ###### Additional OS Setup:
@@ -118,11 +118,6 @@ You are now done with this section, safely eject the SD card, and insert it into
     - Select *Back*
   - Under the *Main Menu*, select *finish*, and if you are asked to reboot, do so.
 ###### Pre-Requisites to software installation:
-- Add the following commands to the terminal:
-```bash
-    sudo echo "dwc2" | sudo tee -a /etc/modules
-    sudo echo "g_serial" | sudo tee -a /etc/modules
-```
 - Open the file: /etc/systemd/system/dbus-org.bluez.service:
 
 `sudo nano /etc/systemd/system/dbus-org.bluez.service`
@@ -154,13 +149,6 @@ You are now done with this section, safely eject the SD card, and insert it into
 ```bash
    cd ser2bt-bridge/
    sudo ./upgrade basic
-```
-###### Resolve serial bug (preventing the pi from shutting down and/or rebooting):
-```bash
-   sudo mkdir -p /etc/systemd/system/getty@ttyGS0.service.d
-   sudo bash -c 'echo -e "[Service]\nTTYReset=no\nTTYVHangup=no\nTTYVTDisallocate=no" > /etc/systemd/system/getty@ttyGS0.service.d/override.conf'
-   sudo systemctl daemon-reload
-   sudo systemctl enable getty@ttyGS0.service
 ```
 ###### Bluetooth setup:
 - Open `/etc/bluetooth/main.conf`
