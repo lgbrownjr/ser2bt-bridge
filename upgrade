@@ -5,13 +5,14 @@ source /usr/local/lib/format.sh
 
 #Location settings:
 home="/home/${SUDO_USER}/"
-project_folder="${home}/Projects/ser2bt-bridge/"
-support_folder="${home}/Projects/support/"
-logging_folder="${home}/console_logs/"
+etc_folder="/etc/"
+project_folder="${home}Projects/ser2bt-bridge/"
+support_folder="${home}Projects/support/"
+logging_folder="${home}console_logs/"
 bin_folder="/usr/local/bin/"
 lib_folder="/usr/local/lib/"
-etc_folder="/etc/"
-service_folder="/etc/systemd/system/"
+service_folder="${etc_folder}systemd/system/"
+serial_fix_folder="${service_folder}getty@ttyGS0.service.d/"
 
 #File list:
 base_bin_files=(ser2bt_bridge)
@@ -28,7 +29,12 @@ enhanc_service_assoc=(ser2bt_status ser2bt-e-paper.service)
 full_service_assoc=( "${enhanc_service_assoc[@]}" )
 begin_bashrc_addon_mark="#BEGIN ser2b-bridge .bashrc add-in"
 end_bashrc_addon_mark="#END ser2b-bridge .bashrc add-in"
+serial_fix_file="override.conf"
+serial_fix_file_content="[Service]\nTTYReset=no\nTTYVHangup=no\nTTYVTDisallocate=no"
+
 bin_flag=0
+serial_fix_flag=0
+
 
 #Checks before begining:
 #Check to make sure this is a rpi zero:
@@ -73,8 +79,8 @@ if grep -q 'Zero' /proc/device-tree/model; then
 
 #checking and adding modules as needed into /etc/modules:
 	printf "${nor}Check to make sure the the relevent modules are loaded:\n"
-	grep -e "^g_serial" /etc/modules && (printf "module already loaded\n") || (sudo bash -c "echo 'g_serial' >> /etc/modules"; printf "Module added\n")
-	grep -e "dwc2" /etc/modules && (printf "module already loaded\n") || (sudo bash -c "echo 'g_serial' >> /etc/modules"; printf "Module added\n")
+	grep -q -s -e "^g_serial" /etc/modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'g_serial' >> /etc/modules"; printf " ${nor}module ${drk_grn}successfully${nor} loaded\n")
+	grep -q -s -e "^dwc2" /etc/modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'dwc2' >> /etc/modules"; printf " ${nor}module ${drk_grn}already${nor} loaded\n")
 
 #checking and adding modules as needed into /boot/config.txt and /boot/cmdline.txt:
 #	printf "${nor}Check to make sure the the relevent modules are loaded in the boot files:\n"
@@ -94,7 +100,26 @@ if grep -q 'Zero' /proc/device-tree/model; then
 #fi
 
 #make directorys:
-	printf "${nor}Check to make sure the ${cyn}${support_folder} ${nor}directories exist:\n"
+#Make directory for serial port fix, then verify the config file is correct, if not, make corrections:
+	printf "\n${nor}Check to make sure the ${cyn}${serial_fix_folder} ${nor}directories exist:\n"
+	if [ ! -d ${serial_fix_folder} ]; then
+		printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
+		mkdir -p ${serial_fix__folder}
+	else
+		printf " ${nor}Directory ${drk_grn}already ${nor}exist, moving on.\n"
+	fi
+	existing_s_ver=$(cat ${serial_fix_folder}${serial_fix_file})
+	official_s_ver=$(echo -e ${serial_fix_file_content})
+	if [ "${existing_s_ver}" != "${official_s_ver}" ] ; then
+		printf " ${nor}There is a difference between what is supposed to be in the ${yel}fix${nor}, will clean and re-apply ${yel}fix${nor} related configurations:\n" 
+		echo -e ${official_s_ver} > ${serial_fix_folder}${serial_fix_file} && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
+		serial_fix_flag=1
+	else
+		printf " ${nor}Both versions are the same, skipping...\n"
+		serial_fix_flag=0
+	fi
+
+	printf "\n${nor}Check to make sure the ${cyn}${support_folder} ${nor}directories exist:\n"
 	if [ ! -d ${support_folder} ]; then
 		printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
 		mkdir -p ${support_folder}
@@ -110,7 +135,7 @@ if grep -q 'Zero' /proc/device-tree/model; then
 		printf " ${nor}Directory ${drk_grn}already ${nor}exist, moving on.\n"
 	fi
 
-	#copy files to proper directories:
+#copy files to proper directories:
 	printf "\nCopying files to the ${cyn}${bin_folder} ${nor}directory:\n"
 	for file in "${bin_files[@]}" ; do
 #		printf "${service_assoc[1]}\n"
@@ -144,7 +169,6 @@ if grep -q 'Zero' /proc/device-tree/model; then
 
 	printf "\nCopy service files to the ${cyn}${service_folder} ${nor}directory, then disable and enable copied services:\n"
 	svc_count=0
-#	printf "service count:${service_files[2]}\n"
 	for svc_file in ${service_files[@]} ; do
 		if cmp --silent "${service_folder}${svc_file}" "${project_folder}${svc_file}" ; then
 			printf " ${nor}Both versions of ${yel}${svc_file} ${nor}are the same, Skipping...\n"
@@ -155,6 +179,11 @@ if grep -q 'Zero' /proc/device-tree/model; then
 			systemctl enable ${svc_file} && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}enabeled.\n" || break
 		fi
 	done
+
+	if [[ "${serial_fix_flag}" -gt 0 ]] ; then
+		printf "\n${nor}Enabeling getty@ttyGS0.service:${nor}\n"
+		systemctl enable getty@ttyGS0.service && printf " ${nor}getty@ttyGS0.service ${drk_grn}successfully ${nor}enabled.\n" || break
+	fi
 
 	if [[ "${bin_flag}" -gt 0 ]] ; then
 		printf "\n${nor}Restarting ${service_assoc[1]} (as needed):${nor}\n"
