@@ -21,4 +21,5 @@ RemainAfterExit=true
 #KillMode=mixed
 
 [Install]
-WantedBy=bluetooth.target
+#WantedBy=basic.target
+RequiredBy=bluetooth.target

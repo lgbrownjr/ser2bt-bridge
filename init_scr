@@ -23,5 +23,5 @@ boot_draw.text((22, 50), 'Serial to bluetooth bridge  ', font=f_title_font18, fi
 epd.display(epd.getbuffer(boot_image))
 
 #Exit:
-epd2in13_V2.epdconfig.module_exit()
+#epd2in13_V2.epdconfig.module_exit()
 exit()
