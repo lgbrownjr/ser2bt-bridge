@@ -63,7 +63,7 @@ You will need:
     - modules-load=dwc2,g_serial
   - Save and close *cmdline.txt*
 - Add or uncomment the following settings in the `/boot/config.txt` file:
-    `enable_uart=1`
+    `enable_uart=0`
     `dtoverlay=dwc2`
 - Save and close *config.txt*
 - Create an empty file and call it *ssh* - no extensions, just *ssh*.
