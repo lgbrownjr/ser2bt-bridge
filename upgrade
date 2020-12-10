@@ -1,7 +1,11 @@
 #!/bin/bash
 
 #color and other formatting defenitions:
-source /usr/local/lib/format.sh
+if [ -f /usr/local/lib/format.sh ]; then
+	source /usr/local/lib/format.sh >> /dev/null
+else
+	printf "\nformat library is not installed, continueing without!\n"
+fi
 
 #Location settings:
 home="/home/${SUDO_USER}/"
@@ -38,7 +42,7 @@ serial_fix_flag=0
 
 #Checks before begining:
 #Check to make sure this is a rpi zero:
-if grep -q 'Zero' /proc/device-tree/model; then
+if [ -f /proc/device-tree/model ] && [ grep -q 'Zero' /proc/device-tree/model ]; then
 # Make sure the script is run with superuser privelages
 	if [[ "${UID}" -ne 0 ]]; then
 		printf "\n${nor}You do ${drk_red}not ${nor}have the permissions to successfully run this script.\n"
@@ -208,6 +212,6 @@ if grep -q 'Zero' /proc/device-tree/model; then
 		printf " ${nor}Both versions are the same, skipping...\n"
 	fi
 else
-	echo 'This is not a Raspberry Zero, skip this step.'
+	printf "\n${nor}This is ${drk_red}not${nor} a ${yel}Raspberry Zero${nor}, ${drk_red}Aborting ${nor}installation/upgrade.\n"
 fi
 exit 0
