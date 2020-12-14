@@ -41,20 +41,19 @@ serial_fix_flag=0
 
 
 #Checks before begining:
-#Check to make sure this is a rpi zero:
-if [ -f /proc/device-tree/model ] && [ grep -q 'Zero' /proc/device-tree/model ]; then
 # Make sure the script is run with superuser privelages
-	if [[ "${UID}" -ne 0 ]]; then
-		printf "\n${nor}You do ${drk_red}not ${nor}have the permissions to successfully run this script.\n"
-		exit 1
-	fi
+if [[ "${UID}" -ne 0 ]]; then
+	printf "\n${nor}You do ${drk_red}not ${nor}have the permissions to successfully run this script.\n"
+	exit 1
+fi
 
 #check for minimum arguements:
-	if [[ "${#}" -lt 1 ]]; then
-		echo "Usage: ${0} UPGRADE_PATH [BASIC|ENHANCED|FULL]."
-		echo "Upgrade ser2bt-bridge, and choose either basic, enhanced, or full."
-		exit 2
-	fi
+if [[ "${#}" -lt 1 ]]; then
+	echo "Usage: ${0} UPGRADE_PATH [BASIC|ENHANCED|FULL]."
+	echo "Upgrade ser2bt-bridge, and choose either basic, enhanced, or full."
+	exit 2
+fi
+
 #assign the upgrade path to the first argument
 	upgrade_path="${1}"
 	shift
@@ -78,6 +77,8 @@ if [ -f /proc/device-tree/model ] && [ grep -q 'Zero' /proc/device-tree/model ];
 		service_assoc=(${full_service_assoc[@]})
 	fi
 
+##Check to make sure this is a rpi zero:
+if  grep -q "Zero" /proc/device-tree/model; then
 #Starting script here:
 	printf "\n\n${nor}Beginning ${upgrade_path} upgrade of ${yel}ser2bt-bridge${nor}:\n\n"
 
@@ -185,8 +186,11 @@ if [ -f /proc/device-tree/model ] && [ grep -q 'Zero' /proc/device-tree/model ];
 	done
 
 	if [[ "${serial_fix_flag}" -gt 0 ]] ; then
-		printf "\n${nor}Enabeling getty@ttyGS0.service:${nor}\n"
-		systemctl enable getty@ttyGS0.service && printf " ${nor}getty@ttyGS0.service ${drk_grn}successfully ${nor}enabled.\n" || break
+		if [ $(systemctl status getty@ttyGS0.service | grep -o "inactive") ]; then
+			printf "\n${nor}Enabeling and starting getty@ttyGS0.service:${nor}\n"
+			systemctl enable getty@ttyGS0.service && printf " ${nor}getty@ttyGS0.service ${drk_grn}successfully ${nor}enabled.\n" || break
+			systemctl start getty@ttyGS0.service && printf " ${nor}getty@ttyGS0.service ${drk_grn}successfully ${nor}started.\n" || break
+		fi
 	fi
 
 	if [[ "${bin_flag}" -gt 0 ]] ; then
