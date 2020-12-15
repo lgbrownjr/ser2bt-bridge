@@ -123,32 +123,32 @@ You are now done with this section, safely eject the SD card, and insert it into
 `sudo nano /etc/systemd/system/dbus-org.bluez.service`
   - Add `-C --noplugin=sap` to the end of:`ExecStart=/usr/lib/bluetooth/bluetoothd`, so:
   
-    `ExecStart=/usr/lib/bluetooth/bluetoothd`
+`ExecStart=/usr/lib/bluetooth/bluetoothd`
     
-    Becomes:
+Becomes:
 
-    `ExecStart=/usr/lib/bluetooth/bluetoothd -C --noplugin=sap`
+`ExecStart=/usr/lib/bluetooth/bluetoothd -C --noplugin=sap`
 - Then, right below that, add the following configurations:
 ```bash
-    ExecStartPost=/usr/bin/sdptool add SP
-    ExecStartPost=/bin/hciconfig hci0 piscan
+ExecStartPost=/usr/bin/sdptool add SP
+ExecStartPost=/bin/hciconfig hci0 piscan
 ```
   - Save and close `/etc/systemd/system/dbus-org.bluez.service`
 - Create the following Directories:
 ```bash
-    mkdir -p /home/pi/Projects/
+mkdir -p /home/pi/Projects/
 ```
 ###### Download and setup the serial to bluetooth scripts:
 - In the Projects folder, initialize git, and clone the following repository:
 ```bash
-   cd $HOME/Projects/
-   git init
-   git clone https://github.com/lgbrownjr/ser2bt-bridge.git
+cd $HOME/Projects/
+git init
+git clone https://github.com/lgbrownjr/ser2bt-bridge.git
 ```
 - Run the upgrade tool:
 ```bash
-   cd ser2bt-bridge/
-   sudo ./upgrade basic
+cd ser2bt-bridge/
+sudo ./upgrade basic
 ```
 ###### Bluetooth setup:
 - Open `/etc/bluetooth/main.conf`
