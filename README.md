@@ -46,7 +46,7 @@ There are two different setup options, basic, and full.
 ### Basic setup:
 The following steps will guide you through the process getting this system to work from just after everything is unboxed, to the point where you are connecting to a switch, router, or whatever - that is the raspberry pi zero, by itself acting as a bluetooth to serial bridge.  We will be using headless installation method, so you will not need a keyboard, mouse, or monitor.
 #### Parts needed for Basic setup:
-You will need:  
+You will need:
 - A *raspberry pi zero w* - at a minimum, but if you don't like soldering, and have at least a desire to expand, get the *raspberry pi zero wh* instead.
 - An SD card with a minimum size of 8G.  Actually, you can get smaller, but for the price, 8G or 16G is a good choice.
 - A USB micro to USB type A for power.  [Example](https://www.amazon.com/6in-Micro-USB-Cable-6-inches/dp/B003YKX6WM/ref=sr_1_18?dchild=1&keywords=usb+micro+to+usb+a+male+6+inch+uart+cable&qid=1599147190&s=electronics&sr=1-18)
@@ -74,7 +74,8 @@ dtoverlay=dwc2
 ```bash
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
-country=US  
+country=US
+
 network={
     ssid="<SSID>"
     psk="<passphrase/password>"
@@ -92,9 +93,7 @@ You are now done with this section, safely eject the SD card, and insert it into
 ###### Update OS and install dependencies:
 ```bash
 sudo apt update && sudo apt full-upgrade -y
- ```
- 
-```bash
+
 sudo apt install screen git minicom tio rfkill xterm ser2net -y
 ```
 - Reboot your Pi when the upgrade is complete and the dependacies have been installed.
@@ -111,7 +110,7 @@ sudo apt install screen git minicom tio rfkill xterm ser2net -y
     - Select *Back*
   - Select *localization Options*, and verify, or set:
     - Setup locals.
-    - Set timezone on the Pi.
+    - Set timezone on the pi.
     - Keyboard.
     - Select *Back*
   - Select *Advanced Options*:
@@ -123,9 +122,9 @@ sudo apt install screen git minicom tio rfkill xterm ser2net -y
 
 `sudo nano /etc/systemd/system/dbus-org.bluez.service`
   - Add `-C --noplugin=sap` to the end of:`ExecStart=/usr/lib/bluetooth/bluetoothd`, so:
-  
+
 `ExecStart=/usr/lib/bluetooth/bluetoothd`
-    
+
 Becomes:
 
 `ExecStart=/usr/lib/bluetooth/bluetoothd -C --noplugin=sap`
@@ -162,22 +161,21 @@ sudo ./upgrade basic
 - type in `sudo bluetoothctl`, and press enter.
   - You should see *Agent Registered*, then a prompt.
   - Type in `show`
-  - You are looking for two items in the output:
+  - You are looking for three items in the output:
     - Powered: yes
     - Discoverable: Yes
     - Pairable: Yes
-  - If all 3 items match with what is on your screen, then type `exit` and skip over the rest of the bluetooth section.
+  - If all three items match with what is on your screen, then type `exit` and skip over the rest of the bluetooth section.
   - Otherwise, type in the following:
 ```sh
 power on
 discoverable on
 pairable on
 ```
-  - Type in `show` to verify, then `exit` to leave bluetooth control
+  - Type in `show` to verify, then `exit` to leave bluetooth control and return to bash.
 ###### Network Setup:
-In order to get time, perform updates, or an alternate way to access the pi, it is advisable you add more networks into your *wpa_supplicant.conf*.  allowable work networks, your home network, your hotspot, and even hotspots of your peers phones (as allowed).
-- Open the file called */etc/wpa_supplicant/wpa_supplicant.conf*, and open it:
-  - Insert the following:
+In order for your pi to keep the correct time, perform updates, or allow an alternate way to access the pi, it is advisable you add more networks into your *wpa_supplicant.conf*.  Examples include:allowable work networks, your home network, your hotspot, and even hotspots of your peer's phones (as allowed).
+- Open */etc/wpa_supplicant/wpa_supplicant.conf*, and add the following:
 ```bash
 network={
     ssid="<SSID>"
@@ -185,14 +183,13 @@ network={
     key_mgmt=WPA-PSK
 }
 ```
-  - Copy the block above and paste it in */etc/wpa_supplicant/wpa_supplicant.conf*
-   - One for each network you want to add.
-   - Make sure to set the ssid and psk as needed.
-Be sure to test each network.
+- One block for each network you want to add.
+ - Make sure to set the ssid and psk as needed.
+ - **Be sure to test each network.**
 ###### We're Done!
 If everything went as planned, your *raspberry pi zero w* should be acting like a serial to bluetooth bridge, allowing you to connect to a switches console port via bluetooth from your computer.
 - Now, reboot your *raspberry pi zero w*.
-- After the raspberry pi has rebooted, use your PC/laptop to pair with it.  
+- After the raspberry pi has rebooted, use your PC/laptop to pair with it.
 - Look for a device advertising your pi's *hostname*
 - The Pi should advertise that it supports serial communications, so you'll be able to associate it with your PC's com/ttyUSBx/ttyACMx ports.
   - Keep in mind, that no pin will be requested.  Your PC should just pair with the pi.
