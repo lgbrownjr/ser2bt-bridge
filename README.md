@@ -63,23 +63,24 @@ You will need:
     - modules-load=dwc2,g_serial
   - Save and close *cmdline.txt*
 - Add or uncomment the following settings in the `/boot/config.txt` file:
-    `enable_uart=0`
-    `dtoverlay=dwc2`
+```bash
+enable_uart=0
+dtoverlay=dwc2
+```
 - Save and close *config.txt*
 - Create an empty file and call it *ssh* - no extensions, just *ssh*.
 - Create another file called *wpa_supplicant.conf*, and open it:
   - Insert the following:
-  ```bash
-  ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
-  update_config=1
-  country=US
-  
-  network={
-      ssid="<SSID>"
-      psk="<passphrase/password>"
-      key_mgmt=WPA-PSK
-  }
-  ```
+```bash
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+country=US  
+network={
+    ssid="<SSID>"
+    psk="<passphrase/password>"
+    key_mgmt=WPA-PSK
+}
+```
 - Be sure to replace *\<SSID\>* with the SSID you want your pi to connect to, and replace *\<passphrase/password\>*
 You are now done with this section, safely eject the SD card, and insert it into you *raspberry pi zero*.
 ###### First login:
@@ -90,12 +91,12 @@ You are now done with this section, safely eject the SD card, and insert it into
 
 ###### Update OS and install dependencies:
 ```bash
- sudo apt update && sudo apt full-upgrade -y
+sudo apt update && sudo apt full-upgrade -y
  ```
  
- ```bash
- sudo apt install screen git minicom tio rfkill xterm ser2net -y
- ```
+```bash
+sudo apt install screen git minicom tio rfkill xterm ser2net -y
+```
 - Reboot your Pi when the upgrade is complete and the dependacies have been installed.
 ###### Additional OS Setup:
 - Setup using raspi-config `sudo raspi-config`:
@@ -168,22 +169,22 @@ sudo ./upgrade basic
   - If all 3 items match with what is on your screen, then type `exit` and skip over the rest of the bluetooth section.
   - Otherwise, type in the following:
 ```sh
-    power on
-    discoverable on
-    pairable on
+power on
+discoverable on
+pairable on
 ```
   - Type in `show` to verify, then `exit` to leave bluetooth control
 ###### Network Setup:
 In order to get time, perform updates, or an alternate way to access the pi, it is advisable you add more networks into your *wpa_supplicant.conf*.  allowable work networks, your home network, your hotspot, and even hotspots of your peers phones (as allowed).
 - Open the file called */etc/wpa_supplicant/wpa_supplicant.conf*, and open it:
   - Insert the following:
-  ```bash
-  network={
-      ssid="<SSID>"
-      psk="<passphrase/password>"
-      key_mgmt=WPA-PSK
-  }
-  ```
+```bash
+network={
+    ssid="<SSID>"
+    psk="<passphrase/password>"
+    key_mgmt=WPA-PSK
+}
+```
   - Copy the block above and paste it in */etc/wpa_supplicant/wpa_supplicant.conf*
    - One for each network you want to add.
    - Make sure to set the ssid and psk as needed.
