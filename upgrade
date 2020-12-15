@@ -14,7 +14,8 @@ project_folder="${home}Projects/ser2bt-bridge/"
 support_folder="${home}Projects/support/"
 logging_folder="${home}console_logs/"
 bin_folder="/usr/local/bin/"
-lib_folder="/usr/local/lib/"
+main_lib_folder="/usr/local/lib/"
+ser2bt_lib_folder="${main_lib_folder}er2bt-bridge/"
 service_folder="${etc_folder}systemd/system/"
 serial_fix_folder="${service_folder}getty@ttyGS0.service.d/"
 
@@ -36,6 +37,7 @@ end_bashrc_addon_mark="#END ser2b-bridge .bashrc add-in"
 serial_fix_file="override.conf"
 serial_fix_file_content="[Service]\nTTYReset=no\nTTYVHangup=no\nTTYVTDisallocate=no"
 
+#Flags
 bin_flag=0
 serial_fix_flag=0
 
@@ -49,8 +51,12 @@ fi
 
 #check for minimum arguements:
 if [[ "${#}" -lt 1 ]]; then
-	echo "Usage: ${0} UPGRADE_PATH [BASIC|ENHANCED|FULL]."
-	echo "Upgrade ser2bt-bridge, and choose either basic, enhanced, or full."
+	printf "${nor}Usage: sudo ${0} UPGRADE_OPTION [basic|battery|sceen|fukk].\n\n"
+	printf "Upgrade ${yel}ser2bt-bridge${nor}, with the following options:\n"
+	printf "\tbasic - Basic istallation of the serial to Bluetooth scripts.\n"
+	printf "\tbattery -  Basic istallation of the serial to Bluetooth scripts, plus battery support.\n"
+	printf "\tscreen -  Basic istallation of the serial to Bluetooth scripts, plus e-ink screen support.\n"
+	printf "\tfull -  Basic istallation of the serial to Bluetooth scripts, plus e-ink screen and battery support.\n\n"
 	exit 2
 fi
 
@@ -154,12 +160,12 @@ if  grep -q "Zero" /proc/device-tree/model; then
 		fi
 	done
 
-	printf "\nCopying files to the ${cyn}${lib_folder} ${nor}directory:\n"
+	printf "\nCopying files to the ${cyn}${main_lib_folder} ${nor}directory:\n"
 	for file in "${lib_files[@]}" ; do
-		if cmp --silent "${lib_folder}${file}" "${project_folder}${file}" ; then
+		if cmp --silent "${main_lib_folder}${file}" "${project_folder}${file}" ; then
 			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
 		else
-			cp ${project_folder}${file} ${lib_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
+			cp ${project_folder}${file} ${main_lib_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
 		fi
 	done
 
