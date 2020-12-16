@@ -2,7 +2,7 @@
 
 #color and other formatting defenitions:
 if [ -f /usr/local/lib/format.sh ]; then
-	source /usr/local/lib/format.sh >> /dev/null
+	source /usr/local/lib/format.sh > /dev/null
 else
 	printf "\nformat library is not installed, continueing without!\n"
 fi
@@ -10,16 +10,19 @@ fi
 #Location settings:
 home="/home/${SUDO_USER}/"
 etc_folder="/etc/"
+lib_folder="/lib/"
 project_folder="${home}Projects/ser2bt-bridge/"
 support_folder="${home}Projects/support/"
 logging_folder="${home}console_logs/"
 bin_folder="/usr/local/bin/"
 main_lib_folder="/usr/local/lib/"
 ser2bt_lib_folder="${main_lib_folder}er2bt-bridge/"
-service_folder="${etc_folder}systemd/system/"
-serial_fix_folder="${service_folder}getty@ttyGS0.service.d/"
+etc_service_folder="${etc_folder}systemd/system/"
+lib_service_folder="${lib_folder}systemd/system/"
+serial_fix_folder="${etc_service_folder}getty@ttyGS0.service.d/"
 
 #File list:
+bt_service="bluetooth.service"
 base_bin_files=(ser2bt_bridge)
 enhanc_bin_files=(ser2bt_status init_scr shutdown_scr)
 full_bin_files=( "${base_bin_files[@]}" "${enhanc_bin_files[@]}" )
@@ -36,10 +39,13 @@ begin_bashrc_addon_mark="#BEGIN ser2b-bridge .bashrc add-in"
 end_bashrc_addon_mark="#END ser2b-bridge .bashrc add-in"
 serial_fix_file="override.conf"
 serial_fix_file_content="[Service]\nTTYReset=no\nTTYVHangup=no\nTTYVTDisallocate=no"
+bt_service_pre_search="ExecStart=/usr/lib/bluetooth/bluetoothd"
+bt_service_content="ExecStart=/usr/lib/bluetooth/bluetoothd -C --noplugin=sap\nExecStartPost=/usr/bin/sdptool add SP\nExecStartPost=/bin/hciconfig hci0 piscan"
 
 #Flags
 bin_flag=0
 serial_fix_flag=0
+bt_fix_flag=0
 
 
 #Checks before begining:
@@ -115,21 +121,52 @@ if  grep -q "Zero" /proc/device-tree/model; then
 	printf "\n${nor}Check to make sure the ${cyn}${serial_fix_folder} ${nor}directories exist:\n"
 	if [ ! -d ${serial_fix_folder} ]; then
 		printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
-		mkdir -p ${serial_fix__folder}
+		mkdir -p ${serial_fix_folder}
 	else
 		printf " ${nor}Directory ${drk_grn}already ${nor}exist, moving on.\n"
 	fi
-	existing_s_ver=$(cat ${serial_fix_folder}${serial_fix_file})
-	official_s_ver=$(echo -e ${serial_fix_file_content})
-	if [ "${existing_s_ver}" != "${official_s_ver}" ] ; then
-		printf " ${nor}There is a difference between what is supposed to be in the ${yel}fix${nor}, will clean and re-apply ${yel}fix${nor} related configurations:\n" 
+	if [ ! -f ${serial_fix_folder}${serial_fix_file} ]; then
+		official_s_ver=$(echo -e ${serial_fix_file_content})
+		printf " ${nor}File does ${drk_red}not${nor}exist, creating..."
 		echo -e ${official_s_ver} > ${serial_fix_folder}${serial_fix_file} && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
-		serial_fix_flag=1
 	else
-		printf " ${nor}Both versions are the same, skipping...\n"
-		serial_fix_flag=0
+		printf " ${nor}File ${drk_green}does${nor} exist, checking if updates are needed:\n"
+		existing_s_ver=$(cat ${serial_fix_folder}${serial_fix_file})
+		if [ "${existing_s_ver}" != "${official_s_ver}" ] ; then
+			printf "  ${nor}There is a difference between what is supposed to be in the ${yel}fix${nor}, will clean and re-apply ${yel}fix${nor} related configurations:\n"
+			echo -e ${official_s_ver} > ${serial_fix_folder}${serial_fix_file} && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
+			serial_fix_flag=1
+		else
+			printf "  ${nor}Both versions are the same, skipping...\n"
+			serial_fix_flag=0
+		fi
 	fi
 
+#Modify/Ammend the bluetooth/bluez service file:
+printf "\n${blu}Bluetooth${nor} service configurations:\n"
+if [ -f "${lib_service_folder}${bt_service}" ]; then
+	existing_bt_chg=$(awk '/^ExecStart/,/piscan/ { print }' ${lib_service_folder}${bt_service})
+	printf " ${blu}Bluetooth${nor} Service ${drk_grn}was${nor} found, checking content:\n"
+	if grep -q -e "^${bt_service_pre_search}$" "${lib_service_folder}${bt_service}"; then
+		printf "  ${blu}Bluetooth${nor} Service ${drk_yel}needs${nor} to be edited..."
+		sed -i "s+${bt_service_pre_search}+${bt_service_content}+g" "${lib_service_folder}${bt_service}" && printf "${drk_grn}Done${nor}\n" || printf "\n"
+		bt_fix_flag=1
+	elif [[ $(printf "${existing_bt_chg}") == $(printf "${bt_service_content}") ]]; then
+#grep -e "^${bt_service_content}$" "${lib_service_folder}${bt_service}"; then
+		printf "  ${blu}Bluetooth${nor} Service does ${drk_grn}not need${nor} to be edited..."
+		bt_fix_flag=0
+	else
+		printf "  ${drk_red}Error${nor} fatal error, unable to overcome problem in ${yel}${lib_service_folder}${bt_service}${nor}.  Please manually fix\n."
+		bt_fix_flag=0
+		exit 4
+	fi
+else
+	printf " ${blu}Bluetooth${nor} Service could ${drk_red}not ${nor}be found, ${drk_red}Aborting${nor}.\n"
+	bt_fix_flag=0
+	exit 3
+fi
+
+#Build support folde(s) and copy files to them:
 	printf "\n${nor}Check to make sure the ${cyn}${support_folder} ${nor}directories exist:\n"
 	if [ ! -d ${support_folder} ]; then
 		printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
@@ -178,30 +215,41 @@ if  grep -q "Zero" /proc/device-tree/model; then
 		fi
 	done
 
-	printf "\nCopy service files to the ${cyn}${service_folder} ${nor}directory, then disable and enable copied services:\n"
+	printf "\nCopy service files to the ${cyn}${etc_service_folder} ${nor}directory, then disable and enable copied services:\n"
 	svc_count=0
 	for svc_file in ${service_files[@]} ; do
-		if cmp --silent "${service_folder}${svc_file}" "${project_folder}${svc_file}" ; then
+		if cmp --silent "${etc_service_folder}${svc_file}" "${project_folder}${svc_file}" ; then
 			printf " ${nor}Both versions of ${yel}${svc_file} ${nor}are the same, Skipping...\n"
 			let svc_count++
 		else
-			cp ${project_folder}${svc_file} ${service_folder} && printf " ${yel}${svc_file} ${nor}copied.\n" || break
+			cp ${project_folder}${svc_file} ${etc_service_folder} && printf " ${yel}${svc_file} ${nor}copied.\n" || break
 			systemctl disable ${svc_file} && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}disabeled.\n" || break
 			systemctl enable ${svc_file} && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}enabeled.\n" || break
 		fi
 	done
 
+#Action based on flags:
+	if [[ "${bt_fix_flag}" -gt 0 ]] ; then
+		printf "\n${nor}Disabeling, Enabeling and Starting ${bt_service}${nor}:\n"
+		systemctl disable ${bt_service} > /dev/null && printf " ${nor}${bt_service} ${drk_grn}successfully ${nor}disabeled.\n" || printf "Failed\n"
+		systemctl enable ${bt_service} > /dev/null && printf " ${nor}${bt_service} ${drk_grn}successfully ${nor}enabled.\n" || printf "Failed\n"
+		systemctl start ${bt_service} > /dev/null && printf " ${nor}${bt_service} ${drk_grn}successfully ${nor}started.\n" ||  printf "Failed\n"
+		let svc_count++
+	fi
+
 	if [[ "${serial_fix_flag}" -gt 0 ]] ; then
-		if [ $(systemctl status getty@ttyGS0.service | grep -o "inactive") ]; then
+#		if [ $(systemctl status getty@ttyGS0.service | grep -o "inactive") ]; then
 			printf "\n${nor}Enabeling and starting getty@ttyGS0.service:${nor}\n"
 			systemctl enable getty@ttyGS0.service && printf " ${nor}getty@ttyGS0.service ${drk_grn}successfully ${nor}enabled.\n" || break
 			systemctl start getty@ttyGS0.service && printf " ${nor}getty@ttyGS0.service ${drk_grn}successfully ${nor}started.\n" || break
-		fi
+			let svc_count++
+#		fi
 	fi
 
 	if [[ "${bin_flag}" -gt 0 ]] ; then
 		printf "\n${nor}Restarting ${service_assoc[1]} (as needed):${nor}\n"
 		systemctl restart "${service_assoc[1]}" && printf " ${nor}e-paper service ${drk_grn}Successfully ${nor}Restarted.\n" || printf "${drk_red}Failed ${yellow}${svc_file}${nor}!\n"
+		let svc_count++
 	fi
 
 	if [ ${svc_count} != ${#service_files[@]} ] || [[ "${bin_flag}" -gt 0 ]] ; then
