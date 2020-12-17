@@ -118,23 +118,6 @@ sudo apt install screen git minicom tio rfkill xterm ser2net -y
     - Select *Back*
   - Under the *Main Menu*, select *finish*, and if you are asked to reboot, do so.
 ###### Pre-Requisites to software installation:
-- Open the file: /etc/systemd/system/dbus-org.bluez.service:
-
-`sudo nano /etc/systemd/system/dbus-org.bluez.service`
-  - Add `-C --noplugin=sap` to the end of:`ExecStart=/usr/lib/bluetooth/bluetoothd`, so:
-
-`ExecStart=/usr/lib/bluetooth/bluetoothd`
-
-Becomes:
-
-`ExecStart=/usr/lib/bluetooth/bluetoothd -C --noplugin=sap`
-- Then, right below that, add the following configurations:
-```bash
-ExecStartPost=/usr/bin/sdptool add SP
-ExecStartPost=/bin/hciconfig hci0 piscan
-```
-  - Save and close `/etc/systemd/system/dbus-org.bluez.service`
-- Create the following Directories:
 ```bash
 mkdir -p /home/pi/Projects/
 ```
