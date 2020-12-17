@@ -118,6 +118,8 @@ if  grep -q "Zero" /proc/device-tree/model; then
 
 #make directorys:
 #Make directory for serial port fix, then verify the config file is correct, if not, make corrections:
+	official_s_ver=$(printf ${serial_fix_file_content})
+	existing_s_ver=$(cat ${serial_fix_folder}${serial_fix_file})
 	printf "\n${nor}Check to make sure the ${cyn}${serial_fix_folder} ${nor}directories exist:\n"
 	if [ ! -d ${serial_fix_folder} ]; then
 		printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
@@ -126,15 +128,13 @@ if  grep -q "Zero" /proc/device-tree/model; then
 		printf " ${nor}Directory ${drk_grn}already ${nor}exist, moving on.\n"
 	fi
 	if [ ! -f ${serial_fix_folder}${serial_fix_file} ]; then
-		official_s_ver=$(echo -e ${serial_fix_file_content})
 		printf " ${nor}File does ${drk_red}not${nor}exist, creating..."
-		echo -e ${official_s_ver} > ${serial_fix_folder}${serial_fix_file} && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
+		printf "${official_s_ver}" > "${serial_fix_folder}${serial_fix_file}" && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
 	else
 		printf " ${nor}File ${drk_green}does${nor} exist, checking if updates are needed:\n"
-		existing_s_ver=$(cat ${serial_fix_folder}${serial_fix_file})
 		if [ "${existing_s_ver}" != "${official_s_ver}" ] ; then
 			printf "  ${nor}There is a difference between what is supposed to be in the ${yel}fix${nor}, will clean and re-apply ${yel}fix${nor} related configurations:\n"
-			echo -e ${official_s_ver} > ${serial_fix_folder}${serial_fix_file} && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
+			printf "${official_s_ver}" > "${serial_fix_folder}${serial_fix_file}" && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
 			serial_fix_flag=1
 		else
 			printf "  ${nor}Both versions are the same, skipping...\n"
