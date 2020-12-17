@@ -23,6 +23,9 @@ serial_fix_folder="${etc_service_folder}getty@ttyGS0.service.d/"
 
 #File list:
 bt_service="bluetooth.service"
+disable_svc=(avahi-daemon.service avahi-daemon.socket keyboard-setup.service \
+dphys-swapfile.service triggerhappy.service triggerhappy.socket apt-daily.service \
+apt-daily.timer apt-daily-upgrade.service apt-daily-upgrade.timer rpi-eeprom-update.service)
 base_bin_files=(ser2bt_bridge)
 enhanc_bin_files=(ser2bt_status init_scr shutdown_scr)
 full_bin_files=( "${base_bin_files[@]}" "${enhanc_bin_files[@]}" )
@@ -153,7 +156,7 @@ if [ -f "${lib_service_folder}${bt_service}" ]; then
 		bt_fix_flag=1
 	elif [[ $(printf "${existing_bt_chg}") == $(printf "${bt_service_content}") ]]; then
 #grep -e "^${bt_service_content}$" "${lib_service_folder}${bt_service}"; then
-		printf "  ${blu}Bluetooth${nor} Service does ${drk_grn}not need${nor} to be edited..."
+		printf "  ${blu}Bluetooth${nor} Service does ${drk_grn}not need${nor} to be edited.\n"
 		bt_fix_flag=0
 	else
 		printf "  ${drk_red}Error${nor} fatal error, unable to overcome problem in ${yel}${lib_service_folder}${bt_service}${nor}.  Please manually fix\n."
@@ -165,6 +168,16 @@ else
 	bt_fix_flag=0
 	exit 3
 fi
+
+#Disable Unneeded services:
+printf "\nChecking for and disabling unneeded services:\n"
+for file in "${disable_svc[@]}" ; do
+	status=$(systemctl is-enabled "${file}")
+	if [[ "${status}" != "disabled" ]] || [[ "${status}" != "static" ]]; then
+		printf "${file} ${status}\n"
+		systemctl disable ${file}
+	fi
+done
 
 #Build support folde(s) and copy files to them:
 	printf "\n${nor}Check to make sure the ${cyn}${support_folder} ${nor}directories exist:\n"
@@ -252,7 +265,7 @@ fi
 		let svc_count++
 	fi
 
-	if [ ${svc_count} != ${#service_files[@]} ] || [[ "${bin_flag}" -gt 0 ]] ; then
+	if [ "${svc_count}" != "${#service_files[@]}" ] || [[ "${bin_flag}" -gt 0 ]] ; then
 		printf "\n${nor}Restarting systemctl (as needed):${nor}\n"
 		systemctl daemon-reload && printf " ${yel}systemctl daemon-reload${nor} was ${drk_grn}Successfull${nor}.\n" || printf " ${nor}systemctl daemon-reload was ${drk_red}not ${nor}successfull.\n"
 	fi
