@@ -173,9 +173,11 @@ fi
 printf "\nChecking for and disabling unneeded services:\n"
 for file in "${disable_svc[@]}" ; do
 	status=$(systemctl is-enabled "${file}")
-	if [[ "${status}" != "disabled" ]] || [[ "${status}" != "static" ]]; then
+	if [[ "${status}" -ne "disabled" ]] || [[ "${status}" -ne "static" ]]; then
 		printf "${file} ${status}\n"
 		systemctl disable ${file}
+	else
+		printf "Status of ${yel}${file}${nor} is ${drk_grn}${status}${nor}.\n"
 	fi
 done
 
