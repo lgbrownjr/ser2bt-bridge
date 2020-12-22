@@ -1,7 +1,8 @@
 # ser2bt-bridge
 ## Serial to Bluetooth bridge for raspberry pi zero w
-Before we begin, please understand that everything in this repository is a work in progress...  :) 
+Before we begin, understand that everything in this repository is a work in progress...  :) 
 ### Definitions:
+I tend to use several differenct discripters for each piece thats involved with this project, so I've tried to define them below to helpkeep the reader from being confused.. :)
 - The terms *pi*, *bridge*, *ser2bt* all refer to the *raspberry pi zero w* that is being used to run this program.
 - The terms *user*, *you*, *network engineer*, *network administrator*, *administrator*, or *engineer* all refer to the person using this bridge to connect to a switch, or router.
 - The terms *switch*, *router*, or *device* all refer to the device you want to be bridged to.  For main purpose of this project, it is to connect to a router or switch.  However, anything with a console port can be used  such as a server, an appliance, Firewall, Wireless LAN conroller, etc.
