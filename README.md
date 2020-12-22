@@ -9,9 +9,9 @@ Before we begin, please understand that everything in this repository is a work 
 ### Preamble:
 This project a set of scripts and libraries, that allow one to use a *raspberry pi zero w* to effectivly "bridge" two serial connections together allowing a user to connect to the pi from their phone/tablet/laptop over a serial bluetooth connection, then get "bridged" to the console port on a device, such as a Cisco router or switch that is already connected to the pi's USB port.  This allows the network engineer to manage the switch or router while enjoying the benefit of not having to be tethered right up to it.
 #### How it works at a high level:
-After completing the installation and setup, one will need to pair their laptop to it and then assign it to a com/tty port. This is a one time (per device) process, so going forward, connecting to the brisge is extremely easy, reguardless of the operating system your computer using.
+After completing the installation and setup, one will need to pair their laptop to the pi and then assign it to a com/tty port. This is a one time (per device) process, so going forward, connecting to the brisge is extremely easy, reguardless of the operating system your computer using.
 
-Afer connecting to the bidge via bluetooth, it will attempt to determine if the pi is also connected serially/USB to a device.  If so, the pi will "bridge" you through to the router or switch.  If not, the pi will politely let you know, and exit to the bash terminal.
+Afer connecting to the bridge via bluetooth, it will attempt to determine if the pi is also connected serially to a device.(swich/router/etc)  If so, the pi will "bridge" you through to the device.  If not, the pi will politely let you know, and exit to the bash terminal.
 
 If you connect to the bridge via ssh or standard telnet, it will assume you have logged in for maintenance, or any other purpose, and not attempt to bridge you through to the end device.
 
