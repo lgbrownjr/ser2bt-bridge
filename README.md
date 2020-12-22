@@ -144,6 +144,10 @@ sudo ./upgrade basic
     - `DiscoverableTimeout = 0`
     - `PairableTimeout = 0`
   - Save and close `/etc/bluetooth/main.conf`
+- Restart the bluetooth service:
+```bash
+sudo systemctl restart bluetooth.service
+```
 - type in `sudo bluetoothctl`, and press enter.
   - You should see *Agent Registered*, then a prompt.
   - Type in `show`
