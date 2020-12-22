@@ -4,10 +4,11 @@ source /usr/local/lib/format.sh
 
 #constants:
 bt_port="/dev/rfcomm0"
-usb_port="/dev/ttyUSB0"
-acm_port="/dev/ttyACM0"
+usb_port="/dev/ttyUSB"
+acm_port="/dev/ttyACM"
 
 #variables set with default values
+switch_name=("Switch_1" "Switch_2" "Switch_3")
 installed_app_count=0
 app_count=0
 baud="9600"
@@ -54,31 +55,62 @@ if [[ ${app_count} != ${installed_app_count} ]]; then
 	exit_script ${exit_status} ${exit_status_reason}
 	exit $exit_status # Exit as dependancies need to be met.
 fi
-#set the bluetooth port, and assign the usb and acm ports.
+
+#set the bluetooth port, and assign the usb and/or acm ports.
 printf "\n${nor}Checking to make sure we are connected to at least one serial device:\n"
-sleep .25
-if [[ ! -e ${usb_port} ]]; then
-   printf "${cyn}${usb_port}${nor} is ${red}not${nor} available - Stamdby, checking for ${gre}ACM${nor} port insted...\n"
-	if [[ ! -e ${acm_port} ]]; then
-		printf "${cyn}${acm_port}${nor} is ${red}not${nor} available.\n${drk_red}Unable${nor} to locate any connected serial device.\nPlease run \"${yel}${0}${nor}\" once the serial connection to the device is established.\n"
-		exit_status=4
-		exit_status_reason="${bro}There is no device connected via serial.${nor}"
-		exit_script ${exit_status} ${exit_status_reason}
-		exit ${exit_status} # Exit as there is no device connected via serial.
+
+#Check for USB ports:
+z=${max_ports}
+printf " ${nor}Checking to see what ${cyn}${usb_port}${nor}'s are available:\n"
+for (( a=0; a<=${max_ports}-1; a++ )); do
+	port="${usb_port}${a}"
+#	echo -e "${port}\n"
+	if [[ ! -e ${port} ]]; then
+		printf "  ${cyn}${port}${nor} is ${drk_red}not${nor} available...\n"
+		let z--
 	else
-	  wire_port=${acm_port}
+		printf "  ${cyn}${port}${nor} is ${drk_grn}available${nor}...\n"
+		wire_port+=(${port})
 	fi
-	sleep .25
-else
-  wire_port=${usb_port}
-fi
+done
+
+#Check for ACM ports:
+z=${max_ports}
+printf " ${nor}Checking to see what ${cyn}${acm_port}${nor}'s are available:\n"
+for (( a=0; a<=${max_ports}-1; a++ )); do
+	port="${acm_port}${a}"
+	if [[ ! -e ${port} ]]; then
+		printf "  ${cyn}${port}${nor} is ${drk_red}not${nor} available...\n"
+		let z--
+	else
+		printf "  ${cyn}${port}${nor} is ${drk_grn}available${nor}...\n"
+		wire_port+=(${port})
+	fi
+done
 resize > /dev/null 2>&1
-printf "Both sides are connected, bridging ${cyn}${bt_port}${nor} with ${cyn}${wire_port}${nor}...\n\n"
-##tio -b 9600 -o 5 $wire_port
-screen -c ${screen_config} ${wire_port} -L ${baud} -T ${terminal}
-printf "You are now connected!\n\nPress ${cyn}CTRL${nor} + ${cyn}A${nor}, then press the ${cyn}\${nor} key.  Finally, press the ${cyn}y${nor} key to agree to exit${end}\r"
+printf "\n"
+count=0
+for serial_port in ${wire_port[@]}; do
+printf "Both sides are connected, bridging ${cyn}${bt_port}${nor} with ${cyn}${serial_port}${nor}..."
+	eval $(screen -c ${screen_config} -S ${switch_name[count]} -d -m -t "${serial_port}${space}${switch_name[count]}" ${serial_port} -L ${baud} -T ${terminal}) && printf "${drk_grn}Done${nor}.\n\n" || printf "${drk_red}Failed${nor}!\n\n"
+	let count++
+done
+
+session_count=$(screen -r | grep Detached | cut -d "." -f 2 | cut -f 1 | wc -w)
+if [[ ${session_count} > 1 ]]; then
+	screen -r | grep Detached | cut -d "." -f 2 | cut -f 1
+	printf "\nUse screen -r switch name (listed above).\n"
+elif [[ ${session_count} = 1 ]]; then
+	screen -r
+else
+	exit_status=4
+	exit_status_reason="${bro}There is no device connected via serial.${nor}"
+	exit_script ${exit_status} ${exit_status_reason}
+	exit ${exit_status} # Exit as there is no device connected via serial.
+fi
 wait
-clear
+#clear
+
 #exit routine.
 exit_status=0
 exit_status_reason="Successful completion."
