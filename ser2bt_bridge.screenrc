@@ -28,7 +28,7 @@ startup_message off
 
 #defflow on # will force screen to process ^S/^Q
 deflogin on
-autodetach off
+autodetach on
 
 # turn visual bell off
 vbell off
@@ -55,10 +55,12 @@ bind } history
 # An example of a "screen scraper" which will launch urlview on the current
 # screen window
 #
+#Title for screen:
+#shelltitle ${WIRE_PORT}
+
 #bind ^B eval "hardcopy_append off" "hardcopy -h $HOME/.screen-urlview" "screen urlview $HOME/.screen-urlview"
 
 #Turn on and setup logging:
-shelltitle console
 deflog on
 #logtstamp on
 logfile $HOME/console_logs/console_session-%Y%m%d-%c:%s.log
