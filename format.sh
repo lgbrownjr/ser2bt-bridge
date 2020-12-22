@@ -16,6 +16,9 @@ drk_whi=$'\e[00;37m'
 end=$'\e[0m'
 nor=$'\e[01;37m'
 
+#Other attributes:
+space=" "
+
 #Formatting dunctions:
 function center (){
   local ctrl_count="${1}"
