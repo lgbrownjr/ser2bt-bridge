@@ -123,7 +123,7 @@ if  grep -q "Zero" /proc/device-tree/model; then
 #Make directory for serial port fix, then verify the config file is correct, if not, make corrections:
 	official_s_ver=$(printf ${serial_fix_file_content})
 	existing_s_ver=$(cat ${serial_fix_folder}${serial_fix_file})
-	printf "\n${nor}Check to make sure the ${cyn}${serial_fix_folder} ${nor}directories exist:\n"
+	printf "\n${nor}Check if the ${cyn}${serial_fix_folder} ${nor}directory exists:\n"
 	if [ ! -d ${serial_fix_folder} ]; then
 		printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
 		mkdir -p ${serial_fix_folder}
@@ -174,10 +174,10 @@ printf "\nChecking for and disabling unneeded services:\n"
 for file in "${disable_svc[@]}" ; do
 	status=$(systemctl is-enabled "${file}")
 	if [[ "${status}" -ne "disabled" ]] || [[ "${status}" -ne "static" ]]; then
-		printf "${file} ${status}\n"
+		printf " Status of ${yel}${file}${nor} is ${drk_red}${status}${nor}.\n"
 		systemctl disable ${file}
 	else
-		printf "Status of ${yel}${file}${nor} is ${drk_grn}${status}${nor}.\n"
+		printf " Status of ${yel}${file}${nor} is ${drk_grn}${status}${nor}.\n"
 	fi
 done
 
