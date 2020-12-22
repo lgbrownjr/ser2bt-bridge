@@ -90,33 +90,36 @@ You are now done with this section, safely eject the SD card, and insert it into
 
 **Note: Finding the IP address can be painful unless you have a utility on your PC or phone that can scan the network for active devices.  Recommend trying the default hostname *raspberrypi.local* first.**
 
-###### Update OS and install dependencies:
+###### Update OS:
 ```bash
 sudo apt update && sudo apt full-upgrade -y
-
-sudo apt install screen git minicom tio rfkill xterm ser2net -y
 ```
-- Reboot your Pi when the upgrade is complete and the dependacies have been installed.
+- Reboot your Pi when the upgrade is complete.
 ###### Additional OS Setup:
 - Setup using raspi-config `sudo raspi-config`:
-  - Under the main menu, select *Change User Password*.
-    - And change your password.
-  - Select*Network Options:*
-    - Disable *Waiting for network on boot*.
-    - Change hostname.
-    - Select *Back*
-  - Select *Interfacing Options*:
-    - Enable serial.
-    - Select *Back*
+  - From the main menu, under *Advanced Options*.
+    - select *Expand Filesystem* to expand.
+  - From the main menu, under *System Options*.
+    - Select *Hostname*, then change.
+- REBOOt!
+- Setup using raspi-config `sudo raspi-config`:
+  - From the main menu, under *System Options*.
+    - select *Boot / Autologin*, then select *Console Autologin*.
+    - select *Password* and change.
+    - select *Network at boot*, then select *No* to Disable *Waiting for network on boot*.
   - Select *localization Options*, and verify, or set:
     - Setup locals.
     - Set timezone on the pi.
     - Keyboard.
-    - Select *Back*
-  - Select *Advanced Options*:
-    - Select *Memory Split* and set *GPU memory* to 32MB.
-    - Select *Back*
-  - Under the *Main Menu*, select *finish*, and if you are asked to reboot, do so.
+    - wifi location.
+  - Select *Performance Options*:
+    - Select *GPU Memory* and set *GPU memory* to 32MB.
+  - Under the *Main Menu*, select *Finish*, and if you are asked to reboot, do so.
+###### Install dependencies:
+```bash
+sudo apt install screen git minicom tio rfkill xterm ser2net -y
+```
+- Reboot your Pi when the dependacies have been installed
 ###### Pre-Requisites to software installation:
 ```bash
 mkdir -p /home/pi/Projects/
@@ -156,9 +159,9 @@ discoverable on
 pairable on
 ```
   - Type in `show` to verify, then `exit` to leave bluetooth control and return to bash.
-###### Network Setup:
-In order for your pi to keep the correct time, perform updates, or allow an alternate way to access the pi, it is advisable you add more networks into your *wpa_supplicant.conf*.  Examples include:allowable work networks, your home network, your hotspot, and even hotspots of your peer's phones (as allowed).
-- Open */etc/wpa_supplicant/wpa_supplicant.conf*, and add the following:
+###### Additional Network Setup:
+In order for your pi to keep the correct time, perform updates, or allow an alternate way to access the pi, it is advisable you add more networks into your *wpa_supplicant.conf*.  Examples include: allowable work networks, your home network, your hotspot, and even hotspots of your peer's phones (as allowed).
+- Open `/etc/wpa_supplicant/wpa_supplicant.conf`, and add the following:
 ```bash
 network={
     ssid="<SSID>"
@@ -170,12 +173,13 @@ network={
  - Make sure to set the ssid and psk as needed.
  - **Be sure to test each network.**
 ###### We're Done!
-If everything went as planned, your *raspberry pi zero w* should be acting like a serial to bluetooth bridge, allowing you to connect to a switches console port via bluetooth from your computer.
+If everything went as planned, your *raspberry pi zero w* should be acting like a bluetooth to serial bridge, allowing you to connect to a switches console port via bluetooth from your computer.
 - Now, reboot your *raspberry pi zero w*.
 - After the raspberry pi has rebooted, use your PC/laptop to pair with it.
 - Look for a device advertising your pi's *hostname*
 - The Pi should advertise that it supports serial communications, so you'll be able to associate it with your PC's com/ttyUSBx/ttyACMx ports.
-  - Keep in mind, that no pin will be requested.  Your PC should just pair with the pi.
+  - Keep in mind, that no pin will be requested.  Your PC should just pair with the pi
+  - Under Widows 10, after pairing, select *More Bluetooth Settings*, under *Related settings*, on the right side of the settings window.
 - Once that's done, go ahead and open your favorite terminal program, and point it to the com/ttyUSBx/tty/ACMx port, and set it up to connect at 115200 bps, n/8/1, xterm.
 ### Full setup:
 #### Installation of *ups-lite* & *waveshare e-ink screen*:
