@@ -12,14 +12,12 @@ Type=oneshot
 SyslogIdentifier=ser2bt-e-paper-init
 WorkingDirectory=/usr/local/bin/
 ExecStart=/usr/local/bin/init_scr
-TimeoutSec=20
 LimitNPROC=1
 RemainAfterExit=true
 #StandardOutput=inherit
 #Restart=on-failure
-#RestartSec=10
+#RestartSec=5
 #KillMode=mixed
 
 [Install]
-#WantedBy=basic.target
-RequiredBy=bluetooth.target
+WantedBy=bluetooth.target

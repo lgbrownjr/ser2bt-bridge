@@ -1,7 +1,7 @@
 [Unit]
 Description=Serial to Bluetooth shutdown screen for e-ink displays - ser2bt:
 #DefaultDependencies=no
-Before=ser2bt-e-paper.service halt.target
+Before=ser2bt-e-paper.service
 #Before=ser2bt-e-paper.service shutdown.target halt.target poweroff.target
 #Conflicts=poweroff.target halt.target shutdown.target
 #Conflicts=restart.target
@@ -12,8 +12,8 @@ RemainAfterExit=true
 SyslogIdentifier=ser2bt-e-paper-shutdown
 ExecStart=/bin/true
 ExecStop=/usr/local/bin/shutdown_scr
-TimeoutStartSec=0
+#TimeoutStartSec=0
 
 [Install]
-WantedBy=multi-user.target
-#WantedBy=halt.target poweoff.target
+#WantedBy=multi-user.target
+WantedBy=ser2bt-e-paper.service
