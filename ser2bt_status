@@ -46,6 +46,7 @@ old_full_tty_status = "XX"
 old_bt_serial_port = "XX"
 old_wired_serial_port = "XX"
 logging.info('ser2bt_status was started')
+ups_type = 'pisugar2' #pisugar2, ups_lite, or none are the three supported options
 
 #Declare the fonts to be used:
 f_title_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 18)
@@ -187,8 +188,8 @@ def cap_bt_serial_port():
 def read_bat_capacity(bus):
     # "This function returns as a float the remaining capacity of the battery
     # connected to the Raspi UPS Hat via the pro$
+    global ups_type
     battery_level = 0
-    ups_type = 'pisugar2' #pisugar2, or ups_lite are the two supported versions
     battery_curve = [
         [4.16, 5.5, 100, 100],
         [4.05, 4.16, 87.5, 100],
@@ -235,6 +236,8 @@ def read_bat_capacity(bus):
                charge = True
            else:
                charge = False
+    else:
+           battery_level = 200.00
     return battery_level
 
 if sys.version_info[0] <  3:
