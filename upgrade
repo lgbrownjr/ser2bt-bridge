@@ -25,9 +25,9 @@ serial_fix_folder="${etc_service_folder}getty@ttyGS0.service.d/"
 #File list:
 bt_service="bluetooth.service"
 boot_config="config.txt"
-disable_svc=(avahi-daemon.service avahi-daemon.socket keyboard-setup.service \
-dphys-swapfile.service triggerhappy.service triggerhappy.socket apt-daily.service \
-apt-daily.timer apt-daily-upgrade.service apt-daily-upgrade.timer rpi-eeprom-update.service)
+disable_svc=("keyboard-setup.service" "dphys-swapfile.service" "triggerhappy.service" \
+"triggerhappy.socket" "apt-daily.service" "apt-daily.timer" \
+"apt-daily-upgrade.service" "apt-daily-upgrade.timer" "rpi-eeprom-update.service")
 base_bin_files=(ser2bt_bridge)
 enhanc_bin_files=(ser2bt_status init_scr shutdown_scr)
 full_bin_files=( "${base_bin_files[@]}" "${enhanc_bin_files[@]}" )
@@ -178,7 +178,7 @@ fi
 printf "\nChecking for and disabling unneeded services:\n"
 for file in "${disable_svc[@]}" ; do
 	status=$(systemctl is-enabled "${file}")
-	if [[ "${status}" -ne "disabled" ]] || [[ "${status}" -ne "static" ]]; then
+	if [ "${status}" != "disabled" ] && [ "${status}" != "static" ]; then
 		printf " Status of ${yel}${file}${nor} is ${drk_red}${status}${nor}.\n"
 		systemctl disable ${file}
 	else
