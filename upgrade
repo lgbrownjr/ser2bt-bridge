@@ -106,7 +106,7 @@ if  grep -q "Zero" /proc/device-tree/model; then
 	grep -q -s -e "^dwc2" ${etc_folder}/modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'dwc2' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}already${nor} loaded\n")
 
 #checking for and adding and changing settings in the /boot/config.txt file:
-	grep -E
+#	grep -E
 #checking and adding modules as needed into /boot/config.txt and /boot/cmdline.txt:
 #	printf "${nor}Check to make sure the the relevent modules are loaded in the boot files:\n"
 #sed -i -e 's/#/maxmemory 26gb/g' /etc/redis/redis.conf
