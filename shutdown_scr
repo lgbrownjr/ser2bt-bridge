@@ -7,9 +7,11 @@ import os
 import time
 
 # Variable decleration
+host_name=os.uname()[1]  # define host_name
 epd = epd2in13_V2.EPD()
 picdir='/usr/local/lib/ser2bt-bridge/'
 roboto_font_dir='/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/'
+f_top_line_font16 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 16)
 f_title_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 18)
 f_title_font24 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 24)
 bmp = Image.open(os.path.join(picdir, 'logo.bmp'))
@@ -28,6 +30,7 @@ time.sleep(2)
 epd.init(epd.FULL_UPDATE)
 exit_image.paste(bmp, (0,0))
 exit_draw.text((19,5), 'Serial to Bluetooth Bridge  ', font=f_title_font18,fill=0)
+exit_draw.text((122,47), host_name, font=f_top_line_font16,fill=0)
 epd.display(epd.getbuffer(exit_image))
 
 #Exit:
