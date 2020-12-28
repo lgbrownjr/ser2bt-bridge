@@ -11,6 +11,7 @@ fi
 home="/home/${SUDO_USER}/"
 etc_folder="/etc/"
 lib_folder="/lib/"
+boot="/boot/"
 project_folder="${home}Projects/ser2bt-bridge/"
 support_folder="${home}Projects/support/"
 logging_folder="${home}console_logs/"
@@ -23,6 +24,7 @@ serial_fix_folder="${etc_service_folder}getty@ttyGS0.service.d/"
 
 #File list:
 bt_service="bluetooth.service"
+boot_config="config.txt"
 disable_svc=(avahi-daemon.service avahi-daemon.socket keyboard-setup.service \
 dphys-swapfile.service triggerhappy.service triggerhappy.socket apt-daily.service \
 apt-daily.timer apt-daily-upgrade.service apt-daily-upgrade.timer rpi-eeprom-update.service)
@@ -44,7 +46,8 @@ serial_fix_file="override.conf"
 serial_fix_file_content="[Service]\nTTYReset=no\nTTYVHangup=no\nTTYVTDisallocate=no"
 bt_service_pre_search="ExecStart=/usr/lib/bluetooth/bluetoothd"
 bt_service_content="ExecStart=/usr/lib/bluetooth/bluetoothd -C --noplugin=sap\nExecStartPost=/usr/bin/sdptool add SP\nExecStartPost=/bin/hciconfig hci0 piscan"
-
+config_txt_addons=("hdmi_blanking=" "disable_splash=" "boot_delay=" "over_voltage=" "dtparam=audio=" "enable_uart=" "dtoverlay=" "gpu_mem=" "initial_turbo=")
+config_txt_values=(2 1 0 0 "off" 0 "dwc2" 32 60)
 #Flags
 bin_flag=0
 serial_fix_flag=0
@@ -99,9 +102,11 @@ if  grep -q "Zero" /proc/device-tree/model; then
 
 #checking and adding modules as needed into /etc/modules:
 	printf "${nor}Check to make sure the the relevent modules are loaded:\n"
-	grep -q -s -e "^g_serial" /etc/modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'g_serial' >> /etc/modules"; printf " ${nor}module ${drk_grn}successfully${nor} loaded\n")
-	grep -q -s -e "^dwc2" /etc/modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'dwc2' >> /etc/modules"; printf " ${nor}module ${drk_grn}already${nor} loaded\n")
+	grep -q -s -e "^g_serial" ${etc_folder}modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'g_serial' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully${nor} loaded\n")
+	grep -q -s -e "^dwc2" ${etc_folder}/modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'dwc2' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}already${nor} loaded\n")
 
+#checking for and adding and changing settings in the /boot/config.txt file:
+	grep -E
 #checking and adding modules as needed into /boot/config.txt and /boot/cmdline.txt:
 #	printf "${nor}Check to make sure the the relevent modules are loaded in the boot files:\n"
 #sed -i -e 's/#/maxmemory 26gb/g' /etc/redis/redis.conf
