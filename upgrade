@@ -248,6 +248,12 @@ done
 		fi
 	done
 
+#After all of the changes have been made, reload the systemd daemon:
+	if [ "${svc_count}" != "${#service_files[@]}" ] || [[ "${bin_flag}" -gt 0 ]] ; then
+		printf "\n${nor}Restarting systemctl (as needed):${nor}\n"
+		systemctl daemon-reload && printf " ${yel}systemctl daemon-reload${nor} was ${drk_grn}Successfull${nor}.\n" || printf " ${nor}systemctl daemon-reload was ${drk_red}not ${nor}successfull.\n"
+	fi
+
 #Action based on flags:
 	if [[ "${bt_fix_flag}" -gt 0 ]] ; then
 		printf "\n${nor}Disabeling, Enabeling and Starting ${bt_service}${nor}:\n"
@@ -270,11 +276,6 @@ done
 		printf "\n${nor}Restarting ${service_assoc[1]} (as needed):${nor}\n"
 		systemctl restart "${service_assoc[1]}" && printf " ${nor}e-paper service ${drk_grn}Successfully ${nor}Restarted.\n" || printf "${drk_red}Failed ${yellow}${svc_file}${nor}!\n"
 		let svc_count++
-	fi
-
-	if [ "${svc_count}" != "${#service_files[@]}" ] || [[ "${bin_flag}" -gt 0 ]] ; then
-		printf "\n${nor}Restarting systemctl (as needed):${nor}\n"
-		systemctl daemon-reload && printf " ${yel}systemctl daemon-reload${nor} was ${drk_grn}Successfull${nor}.\n" || printf " ${nor}systemctl daemon-reload was ${drk_red}not ${nor}successfull.\n"
 	fi
 
 #refreshing .bashrc:
