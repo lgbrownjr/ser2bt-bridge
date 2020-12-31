@@ -64,9 +64,7 @@ z=${max_ports}
 printf " ${nor}Checking to see what ${cyn}${usb_port}${nor}'s are available:\n"
 for (( a=0; a<=${max_ports}-1; a++ )); do
 	port="${usb_port}${a}"
-#	echo -e "${port}\n"
 	if [[ ! -e ${port} ]]; then
-		printf "  ${cyn}${port}${nor} is ${drk_red}not${nor} available...\n"
 		let z--
 	else
 		printf "  ${cyn}${port}${nor} is ${drk_grn}available${nor}...\n"
@@ -80,7 +78,6 @@ printf " ${nor}Checking to see what ${cyn}${acm_port}${nor}'s are available:\n"
 for (( a=0; a<=${max_ports}-1; a++ )); do
 	port="${acm_port}${a}"
 	if [[ ! -e ${port} ]]; then
-		printf "  ${cyn}${port}${nor} is ${drk_red}not${nor} available...\n"
 		let z--
 	else
 		printf "  ${cyn}${port}${nor} is ${drk_grn}available${nor}...\n"
