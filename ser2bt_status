@@ -46,7 +46,7 @@ old_full_tty_status = "XX"
 old_bt_serial_port = "XX"
 old_wired_serial_port = "XX"
 logging.info('ser2bt_status was started')
-ups_type = 'pisugar2' #pisugar2, ups_lite, or none are the three supported options
+ups_type = 'ups_lite' #pisugar2, ups_lite, or none are the three supported options # No longer used.
 
 #Declare the fonts to be used:
 f_title_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 18)
@@ -204,15 +204,14 @@ def read_bat_capacity(bus):
         [0, 3.1, 0, 0],
     ]
 
-    if ups_type == 'ups_lite':
-        address = 0x36 # ups_ lite is 0x36
-        try:
-            read = bus.read_word_data(address, 4)
-            swapped = struct.unpack("<H", struct.pack(">H", read))[0]
-            battery_level = swapped/256
-        except:
-            battery_level = 100
-    elif ups_type == 'pisugar2':
+#    if ups_type == 'ups_lite':
+    address = 0x36 # PiSugar is 0x75
+    try:
+        read = bus.read_word_data(address, 4)
+        swapped = struct.unpack("<H", struct.pack(">H", read))[0]
+        battery_level = swapped/256
+    except:
+#    elif ups_type == 'pisugar2':
         address = 0x75 # ups_ lite is 0x36
         try:
            low = bus.read_byte_data(address, 0xa2)
