@@ -13,17 +13,12 @@ import netifaces #get active interface (wlan)
 import smbus
 import psutil  # Capture cpu and memory values
 import logging
+from logging.handlers import SysLogHandler
 import signal # Check for incomming signals from the service and react if there is term signal.
 
 # Variable decleration:
 sys.path.append(r'lib')
 epd = epd2in13_V2.EPD()
-
-#Capture the bus for ups board, both ups_lite, and pisugar2.
-try:
-    bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
-except:
-    bus="error"
 
 min_bat_cap=1  # setting in percent minimum battery capacity before we'll shutdown.
 host_name=os.uname()[1]  # define host_name
@@ -46,7 +41,8 @@ old_full_tty_status = "XX"
 old_bt_serial_port = "XX"
 old_wired_serial_port = "XX"
 logging.info('ser2bt_status was started')
-ups_type = 'ups_lite' #pisugar2, ups_lite, or none are the three supported options # No longer used.
+ups_type = 'none' #pisugar2, ups_lite, or none are the three supported options # No longer used.
+charge = True
 
 #Declare the fonts to be used:
 f_title_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 18)
@@ -54,7 +50,44 @@ f_var_spc_char_font18 = ImageFont.truetype(dejavu_font_dir+'DejaVuSans-Bold.ttf'
 f_title_font24 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 24)
 f_var_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 18)
 f_top_line_font16 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 16)
+is_not_ups_lite = False
+is_not_pisugar = False
 
+#Setup logging:
+#logger = logging.getLogger('ser2bt-bridge')
+#logger.addHandler(SysLogHandler(address=('/dev/log'))
+#logger.addHandler(logging.FileHandler("ser2bt_status.log"))
+#logger.setLevel(os.environ.get("LOGLEVEL", "INFO"))
+#root.addHandler(logger)
+#root.setLevel(logging.INFO)
+
+
+#Capture the bus for ups board, both ups_lite, and pisugar2.
+try:
+    bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
+except:
+    bus="error"
+#Test to see which UPS solution is inatalled, if any:
+try:
+    address = 0x75 # ups_lite is 0x36
+    low = bus.read_byte_data(address, 0xa2)
+except:
+    is_not_pisugar = True
+try:
+    address = 0x36 # PiSugar is 0x75
+    value = bus.read_word_data(address, 4)
+    swapped = struct.unpack("<H", struct.pack(">H", value))[0]
+    battery_level = swapped/256
+except:
+    is_not_ups_lite = True
+if is_not_ups_lite is True and is_not_pisugar is True:
+    ups_type = 'none'
+elif is_not_ups_lite is True and is_not_pisugar is False:
+    ups_type = 'pisugar2'
+    address = 0x75 # ups_lite is 0x36
+elif is_not_ups_lite is False and is_not_pisugar is True:
+    ups_type = 'ups_lite'
+    address = 0x36 # PiSugar is 0x75
 
 def handler(signum, frame):
     logging.info ('Got SIGTERM!')
@@ -65,8 +98,7 @@ def get_bt_service_status():
     global old_bt_status
     bt_services = [ 'bluetooth', 'hciuart', 'rfcomm' ]
     bt_services_count = 0
-    inactive = 'inactive'
-    #for loop to cycle through the three bluetooth-related services to check their status.
+    inactive = 'inactive'    #for loop to cycle through the three bluetooth-related services to check their status.
     for bt_service in bt_services:
         bt_service = subprocess.Popen(['systemctl', 'is-active', bt_service], stdout=subprocess.PIPE).communicate()[0].decode(encoding='UTF-8')
         if inactive in bt_service:
@@ -189,6 +221,8 @@ def read_bat_capacity(bus):
     # "This function returns as a float the remaining capacity of the battery
     # connected to the Raspi UPS Hat via the pro$
     global ups_type
+    global address
+    global charge
     battery_level = 0
     battery_curve = [
         [4.16, 5.5, 100, 100],
@@ -204,42 +238,43 @@ def read_bat_capacity(bus):
         [0, 3.1, 0, 0],
     ]
 
-#    if ups_type == 'ups_lite':
-    address = 0x36 # PiSugar is 0x75
-    try:
-        read = bus.read_word_data(address, 4)
-        swapped = struct.unpack("<H", struct.pack(">H", read))[0]
-        battery_level = swapped/256
-    except:
-#    elif ups_type == 'pisugar2':
-       try:
-           address = 0x75 # ups_ lite is 0x36
-           try:
-               low = bus.read_byte_data(address, 0xa2)
-               high = bus.read_byte_data(address, 0xa3)
-               charge_v = bus.read_byte_data(address, 0x55)
-               if high & 0x20:
-                   low = ~low & 0xff
-                   high = ~high & 0x1f
-                   v = (((high | 0b1100_0000) << 8) + low)
-                   battery_v = (2600.0 - v * 0.26855) / 1000
-               else:
-                   v = ((high & 0x1f) << 8 ) + low
-                   battery_v = (2600 + v * 0.26855) / 1000
-           except:
-               battery_v = 0.0
-           for range in battery_curve:
-               if range[0] <  battery_v <= range[1]:
-                   level_base = ((battery_v - range[0]) / (range[1] - range[0])) * (range[3] - range[2])
-                   battery_level = level_base + range[2]
-               if charge_v & 0b00001_0000 != 0:
-                   charge = True
-               else:
-                   charge = False
-       except:
-           battery_level = 200.00
+    if ups_type == 'ups_lite':
+#        address = 0x36 # PiSugar is 0x75
+        try:
+            read = bus.read_word_data(address, 4)
+            swapped = struct.unpack("<H", struct.pack(">H", read))[0]
+            battery_level = swapped/256
+        except:
+            battery_level = 200.00
+    elif ups_type == 'pisugar2':
+#        address = 0x75 # ups_lite is 0x36
+        try:
+            low = bus.read_byte_data(address, 0xa2)
+            high = bus.read_byte_data(address, 0xa3)
+            charge_v = bus.read_byte_data(address, 0x55)
+            if high & 0x20:
+                low = ~low & 0xff
+                high = ~high & 0x1f
+                v = (((high | 0b1100_0000) << 8) + low)
+                battery_v = (2600.0 - v * 0.26855) / 1000
+            else:
+                v = ((high & 0x1f) << 8 ) + low
+                battery_v = (2600 + v * 0.26855) / 1000
+        except:
+            battery_v = 0.0
+        for range in battery_curve:
+            if range[0] <  battery_v <= range[1]:
+                level_base = ((battery_v - range[0]) / (range[1] - range[0])) * (range[3] - range[2])
+                battery_level = level_base + range[2]
+            if charge_v & 0b00001_0000 != 0:
+                charge = True
+            else:
+                charge = False
+    else:
+        battery_level = 200.00
     return battery_level
 
+#Begin Program
 if sys.version_info[0] <  3:
     raise Exception("Must be using Python 3")
 
@@ -272,7 +307,7 @@ try:
     #Define the initial battery capacity.  This is just enough to get to the first iteration of the loop without dumping out.
     bat_cap = min_bat_cap+1
     turn=0
-    while (bat_cap > min_bat_cap):
+    while (bat_cap > min_bat_cap and charge is True):
         epd.sleep()
         # Grab initial information
         #This part grabs the active network interface.
