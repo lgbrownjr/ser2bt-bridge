@@ -307,7 +307,7 @@ try:
     #Define the initial battery capacity.  This is just enough to get to the first iteration of the loop without dumping out.
     bat_cap = min_bat_cap+1
     turn=0
-    while (bat_cap > min_bat_cap and charge is True):
+    while (bat_cap > min_bat_cap or charge is True):
         epd.sleep()
         # Grab initial information
         #This part grabs the active network interface.
