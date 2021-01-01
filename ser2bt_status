@@ -212,30 +212,31 @@ def read_bat_capacity(bus):
         battery_level = swapped/256
     except:
 #    elif ups_type == 'pisugar2':
-        address = 0x75 # ups_ lite is 0x36
-        try:
-           low = bus.read_byte_data(address, 0xa2)
-           high = bus.read_byte_data(address, 0xa3)
-           charge_v = bus.read_byte_data(address, 0x55)
-           if high & 0x20:
-               low = ~low & 0xff
-               high = ~high & 0x1f
-               v = (((high | 0b1100_0000) << 8) + low)
-               battery_v = (2600.0 - v * 0.26855) / 1000
-           else:
-               v = ((high & 0x1f) << 8 ) + low
-               battery_v = (2600 + v * 0.26855) / 1000
-        except:
-           battery_v = 0.0
-        for range in battery_curve:
-           if range[0] <  battery_v <= range[1]:
-               level_base = ((battery_v - range[0]) / (range[1] - range[0])) * (range[3] - range[2])
-               battery_level = level_base + range[2]
-           if charge_v & 0b00001_0000 != 0:
-               charge = True
-           else:
-               charge = False
-    else:
+       try:
+           address = 0x75 # ups_ lite is 0x36
+           try:
+               low = bus.read_byte_data(address, 0xa2)
+               high = bus.read_byte_data(address, 0xa3)
+               charge_v = bus.read_byte_data(address, 0x55)
+               if high & 0x20:
+                   low = ~low & 0xff
+                   high = ~high & 0x1f
+                   v = (((high | 0b1100_0000) << 8) + low)
+                   battery_v = (2600.0 - v * 0.26855) / 1000
+               else:
+                   v = ((high & 0x1f) << 8 ) + low
+                   battery_v = (2600 + v * 0.26855) / 1000
+           except:
+               battery_v = 0.0
+           for range in battery_curve:
+               if range[0] <  battery_v <= range[1]:
+                   level_base = ((battery_v - range[0]) / (range[1] - range[0])) * (range[3] - range[2])
+                   battery_level = level_base + range[2]
+               if charge_v & 0b00001_0000 != 0:
+                   charge = True
+               else:
+                   charge = False
+       except:
            battery_level = 200.00
     return battery_level
 
