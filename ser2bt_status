@@ -12,8 +12,7 @@ import subprocess #get ssid
 import netifaces #get active interface (wlan)
 import smbus
 import psutil  # Capture cpu and memory values
-import logging
-from logging.handlers import SysLogHandler
+import syslog
 import signal # Check for incomming signals from the service and react if there is term signal.
 
 # Variable decleration:
@@ -40,7 +39,6 @@ old_bt_status = "XX"
 old_full_tty_status = "XX"
 old_bt_serial_port = "XX"
 old_wired_serial_port = "XX"
-logging.info('ser2bt_status was started')
 ups_type = 'none' #pisugar2, ups_lite, or none are the three supported options # No longer used.
 charge = True
 
@@ -54,6 +52,7 @@ is_not_ups_lite = False
 is_not_pisugar = False
 
 #Setup logging:  Work in progress
+syslog.openlog(ident="ser2bt-bridge",logoption=syslog.LOG_PID, facility=syslog.LOG_LOCAL7)
 #logger = logging.getLogger('ser2bt-bridge')
 #logger.addHandler(SysLogHandler(address=('/dev/log'))
 #logger.addHandler(logging.FileHandler("ser2bt_status.log"))
@@ -61,7 +60,7 @@ is_not_pisugar = False
 #root.addHandler(logger)
 #root.setLevel(logging.INFO)
 
-
+syslog.syslog(syslog.LOG_INFO, 'ser2bt_status was started')
 #Capture the bus for ups board, both ups_lite, and pisugar2.
 try:
     bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
@@ -89,8 +88,10 @@ elif is_not_ups_lite is False and is_not_pisugar is True:
     ups_type = 'ups_lite'
     address = 0x36 # PiSugar is 0x75
 
+syslog.syslog(syslog.LOG_INFO, 'Found and selected the '+ups_type+' UPS option.')
+
 def handler(signum, frame):
-    logging.info ('Got SIGTERM!')
+    syslog.syslog(syslog.LOG_ERR, 'Got SIGTERM!')
     sys.exit(0) # raises a SystemExit exception
 
 
@@ -370,8 +371,8 @@ try:
             epd.sleep()
 
         except IOError as e:
-            logging.info ('traceback.format_exc():\n%s',traceback.format_exc())
-            logging.info('Shutting Down ser2bt_status - traceback.format_exc():\n%s' ,traceback.format_exc())
+            syslog.syslog(syslog.LOG_INFO, 'traceback.format_exc():\n%s',traceback.format_exc())
+            syslog.syslog(syslog.LOG_INFO, 'Shutting Down ser2bt_status - traceback.format_exc():\n%s' ,traceback.format_exc())
             epd2in13_V2.epdconfig.module_init()
             epd2in13_V2.epdconfig.module_exit()
             exit()
@@ -390,14 +391,14 @@ try:
     term_draw.text((30, 80), 'Is Shutting Down!', font=f_title_font24, fill=0)
     term_draw.text((3, 100), 'Due to Critical Battary level ', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(term_image))
-    logging.info('Shutting down - battary has reached critical level')
-    logging.info('Battary is: '+bat_lvl+'%')
+    syslog.syslog(syslog.LOG_INFO, 'Shutting down - battary has reached critical level')
+    syslog.syslog(syslog.LOG_INFO, 'Battary is: '+bat_lvl+'%')
     epd2in13_V2.epdconfig.module_init()
     epd2in13_V2.epdconfig.module_exit()
     exit()
 
 except KeyboardInterrupt:
-    logging.info (" Quit (SIGINT) Due to Keyboard interrupt when not being run as a service")
+    syslog.syslog(syslog.LOG_INFO, 'Quit (SIGINT) Due to Keyboard interrupt when not being run as a service')
     epd.init(epd.FULL_UPDATE)
     term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     term_draw = ImageDraw.Draw(term_image)
@@ -405,13 +406,13 @@ except KeyboardInterrupt:
     term_draw.text((90, 50), 'bridge', font=f_title_font24, fill=0)
     term_draw.text((15, 80), 'Has Stopped due to SIGINT', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(term_image))
-    logging.info("Shutting Down ser2bt_status - interupted by Control C")
+    syslog.syslog(syslog.LOG_INFO, 'Shutting Down ser2bt_status - interupted by Control C')
     epd2in13_V2.epdconfig.module_init()
     epd2in13_V2.epdconfig.module_exit()
     exit()
 
 except SystemExit:
-    logging.info (" Quit (SIGTERM) from service telling us to terminare")
+    syslog.syslog(syslog.LOG_INFO, 'Quit (SIGTERM) from service telling us to terminate')
     epd.init(epd.FULL_UPDATE)
     term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     term_draw = ImageDraw.Draw(term_image)
@@ -419,12 +420,13 @@ except SystemExit:
     term_draw.text((90, 50), 'bridge', font=f_title_font24, fill=0)
     term_draw.text((15, 80), 'Is exiting Due to SIGTERM', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(term_image))
-    logging.info("Shutting Down/Restarting service - interupted by service stop, from command, shutdown, or reboot")
+    syslog.syslog(syslog.LOG_INFO, 'Shutting Down/Restarting service - interupted by service stop, from command, shutdown, or reboot')
     epd2in13_V2.epdconfig.module_init()
     epd2in13_V2.epdconfig.module_exit()
     exit()
 
 except IOError as e:
-    logging.info('Shutting Down ser2bt_status - traceback.format_exc():\n%s' ,traceback.format_exc())
+    syslog.syslog(syslog.LOG_ERR, 'Shutting Down ser2bt_status - traceback.format_exc():\n%s' ,traceback.format_exc())
     epd2in13_V2.epdconfig.module_init()
     epd2in13_V2.epdconfig.module_exit()
+    exit()
