@@ -9,15 +9,11 @@ DefaultDependencies=no
 
 [Service]
 Type=oneshot
+RemainAfterExit=true
 SyslogIdentifier=ser2bt-e-paper-init
 WorkingDirectory=/usr/local/bin/
 ExecStart=/usr/local/bin/init_scr
 LimitNPROC=1
-RemainAfterExit=true
-#StandardOutput=inherit
-#Restart=on-failure
-#RestartSec=5
-#KillMode=mixed
 
 [Install]
 WantedBy=bluetooth.target
