@@ -36,10 +36,11 @@ enhanc_lib_files=(logo.bmp)
 full_lib_files=( "${base_lib_files[@]}" "${enhanc_lib_files[@]}" )
 etc_files=(ser2bt_bridge.screenrc)
 base_service_files=(rfcomm.service)
-enhanc_service_files=(ser2bt-e-paper.service ser2bt-e-paper-init.service ser2bt-e-paper-shut.service)
+enhanc_service_files=(ser2bt-e-paper.service ser2bt-e-paper-init.service)
 full_service_files=( "${base_service_files[@]}" "${enhanc_service_files[@]}" )
 enhanc_service_assoc=(ser2bt_status ser2bt-e-paper.service)
 full_service_assoc=( "${enhanc_service_assoc[@]}" )
+removed_service_files=("ser2bt-e-paper-shut.service")
 begin_bashrc_addon_mark="#BEGIN ser2b-bridge .bashrc add-in"
 end_bashrc_addon_mark="#END ser2b-bridge .bashrc add-in"
 serial_fix_file="override.conf"
@@ -47,12 +48,11 @@ serial_fix_file_content="[Service]\nTTYReset=no\nTTYVHangup=no\nTTYVTDisallocate
 bt_service_pre_search="ExecStart=/usr/lib/bluetooth/bluetoothd"
 bt_service_content="ExecStart=/usr/lib/bluetooth/bluetoothd -C --noplugin=sap\nExecStartPost=/usr/bin/sdptool add SP\nExecStartPost=/bin/hciconfig hci0 piscan"
 config_txt_addons=("hdmi_blanking=" "disable_splash=" "boot_delay=" "over_voltage=" "dtparam=audio=" "enable_uart=" "dtoverlay=" "gpu_mem=" "initial_turbo=")
-config_txt_values=(2 1 0 0 "off" 0 "dwc2" 32 60)
+config_txt_values=(2 1 0 0 "off" 1 "dwc2" 32 60)
 #Flags
 bin_flag=0
 serial_fix_flag=0
 bt_fix_flag=0
-
 
 #Checks before begining:
 # Make sure the script is run with superuser privelages
@@ -71,6 +71,7 @@ if [[ "${#}" -lt 1 ]]; then
 	printf "\tfull -  Basic istallation of the serial to Bluetooth scripts, plus e-ink screen and battery support.\n\n"
 	exit 2
 fi
+echo "${serial_fix_file}"
 
 #assign the upgrade path to the first argument
 	upgrade_path="${1}"
@@ -103,14 +104,21 @@ if  grep -q "Zero" /proc/device-tree/model; then
 
 #checking and adding modules as needed into /etc/modules:
 	printf "${nor}Check to make sure the the relevent modules are loaded:\n"
-	grep -q -s -e "^g_serial" ${etc_folder}modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'g_serial' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully${nor} loaded\n")
-	grep -q -s -e "^dwc2" ${etc_folder}/modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'dwc2' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}already${nor} loaded\n")
+	grep -q -s -o -e "^g_serial" ${etc_folder}modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'g_serial' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully${nor} loaded\n")
+	grep -q -s -o -e "^dwc2" ${etc_folder}/modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'dwc2' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully ${nor} loaded\n")
 
-#checking for and adding and changing settings in the /boot/config.txt file:
-#	grep -E
 #checking and adding modules as needed into /boot/config.txt and /boot/cmdline.txt:
-#	printf "${nor}Check to make sure the the relevent modules are loaded in the boot files:\n"
-#sed -i -e 's/#/maxmemory 26gb/g' /etc/redis/redis.conf
+	printf "\n\n${nor}Check to make sure the the relevent seetings are made in the boot files:${nor}\n"
+	num=0
+	for config in "${config_txt_addons[@]}"; do
+		grep -q -s -o -E ^${config}${config_txt_values[num]} ${boot}${boot_config}
+		if [ ${?} -eq 1 ]; then
+			rem_config=$(grep -s -o -E ^\(#\)?${config}\(on\|off\|dwc2\|[0-9]+\)  ${boot}${boot_config})
+			printf " The configuration ${yel}${rem_config}${nor} will be replaced by ${yel}${config}${config_txt_values[num]}${nor}"
+			sed -i "s+${rem_config}+${config}${config_txt_values[num]}+g" "${boot}${boot_config}" && printf " ${drk_grn}Done${nor}\n" || printf "\n"
+		fi
+		let num++
+	done
 
 #Upgrade system files
 #printf "\r${nor}Update package manager:\n"
@@ -134,20 +142,20 @@ if  grep -q "Zero" /proc/device-tree/model; then
 		printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
 		mkdir -p ${serial_fix_folder}
 	else
-		printf " ${nor}Directory ${drk_grn}already ${nor}exist, moving on.\n"
-	fi
-	if [ ! -f ${serial_fix_folder}${serial_fix_file} ]; then
-		printf " ${nor}File does ${drk_red}not${nor}exist, creating..."
-		printf "${official_s_ver}" > "${serial_fix_folder}${serial_fix_file}" && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
-	else
-		printf " ${nor}File ${drk_green}does${nor} exist, checking if updates are needed:\n"
-		if [ "${existing_s_ver}" != "${official_s_ver}" ] ; then
-			printf "  ${nor}There is a difference between what is supposed to be in the ${yel}fix${nor}, will clean and re-apply ${yel}fix${nor} related configurations:\n"
+		printf " ${nor}Directory ${drk_grn}already ${nor}exist, checking for ${yel}${serial_fix_folder}${serial_fix_file}${nor}:\n"
+		if [ ! -f ${serial_fix_folder}${serial_fix_file} ]; then
+			printf " ${yel}${serial_fix_file}${nor}does ${drk_red}not${nor}exist, creating..."
 			printf "${official_s_ver}" > "${serial_fix_folder}${serial_fix_file}" && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
-			serial_fix_flag=1
 		else
-			printf "  ${nor}Both versions are the same, skipping...\n"
-			serial_fix_flag=0
+			printf " ${yel}${serial_fix_file} ${drk_grn}does${nor} exist, checking if updates are needed:\n"
+			if [ "${existing_s_ver}" != "${official_s_ver}" ]; then
+				printf "  ${nor}There is a difference between what is supposed to be in the ${yel}fix${nor}, will clean and re-apply ${yel}fix${nor} related configurations:\n"
+				printf "${official_s_ver}" > "${serial_fix_folder}${serial_fix_file}" && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
+				serial_fix_flag=1
+			else
+				printf "  ${nor}Both versions are the same, skipping...\n"
+				serial_fix_flag=0
+			fi
 		fi
 	fi
 
@@ -158,7 +166,7 @@ if [ -f "${lib_service_folder}${bt_service}" ]; then
 	printf " ${blu}Bluetooth${nor} Service ${drk_grn}was${nor} found, checking content:\n"
 	if grep -q -e "^${bt_service_pre_search}$" "${lib_service_folder}${bt_service}"; then
 		printf "  ${blu}Bluetooth${nor} Service ${drk_yel}needs${nor} to be edited..."
-		sed -i "s+${bt_service_pre_search}+${bt_service_content}+g" "${lib_service_folder}${bt_service}" && printf "${drk_grn}Done${nor}\n" || printf "\n"
+		sed -r -i "s+${bt_service_pre_search}+${bt_service_content}+g" "${lib_service_folder}${bt_service}" && printf "${drk_grn}Done${nor}\n" || printf "\n"
 		bt_fix_flag=1
 	elif [[ $(printf "${existing_bt_chg}") == $(printf "${bt_service_content}") ]]; then
 #grep -e "^${bt_service_content}$" "${lib_service_folder}${bt_service}"; then
@@ -258,6 +266,11 @@ done
 		fi
 	done
 
+#Remove un-needed services"
+	for svc_file in ${removed_service_files[@]} ; do
+		systemctl disable ${svc_file} && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}disabeled.\n" || break
+		rm ${etc_service_filder}${svc_file} && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}disabeled.\n" || break
+	done
 #After all of the changes have been made, reload the systemd daemon:
 	if [ "${svc_count}" != "${#service_files[@]}" ] || [[ "${bin_flag}" -gt 0 ]] ; then
 		printf "\n${nor}Restarting systemctl (as needed):${nor}\n"
