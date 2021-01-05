@@ -230,6 +230,14 @@ done
 		printf " ${nor}Directory ${drk_grn}already ${nor}exist, moving on.\n"
 	fi
 
+	printf "\n${nor}check to make sure the ${cyn}${ser2bt_lib_folder} ${nor}directories exist:\n"
+	if [ ! -d ${ser2bt_lib_folder} ]; then
+		printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
+		mkdir -p ${ser2bt_lib_folder}
+	else
+		printf " ${nor}Directory ${drk_grn}already ${nor}exist, moving on.\n"
+	fi
+
 #copy files to proper directories:
 	printf "\nCopying files to the ${cyn}${bin_folder} ${nor}directory:\n"
 	for file in "${bin_files[@]}" ; do
