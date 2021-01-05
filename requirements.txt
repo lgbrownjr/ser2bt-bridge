@@ -9,3 +9,6 @@ syslog
 struct
 signal
 subprocess
+time
+PIL
+waveshare_epd
