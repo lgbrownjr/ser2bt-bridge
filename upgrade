@@ -48,7 +48,7 @@ serial_fix_file_content="[Service]\nTTYReset=no\nTTYVHangup=no\nTTYVTDisallocate
 bt_service_pre_search="ExecStart=/usr/lib/bluetooth/bluetoothd"
 bt_service_content="ExecStart=/usr/lib/bluetooth/bluetoothd -C --noplugin=sap\nExecStartPost=/usr/bin/sdptool add SP\nExecStartPost=/bin/hciconfig hci0 piscan"
 base_config_txt_addons=("hdmi_blanking=" "disable_splash=" "boot_delay=" "over_voltage=" "dtparam=audio=" "enable_uart=" "gpu_mem=" "initial_turbo=")
-enhanc_config_txt_addons=("dtoverlay=" "dtoverlay="
+enhanc_config_txt_addons=("dtoverlay=" "dtoverlay=")
 full_config_txt_addons=("${base_config_txt_addons[@]}" "${enhanc_config_txt_addons[@]}")
 base_config_txt_values=(2 1 0 0 "off" 1 32 60)
 enhanc_config_txt_values=("dwc2" "i2c-rtc,ds1307,addr=0x32")
@@ -85,6 +85,7 @@ fi
 		lib_files=( "${base_lib_files[@]}" )
 		service_files=( "${base_service_files[@]}" )
 		config_txt_addons=("${base_config_txt_addons[@]}")
+		config_txt_values=("${base_config_txt_values[@]}")
 	fi
 
 	if [ "${upgrade_path}" = "enhanced" ] ; then
@@ -92,7 +93,8 @@ fi
 		lib_files=(${enhanc_lib_files[@]})
 		service_files=(${enhanc_service_files[@]})
 		service_assoc=(${enhanc_service_assoc[@]})
-		config_txt_addons=("${enhanc_config_txt_addons[@]}")
+		config_txt_addons=(${enhanc_config_txt_addons[@]})
+		config_txt_values=("${enhanc_config_txt_values[@]}")
 	fi
 
 	if [ "${upgrade_path}" = "full" ] ; then
@@ -101,8 +103,8 @@ fi
 		ser2bt_lib_files=(${enhanc_lib_files[@]})
 		service_files=(${full_service_files[@]})
 		service_assoc=(${full_service_assoc[@]})
-		config_txt_addons=("${full_config_txt_addons[@]}")
-
+		config_txt_addons=(${full_config_txt_addons[@]})
+		config_txt_values=("${full_config_txt_values[@]}")
 	fi
 
 ##Check to make sure this is a rpi zero:
