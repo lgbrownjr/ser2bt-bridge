@@ -1,5 +1,5 @@
 RPi.GPIO
-spidev
+py-spidev
 smbusb
 psutil
 netifaces
