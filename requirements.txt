@@ -3,3 +3,7 @@ spidev
 smbus
 psutil
 netifaces
+os
+sys
+syslog
+struct
