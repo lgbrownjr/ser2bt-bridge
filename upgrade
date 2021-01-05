@@ -134,22 +134,22 @@ if  grep -q "Zero" /proc/device-tree/model; then
 	fi
 
 #Upgrade system files
-printf "\n${nor}Update package manager:\n"
-apt update > /dev/null 2>&1
-if [ ${?} -gt 0 ]; then
-	printf " ${red}Update failed, exiting to shell\n"
-	exit 1 #apt update or apt full-upgrade failed"
-else
-	printf " ${grn}Update completed...\n"
-
-fi
-apt full-upgrade -y > /dev/null 2>&1
-if [ ${?} -gt 0 ]; then
-	printf " ${red}Upgrade failed, exiting to shell\n"
-	exit 1 #apt update or apt full-upgrade failed"
-else
-	printf " ${grn}Upgrade completed...\n"
-fi
+#printf "\n${nor}Update package manager:\n"
+#apt update > /dev/null 2>&1
+#if [ ${?} -gt 0 ]; then
+#	printf " ${red}Update failed, exiting to shell\n"
+#	exit 1 #apt update or apt full-upgrade failed"
+#else
+#	printf " ${grn}Update completed...\n"
+#
+#fi
+#apt full-upgrade -y > /dev/null 2>&1
+#if [ ${?} -gt 0 ]; then
+#	printf " ${red}Upgrade failed, exiting to shell\n"
+#	exit 1 #apt update or apt full-upgrade failed"
+#else
+#	printf " ${grn}Upgrade completed...\n"
+#fi
 
 #make directorys:
 #Make directory for serial port fix, then verify the config file is correct, if not, make corrections:
