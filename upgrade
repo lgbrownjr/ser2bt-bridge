@@ -2,7 +2,7 @@
 
 #color and other formatting defenitions:
 if [ -f /usr/local/lib/format.sh ]; then
-	source /usr/local/lib/format.sh > /dev/null
+	source /usr/local/lib/format.sh > /dev/null 2>&1
 else
 	printf "\nformat library is not installed, continueing without!\n"
 fi
@@ -118,18 +118,20 @@ if  grep -q "Zero" /proc/device-tree/model; then
 	grep -q -s -o -e "^dwc2" ${etc_folder}/modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'dwc2' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully ${nor} loaded\n")
 
 #checking and adding modules as needed into /boot/config.txt and /boot/cmdline.txt:
-	printf "\n\n${nor}Check to make sure the the relevent seetings are made in the boot files:${nor}\n"
+	printf "\n${nor}Check to make sure the the relevent seetings are made in the boot files:${nor}\n"
 	num=0
 	for config in "${config_txt_addons[@]}"; do
 		grep -q -s -o -E ^${config}${config_txt_values[num]} ${boot}${boot_config}
 		if [ ${?} -eq 1 ]; then
 			rem_config=$(grep -s -o -E ^\(#\)?${config}\(on\|off\|dwc2\|[0-9]+\)  ${boot}${boot_config})
-#			printf " The configuration ${yel}${rem_config}${nor} will be replaced by ${yel}${config}${config_txt_values[num]}${nor}"
+			printf " The configuration ${yel}${rem_config}${nor} will be replaced by ${yel}${config}${config_txt_values[num]}${nor}"
 			sed -i "s+${rem_config}+${config}${config_txt_values[num]}+g" "${boot}${boot_config}" && printf " ${drk_grn}Done${nor}\n" || printf "\n"
 		fi
-		printf " The configuration ${yel}${rem_config}${nor} will be replaced by ${yel}${config}${config_txt_values[num]}${nor}\n"
 		let num++
 	done
+	if [[ ${#config_txt_addons[@]} -eq ${num} ]]; then
+		printf "${drk_grn}no changes were needed, continueing${nor}...\n"
+	fi
 
 #Upgrade system files
 #printf "\r${nor}Update package manager:\n"
@@ -177,7 +179,7 @@ if [ -f "${lib_service_folder}${bt_service}" ]; then
 	printf " ${blu}Bluetooth${nor} Service ${drk_grn}was${nor} found, checking content:\n"
 	if grep -q -e "^${bt_service_pre_search}$" "${lib_service_folder}${bt_service}"; then
 		printf "  ${blu}Bluetooth${nor} Service ${drk_yel}needs${nor} to be edited..."
-		sed -r -i "s+${bt_service_pre_search}+${bt_service_content}+g" "${lib_service_folder}${bt_service}" && printf "${drk_grn}Done${nor}\n" || printf "\n"
+		sed -i "s+${bt_service_pre_search}+${bt_service_content}+g" "${lib_service_folder}${bt_service}" && printf "${drk_grn}Done${nor}\n" || printf "\n"
 		bt_fix_flag=1
 	elif [[ $(printf "${existing_bt_chg}") == $(printf "${bt_service_content}") ]]; then
 #grep -e "^${bt_service_content}$" "${lib_service_folder}${bt_service}"; then
@@ -272,19 +274,26 @@ done
 			let svc_count++
 		else
 			cp ${project_folder}${svc_file} ${etc_service_folder} && printf " ${yel}${svc_file} ${nor}copied.\n" || break
-			systemctl disable ${svc_file} && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}disabeled.\n" || break
-			systemctl enable ${svc_file} && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}enabeled.\n" || break
+			systemctl disable ${svc_file} >  /dev/null 2>&1 && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}disabeled.\n" || break
+			systemctl enable ${svc_file} > /dev/null 2>&1 && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}enabeled.\n" || break
 		fi
 	done
 
-#Remove un-needed services"
-	printf "${nor}\nRemove any services that are no longer required${nor}\n"
+#Disable and Remove un-needed services"
+	printf "${nor}\nDisable, and remove any services that are no longer required${nor}\n"
+	num=0
 	for svc_file in ${removed_service_files[@]}; do
 		if [ -f "${etc_service_folder}${svc_file}" ]; then
-			systemctl disable ${svc_file} && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}disabeled.\n" || break
-			rm ${etc_service_folder}${svc_file} && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}removed.\n" || break
+			systemctl disable ${svc_file} > /dev/null 2>&1 && printf " ${yel}${svc_file} ${drk_grn}successfully ${nor}disabeled.\n" || break
+			rm ${etc_service_folder}${svc_file} && printf " ${yel}${svc_file} ${drk_grn}successfully ${nor}removed.\n" || break
+		else
+			let num++
 		fi
 	done
+	if [[ ${#removed_service_files[@]} -eq ${num} ]]; then
+		printf "${drk_grn}no changes were needed, continueing${nor}...\n"
+	fi
+
 #After all of the changes have been made, reload the systemd daemon:
 	if [ "${svc_count}" != "${#service_files[@]}" ] || [[ "${bin_flag}" -gt 0 ]] ; then
 		printf "\n${nor}Restarting systemctl (as needed):${nor}\n"
@@ -294,17 +303,17 @@ done
 #Action based on flags:
 	if [[ "${bt_fix_flag}" -gt 0 ]] ; then
 		printf "\n${nor}Disabeling, Enabeling and Starting ${bt_service}${nor}:\n"
-		systemctl disable ${bt_service} > /dev/null && printf " ${nor}${bt_service} ${drk_grn}successfully ${nor}disabeled.\n" || printf "Failed\n"
-		systemctl enable ${bt_service} > /dev/null && printf " ${nor}${bt_service} ${drk_grn}successfully ${nor}enabled.\n" || printf "Failed\n"
-		systemctl start ${bt_service} > /dev/null && printf " ${nor}${bt_service} ${drk_grn}successfully ${nor}started.\n" ||  printf "Failed\n"
+		systemctl disable ${bt_service} > /dev/null 2>&1 && printf " ${nor}${bt_service} ${drk_grn}successfully ${nor}disabeled.\n" || printf "Failed\n"
+		systemctl enable ${bt_service} > /dev/null 2>&1 && printf " ${nor}${bt_service} ${drk_grn}successfully ${nor}enabled.\n" || printf "Failed\n"
+		systemctl start ${bt_service} > /dev/null 2>&1 && printf " ${nor}${bt_service} ${drk_grn}successfully ${nor}started.\n" ||  printf "Failed\n"
 		let svc_count++
 	fi
 
 	if [[ "${serial_fix_flag}" -gt 0 ]] ; then
 #		if [ $(systemctl status getty@ttyGS0.service | grep -o "inactive") ]; then
 			printf "\n${nor}Enabeling and starting getty@ttyGS0.service:${nor}\n"
-			systemctl enable getty@ttyGS0.service && printf " ${nor}getty@ttyGS0.service ${drk_grn}successfully ${nor}enabled.\n" || break
-			systemctl start getty@ttyGS0.service && printf " ${nor}getty@ttyGS0.service ${drk_grn}successfully ${nor}started.\n" || break
+			systemctl enable getty@ttyGS0.service > /dev/null 2>&1 && printf " ${nor}getty@ttyGS0.service ${drk_grn}successfully ${nor}enabled.\n" || break
+			systemctl start getty@ttyGS0.service > /dev/null 2>&1 && printf " ${nor}getty@ttyGS0.service ${drk_grn}successfully ${nor}started.\n" || break
 			let svc_count++
 #		fi
 	fi
