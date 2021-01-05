@@ -1,6 +1,6 @@
 RPi.GPIO
 spidev
-smbus
+smbusb
 psutil
 netifaces
 os
