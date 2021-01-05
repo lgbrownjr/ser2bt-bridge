@@ -1,6 +1,6 @@
 RPi.GPIO
-py-spidev
-smbusb
+spidev
+smbus
 psutil
 netifaces
 os
