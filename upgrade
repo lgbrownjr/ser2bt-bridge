@@ -47,11 +47,11 @@ serial_fix_file="override.conf"
 serial_fix_file_content="[Service]\nTTYReset=no\nTTYVHangup=no\nTTYVTDisallocate=no"
 bt_service_pre_search="ExecStart=/usr/lib/bluetooth/bluetoothd"
 bt_service_content="ExecStart=/usr/lib/bluetooth/bluetoothd -C --noplugin=sap\nExecStartPost=/usr/bin/sdptool add SP\nExecStartPost=/bin/hciconfig hci0 piscan"
-base_config_txt_addons=("hdmi_blanking=" "disable_splash=" "boot_delay=" "over_voltage=" "dtparam=audio=" "enable_uart=" "gpu_mem=" "initial_turbo=")
-enhanc_config_txt_addons=("dtoverlay=" "dtoverlay=")
+base_config_txt_addons=("hdmi_blanking=" "disable_splash=" "boot_delay=" "over_voltage=" "dtparam=audio=" "enable_uart=" "gpu_mem=" "initial_turbo=" "dtoverlay=")
+enhanc_config_txt_addons=("dtoverlay=")
 full_config_txt_addons=("${base_config_txt_addons[@]}" "${enhanc_config_txt_addons[@]}")
-base_config_txt_values=(2 1 0 0 "off" 1 32 60)
-enhanc_config_txt_values=("dwc2" "i2c-rtc,ds1307,addr=0x32")
+base_config_txt_values=(2 1 0 0 "off" 1 32 60 "dwc2")
+enhanc_config_txt_values=("i2c-rtc,ds1307,addr=0x32")
 full_config_txt_values=("${base_config_txt_values[@]}" "${enhanc_config_txt_values[@]}")
 
 #Flags
@@ -123,7 +123,7 @@ if  grep -q "Zero" /proc/device-tree/model; then
 	for config in "${config_txt_addons[@]}"; do
 		grep -q -s -o -E ^${config}${config_txt_values[num]} ${boot}${boot_config}
 		if [ ${?} -eq 1 ]; then
-			rem_config=$(grep -s -o -E ^\(#\)?${config}\(on\|off\|dwc2\|[0-9]+\)  ${boot}${boot_config})
+			rem_config=$(grep -s -o -E ^\(#\)?${config}\(on\|off\|dwc2\|i2c*\|[0-9]+\)  ${boot}${boot_config})
 			printf " The configuration ${yel}${rem_config}${nor} will be replaced by ${yel}${config}${config_txt_values[num]}${nor}"
 			sed -i "s+${rem_config}+${config}${config_txt_values[num]}+g" "${boot}${boot_config}" && printf " ${drk_grn}Done${nor}\n" || printf "\n"
 		fi
@@ -134,17 +134,22 @@ if  grep -q "Zero" /proc/device-tree/model; then
 	fi
 
 #Upgrade system files
-#printf "\r${nor}Update package manager:\n"
-#apt update > /dev/null 2>&1
-#if [ ${?} -gt 0 ]; then
-#	printf "${red}Update failed, exiting to shell\n"
-#	exit 1 #apt update or apt full-upgrade failed"
-#fi
-#apt full-upgrade -y > /dev/null 2>&1
-#if [ ${?} -gt 0 ]; then
-#	printf "${red}Upgrade failed, exiting to shell\n"
-#	exit 1 #apt update or apt full-upgrade failed"
-#fi
+printf "\n${nor}Update package manager:\n"
+apt update > /dev/null 2>&1
+if [ ${?} -gt 0 ]; then
+	printf " ${red}Update failed, exiting to shell\n"
+	exit 1 #apt update or apt full-upgrade failed"
+else
+	printf " ${grn}Update completed...\n"
+
+fi
+apt full-upgrade -y > /dev/null 2>&1
+if [ ${?} -gt 0 ]; then
+	printf " ${red}Upgrade failed, exiting to shell\n"
+	exit 1 #apt update or apt full-upgrade failed"
+else
+	printf " ${grn}Upgrade completed...\n"
+fi
 
 #make directorys:
 #Make directory for serial port fix, then verify the config file is correct, if not, make corrections:
