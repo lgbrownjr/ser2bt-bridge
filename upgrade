@@ -47,8 +47,13 @@ serial_fix_file="override.conf"
 serial_fix_file_content="[Service]\nTTYReset=no\nTTYVHangup=no\nTTYVTDisallocate=no"
 bt_service_pre_search="ExecStart=/usr/lib/bluetooth/bluetoothd"
 bt_service_content="ExecStart=/usr/lib/bluetooth/bluetoothd -C --noplugin=sap\nExecStartPost=/usr/bin/sdptool add SP\nExecStartPost=/bin/hciconfig hci0 piscan"
-config_txt_addons=("hdmi_blanking=" "disable_splash=" "boot_delay=" "over_voltage=" "dtparam=audio=" "enable_uart=" "dtoverlay=" "gpu_mem=" "initial_turbo=")
-config_txt_values=(2 1 0 0 "off" 1 "dwc2" 32 60)
+base_config_txt_addons=("hdmi_blanking=" "disable_splash=" "boot_delay=" "over_voltage=" "dtparam=audio=" "enable_uart=" "gpu_mem=" "initial_turbo=")
+enhanc_config_txt_addons=("dtoverlay=" "dtoverlay="
+full_config_txt_addons=("${base_config_txt_addons[@]}" "${enhanc_config_txt_addons[@]}")
+base_config_txt_values=(2 1 0 0 "off" 1 32 60)
+enhanc_config_txt_values=("dwc2" "i2c-rtc,ds1307,addr=0x32")
+full_config_txt_values=("${base_config_txt_values[@]}" "${enhanc_config_txt_values[@]}")
+
 #Flags
 bin_flag=0
 serial_fix_flag=0
@@ -71,7 +76,6 @@ if [[ "${#}" -lt 1 ]]; then
 	printf "\tfull -  Basic istallation of the serial to Bluetooth scripts, plus e-ink screen and battery support.\n\n"
 	exit 2
 fi
-echo "${serial_fix_file}"
 
 #assign the upgrade path to the first argument
 	upgrade_path="${1}"
@@ -80,6 +84,7 @@ echo "${serial_fix_file}"
 		bin_files=( "${base_bin_files[@]}" )
 		lib_files=( "${base_lib_files[@]}" )
 		service_files=( "${base_service_files[@]}" )
+		config_txt_addons=("${base_config_txt_addons[@]}")
 	fi
 
 	if [ "${upgrade_path}" = "enhanced" ] ; then
@@ -87,6 +92,7 @@ echo "${serial_fix_file}"
 		lib_files=(${enhanc_lib_files[@]})
 		service_files=(${enhanc_service_files[@]})
 		service_assoc=(${enhanc_service_assoc[@]})
+		config_txt_addons=("${enhanc_config_txt_addons[@]}")
 	fi
 
 	if [ "${upgrade_path}" = "full" ] ; then
@@ -95,6 +101,8 @@ echo "${serial_fix_file}"
 		ser2bt_lib_files=(${enhanc_lib_files[@]})
 		service_files=(${full_service_files[@]})
 		service_assoc=(${full_service_assoc[@]})
+		config_txt_addons=("${full_config_txt_addons[@]}")
+
 	fi
 
 ##Check to make sure this is a rpi zero:
@@ -114,9 +122,10 @@ if  grep -q "Zero" /proc/device-tree/model; then
 		grep -q -s -o -E ^${config}${config_txt_values[num]} ${boot}${boot_config}
 		if [ ${?} -eq 1 ]; then
 			rem_config=$(grep -s -o -E ^\(#\)?${config}\(on\|off\|dwc2\|[0-9]+\)  ${boot}${boot_config})
-			printf " The configuration ${yel}${rem_config}${nor} will be replaced by ${yel}${config}${config_txt_values[num]}${nor}"
+#			printf " The configuration ${yel}${rem_config}${nor} will be replaced by ${yel}${config}${config_txt_values[num]}${nor}"
 			sed -i "s+${rem_config}+${config}${config_txt_values[num]}+g" "${boot}${boot_config}" && printf " ${drk_grn}Done${nor}\n" || printf "\n"
 		fi
+		printf " The configuration ${yel}${rem_config}${nor} will be replaced by ${yel}${config}${config_txt_values[num]}${nor}\n"
 		let num++
 	done
 
