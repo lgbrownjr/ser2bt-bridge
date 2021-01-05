@@ -267,9 +267,12 @@ done
 	done
 
 #Remove un-needed services"
-	for svc_file in ${removed_service_files[@]} ; do
-		systemctl disable ${svc_file} && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}disabeled.\n" || break
-		rm ${etc_service_filder}${svc_file} && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}disabeled.\n" || break
+	printf "${nor}\nRemove any services that are no longer required${nor}\n"
+	for svc_file in ${removed_service_files[@]}; do
+		if [ -f "${etc_service_folder}${svc_file}" ]; then
+			systemctl disable ${svc_file} && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}disabeled.\n" || break
+			rm ${etc_service_folder}${svc_file} && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}removed.\n" || break
+		fi
 	done
 #After all of the changes have been made, reload the systemd daemon:
 	if [ "${svc_count}" != "${#service_files[@]}" ] || [[ "${bin_flag}" -gt 0 ]] ; then
