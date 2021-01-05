@@ -7,3 +7,5 @@ os
 sys
 syslog
 struct
+signal
+subprocess
