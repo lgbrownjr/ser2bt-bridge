@@ -48,10 +48,15 @@ serial_fix_file_content="[Service]\nTTYReset=no\nTTYVHangup=no\nTTYVTDisallocate
 bt_service_pre_search="ExecStart=/usr/lib/bluetooth/bluetoothd"
 bt_service_content="ExecStart=/usr/lib/bluetooth/bluetoothd -C --noplugin=sap\nExecStartPost=/usr/bin/sdptool add SP\nExecStartPost=/bin/hciconfig hci0 piscan"
 base_config_txt_addons=("hdmi_blanking=" "disable_splash=" "boot_delay=" "over_voltage=" "dtparam=audio=" "enable_uart=" "gpu_mem=" "initial_turbo=" "dtoverlay=")
-enhanc_config_txt_addons=("dtoverlay=")
+enhanc_config_txt_addons=("dtparam=i2c_arm=" "dtparam=spi=")
+pisugar_config_txt_addons=("dtoverlay=")
 full_config_txt_addons=("${base_config_txt_addons[@]}" "${enhanc_config_txt_addons[@]}")
 base_config_txt_values=(2 1 0 0 "off" 1 32 60 "dwc2")
-enhanc_config_txt_values=("i2c-rtc,ds1307,addr=0x32")
+base_boot_search=("[0-9]" "[0-9]" "[0-9]" "[0-9]" "on" "[0-9]" "[0-9]*" "[0-9]*" "dwc2")
+enhanc_config_txt_values=("on" "on")
+enhanc_boot_search=("off" "off")
+full_boot_search=("${base_boot_search[@]}" "${enhanc_boot_search[@]}")
+pisugar2_config_txt_values=("i2c-rtc,ds1307,addr=0x32")
 full_config_txt_values=("${base_config_txt_values[@]}" "${enhanc_config_txt_values[@]}")
 
 #Flags
@@ -86,6 +91,7 @@ fi
 		service_files=( "${base_service_files[@]}" )
 		config_txt_addons=("${base_config_txt_addons[@]}")
 		config_txt_values=("${base_config_txt_values[@]}")
+		boot_search=(${base_boot_search[@]})
 	fi
 
 	if [ "${upgrade_path}" = "enhanced" ] ; then
@@ -95,6 +101,7 @@ fi
 		service_assoc=(${enhanc_service_assoc[@]})
 		config_txt_addons=(${enhanc_config_txt_addons[@]})
 		config_txt_values=("${enhanc_config_txt_values[@]}")
+		boot_search=(${enhanc_boot_search[@]})
 	fi
 
 	if [ "${upgrade_path}" = "full" ] ; then
@@ -105,6 +112,7 @@ fi
 		service_assoc=(${full_service_assoc[@]})
 		config_txt_addons=(${full_config_txt_addons[@]})
 		config_txt_values=("${full_config_txt_values[@]}")
+		boot_search=(${full_boot_search[@]})
 	fi
 
 ##Check to make sure this is a rpi zero:
@@ -121,13 +129,18 @@ if  grep -q "Zero" /proc/device-tree/model; then
 	printf "\n${nor}Check to make sure the the relevent seetings are made in the boot files:${nor}\n"
 	num=0
 	for config in "${config_txt_addons[@]}"; do
-		grep -q -s -o -E ^${config}${config_txt_values[num]} ${boot}${boot_config}
+		grep -q -s -x -E ^${config}${config_txt_values[num]} ${boot}${boot_config}
 		if [ ${?} -eq 1 ]; then
-			rem_config=$(grep -s -o -E ^\(#\)?${config}\(on\|off\|dwc2\|i2c*\|[0-9]+\)  ${boot}${boot_config})
-			printf " The configuration ${yel}${rem_config}${nor} will be replaced by ${yel}${config}${config_txt_values[num]}${nor}"
-			sed -i "s+${rem_config}+${config}${config_txt_values[num]}+g" "${boot}${boot_config}" && printf " ${drk_grn}Done${nor}\n" || printf "\n"
+			rem_config=$(grep -s -x -E ^#?${config}\(on\|off\|dwc2\|i2c_.*\|spi\=.*\|[0-9]*\)  ${boot}${boot_config})
+			printf " The configuration ${yel}${rem_config}${nor} will be replaced by ${yel}${config}${config_txt_values[num]}${nor}\n"
+			sed -i "/${config}${rem_search}/ { s/^#//; s/${boot_search[num]}$/${config_txt_values[num]}/ }" ${boot}${boot_config} && printf "Good\n" || printf "Bad\n"
 		fi
-		let num++
+		grep -s -x -E ^${config}${config_txt_values[num]} ${boot}${boot_config}
+		if [ ${?} -eq 1 ]; then
+			sed -i "$ a ${config}${config_txt_values[num]}" ${boot}${boot_config}
+			printf "${yel}${config}${config_txt_values[num]} ${nor}has been added to ${cya}${boot}${boot_config}${nor}\n"
+		fi
+	let num++
 	done
 	if [[ ${#config_txt_addons[@]} -eq ${num} ]]; then
 		printf "${drk_grn}no changes were needed, continueing${nor}...\n"
