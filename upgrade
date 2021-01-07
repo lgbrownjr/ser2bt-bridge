@@ -127,6 +127,7 @@ if  grep -q "Zero" /proc/device-tree/model; then
 
 #checking and adding modules as needed into /boot/config.txt and /boot/cmdline.txt:
 	printf "\n${nor}Check to make sure the the relevent seetings are made in the boot files:${nor}\n"
+	change_flag=0
 	num=0
 	for config in "${config_txt_addons[@]}"; do
 		grep -q -s -x -E ^${config}${config_txt_values[num]} ${boot}${boot_config}
@@ -134,15 +135,17 @@ if  grep -q "Zero" /proc/device-tree/model; then
 			rem_config=$(grep -s -x -E ^#?${config}\(on\|off\|dwc2\|i2c_.*\|spi\=.*\|[0-9]*\)  ${boot}${boot_config})
 			printf " The configuration ${yel}${rem_config}${nor} will be replaced by ${yel}${config}${config_txt_values[num]}${nor}\n"
 			sed -i "/${config}${rem_search}/ { s/^#//; s/${boot_search[num]}$/${config_txt_values[num]}/ }" ${boot}${boot_config} && printf "Good\n" || printf "Bad\n"
+			let change_flag++
 		fi
-		grep -s -x -E ^${config}${config_txt_values[num]} ${boot}${boot_config}
+		grep -q -s -x -E ^${config}${config_txt_values[num]} ${boot}${boot_config}
 		if [ ${?} -eq 1 ]; then
 			sed -i "$ a ${config}${config_txt_values[num]}" ${boot}${boot_config}
 			printf "${yel}${config}${config_txt_values[num]} ${nor}has been added to ${cya}${boot}${boot_config}${nor}\n"
+			let change_flag++
 		fi
 	let num++
 	done
-	if [[ ${#config_txt_addons[@]} -eq ${num} ]]; then
+	if [ ${change_flag} -eq 0 ]; then
 		printf "${drk_grn}no changes were needed, continueing${nor}...\n"
 	fi
 
