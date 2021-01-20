@@ -4,16 +4,25 @@
 #import modules
 import os #hostname
 import sys #check python version.
-import struct  # Capture battary capacity
-from waveshare_epd import epd2in13_V2
 import time #timers for sleep
-from PIL import Image, ImageDraw, ImageFont  # Font handeling
-import subprocess #get ssid
-import netifaces #get active interface (wlan)
-import smbus
-import psutil  # Capture cpu and memory values
-import syslog
-import signal # Check for incomming signals from the service and react if there is term signal.
+try:
+    from waveshare_epd import epd2in13_V2
+    from PIL import Image, ImageDraw, ImageFont  # Font handeling
+    import struct  # Capture battary capacity
+    import smbus #both waveshare and UPS-LITE
+
+except:
+    print ("No Waveshare e-ink was detected.  Please investigate, and try again\n")
+    exit()
+try:
+    import netifaces #get active interface (wlan)
+    import psutil  # Capture cpu and memory values
+    import syslog
+    import subprocess #get ssid
+    import signal # Check for incomming signals from the service and react if there is term signal.
+except:
+    print ("No supporing system/network libraries were detected.  Please investigate, and try again\n")
+    exit()
 
 # Variable decleration:
 sys.path.append(r'lib')
@@ -65,43 +74,38 @@ is_not_pisugar = False
 
 #Setup logging:  Work in progress
 syslog.openlog(ident="ser2bt-bridge",logoption=syslog.LOG_PID, facility=syslog.LOG_LOCAL7)
-#logger = logging.getLogger('ser2bt-bridge')
-#logger.addHandler(SysLogHandler(address=('/dev/log'))
-#logger.addHandler(logging.FileHandler("ser2bt_status.log"))
-#logger.setLevel(os.environ.get("LOGLEVEL", "INFO"))
-#root.addHandler(logger)
-#root.setLevel(logging.INFO)
-
 syslog.syslog(syslog.LOG_INFO, 'ser2bt_status was started')
 #Capture the bus for ups board, both ups_lite, and pisugar2.
 try:
     bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
+#Test to see which UPS solution is inatalled, if any:
+    try:
+        address = 0x75 # ups_lite is 0x36
+        low = bus.read_byte_data(address, 0xa2)
+    except:
+        is_not_pisugar = True
+    try:
+        address = 0x36 # PiSugar is 0x75
+        value = bus.read_word_data(address, 4)
+        swapped = struct.unpack("<H", struct.pack(">H", value))[0]
+        battery_level = swapped/256
+    except:
+        is_not_ups_lite = True
+        if is_not_ups_lite is True and is_not_pisugar is True:
+            ups_type = 'none'
+        elif is_not_ups_lite is True and is_not_pisugar is False:
+            ups_type = 'pisugar2'
+            address = 0x75 # ups_lite is 0x36
+        elif is_not_ups_lite is False and is_not_pisugar is True:
+            ups_type = 'ups_lite'
+            address = 0x36 # PiSugar is 0x75
+        syslog.syslog(syslog.LOG_INFO, 'Found and selected the '+ups_type+' UPS option.')
 except:
     bus="error"
-#Test to see which UPS solution is inatalled, if any:
-try:
-    address = 0x75 # ups_lite is 0x36
-    low = bus.read_byte_data(address, 0xa2)
-except:
-    is_not_pisugar = True
-try:
-    address = 0x36 # PiSugar is 0x75
-    value = bus.read_word_data(address, 4)
-    swapped = struct.unpack("<H", struct.pack(">H", value))[0]
-    battery_level = swapped/256
-except:
-    is_not_ups_lite = True
-if is_not_ups_lite is True and is_not_pisugar is True:
-    ups_type = 'none'
-elif is_not_ups_lite is True and is_not_pisugar is False:
-    ups_type = 'pisugar2'
-    address = 0x75 # ups_lite is 0x36
-elif is_not_ups_lite is False and is_not_pisugar is True:
-    ups_type = 'ups_lite'
-    address = 0x36 # PiSugar is 0x75
+    syslog.syslog(syslog.LOG_INFO, 'Did not find a UPS option.')
 
-syslog.syslog(syslog.LOG_INFO, 'Found and selected the '+ups_type+' UPS option.')
-
+#Define the functions:
+###################################################################################################################
 def handler(signum, frame):
     syslog.syslog(syslog.LOG_ERR, 'Got SIGTERM!')
     sys.exit(0) # raises a SystemExit exception
@@ -273,6 +277,8 @@ def read_bat_capacity(bus):
     else:
         battery_level = 200.00
     return battery_level
+##############################################################################################################
+#End of Function defenition:
 
 #Begin Program
 if sys.version_info[0] <  3:
