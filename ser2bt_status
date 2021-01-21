@@ -278,7 +278,7 @@ def read_bat_capacity(ups_type, address, bus):
             charge = False
     else:
         battery_level = 200.00
-    return [battery_level, charge]
+    return [int(battery_level), charge]
 ##############################################################################################################
 #End of Function defenition:
 
