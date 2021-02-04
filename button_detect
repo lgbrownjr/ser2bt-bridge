@@ -1,0 +1,24 @@
+#!/usr/bin/python3
+# -*- coding:utf-8 -*-
+
+import smbus
+#import syslog
+import time
+import os
+
+#Var decloration:
+bus=1
+i2c_bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
+address = 0x75 # pisugar2 i2c address is 0x75 for battery management.
+
+try: #TRy setting the following attributes, to turn on the button.
+	i2c_bus.write_byte_data(address, 0x51, 0b0000_0100)
+	i2c_bus.write_byte_data(address, 0x53, 0b0000_0010)
+except: #if we hit except, we exit.
+	exit(1)
+while True:
+	button_press = i2c_bus.read_byte_data(address, 0x55) #Wait for the button press
+	if button_press > 0: #Once the button is pressed...
+		os.system("sudo poweroff -p") #shut the pi down.
+
+	time.sleep(5) #sleep for 5 seconds, before we loop again.
