@@ -47,9 +47,11 @@ old_bt_status = "XX"
 old_full_tty_status = "XX"
 old_bt_serial_port = "XX"
 old_wired_serial_port = "XX"
+bus=1
+i2c_bus=smbus.SMBus(bus)
+address = 0x75
+TAP_ARRAY = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 #ups_type = 'none' #pisugar2, ups_lite, or none are the three supported options # No longer used.
-charge = True
-bus = 1
 
 #Declare the fonts to be used:
 f_title_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 18)
@@ -64,20 +66,20 @@ syslog.syslog(syslog.LOG_INFO, 'ser2bt_status was started')
 #Define the functions:
 ###################################################################################################################
 #Capture the bus for ups board, both ups_lite, and pisugar2.
-def init_ups_check():
+def init_ups_check(i2c_bus, bus):
     is_not_ups_lite = False
     is_not_pisugar = False
     try:
-        bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
+        smbus.SMBus(bus)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
 #Test to see which UPS solution is inatalled, if any:
         try:
-            address = 0x75 # ups_lite is 0x36
-            low = bus.read_byte_data(address, 0xa2)
+            address = 0x75 # pisugar 2's battery is on 0x75
+            low = i2c_bus.read_byte_data(address, 0xa2)
         except:
             is_not_pisugar = True
         try:
-            address = 0x36 # PiSugar is 0x75
-            value = bus.read_word_data(address, 4)
+            address = 0x36 # ups_lite's address is on 0x36
+            value = i2c_bus.read_word_data(address, 4)
             swapped = struct.unpack("<H", struct.pack(">H", value))[0]
             battery_level = swapped/256
         except:
@@ -87,16 +89,16 @@ def init_ups_check():
                 address = 'error'
             elif is_not_ups_lite is True and is_not_pisugar is False:
                 ups_type = 'pisugar2'
-                address = 0x75 # ups_lite is 0x36
+                address = 0x75 #making sure the correct address is set.
             elif is_not_ups_lite is False and is_not_pisugar is True:
                 ups_type = 'ups_lite'
-                address = 0x36 # PiSugar is 0x75
+                address = 0x36 #Making sure the correct address is set.
             syslog.syslog(syslog.LOG_INFO, 'Found and selected the '+ups_type+' UPS option.')
     except:
         bus="error"
         syslog.syslog(syslog.LOG_INFO, 'Did not find a UPS option.')
 
-    return ups_type, address, bus
+    return ups_type, address
 
 
 def handler(signum, frame):
@@ -227,6 +229,59 @@ def cap_bt_serial_port():
     return [bt_serial_port, bt_serial_status_pos, bt_serial_connect, bt_serial_status]
 
 
+def gpio_tap_detect(tap):
+    global TAP_ARRAY
+    if tap > 0:
+        tap = 1
+
+    del TAP_ARRAY[0]
+    TAP_ARRAY.append(tap)
+    string = "".join([str(x) for x in TAP_ARRAY])
+    print (string)
+    print (tap)
+    should_refresh = False
+    current_tap_type = ""
+
+    if string.find("111111110") >= 0:
+        print("long tap event")
+        current_tap_type = "long"
+        should_refresh = True
+
+    if string.find("1010") >= 0 \
+        or string.find("10010") >= 0 \
+        or string.find("10110") >= 0\
+        or string.find("100110") >= 0\
+        or string.find("101110") >= 0\
+        or string.find("1001110") >= 0:
+        print("double tap event")
+        current_tap_type = "double"
+        should_refresh = True
+
+    if string.find("1000") >= 0:
+        print("single tap event")
+        current_tap_type = "single"
+        should_refresh = True
+    if should_refresh:
+        TAP_ARRAY = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+
+def button_detect(adddress, bus):
+#   bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
+   button_value = bus.read_byte_data(address, 0x55)
+   print (hex(button_value))
+   try:
+       button_value = bus.read_byte_data(address, 0x55)
+       print (hex(button_value))
+   except:
+       button_press = False
+   if hex(button_value) is 0:
+       button_press = False
+   else:
+       button_press = True
+   return button_press
+
+
+
 def read_bat_capacity(ups_type, address, bus):
     # "This function returns as a float the remaining capacity of the battery
     # connected to the Raspi UPS Hat via the pro$
@@ -244,6 +299,7 @@ def read_bat_capacity(ups_type, address, bus):
         [0, 3.1, 0, 0],
     ]
     battery_level = 0
+    charge = False
 
     if ups_type == 'ups_lite':
         charge = False
@@ -257,7 +313,6 @@ def read_bat_capacity(ups_type, address, bus):
         try:
             low = bus.read_byte_data(address, 0xa2)
             high = bus.read_byte_data(address, 0xa3)
-            charge_v = bus.read_byte_data(address, 0x55)
             if high & 0x20:
                 low = ~low & 0xff
                 high = ~high & 0x1f
@@ -269,15 +324,12 @@ def read_bat_capacity(ups_type, address, bus):
         except:
             battery_v = 0.0
         for range in battery_curve:
-            if range[0] <  battery_v <= range[1]:
+            if range[0] < battery_v <= range[1]:
                 level_base = ((battery_v - range[0]) / (range[1] - range[0])) * (range[3] - range[2])
                 battery_level = level_base + range[2]
-        if charge_v & 0b00001_0000 != 0:
-            charge = True
-        else:
-            charge = False
     else:
         battery_level = 200.00
+        charge = False
     return [int(battery_level), charge]
 ##############################################################################################################
 #End of Function defenition:
@@ -290,10 +342,7 @@ if sys.version_info[0] <  3:
 signal.signal(signal.SIGTERM, handler)
 
 #determine UPS type, bus number, and if its charging or not:
-ups, addr, i2c_bus = init_ups_check()
-#print ("ups\n")
-#print ("addr\n")
-#print ("i2c_bus\n")
+ups, addr = init_ups_check(i2c_bus, bus)
 try:
     #Define frame size for e-ink display
     image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear frame
@@ -325,7 +374,6 @@ try:
         epd.init(epd.PART_UPDATE) #Initialize the partial screen
         try:
             bat_cap, charge = read_bat_capacity(ups, addr, i2c_bus) #Formatted battery level
-#            bat_cap, _=int(read_bat_capacity(bus)) #Formatted battery level
             bat_lvl=str(bat_cap)+'%' #Formatted battery level
             draw.rectangle((82, 0, 120, 16), fill=255)
             draw.text((82, 0), bat_lvl, font=f_top_line_font16, fill=0)
@@ -407,6 +455,7 @@ try:
     epd2in13_V2.epdconfig.module_init()
     epd2in13_V2.epdconfig.module_exit()
     exit()
+
 
 except KeyboardInterrupt:
     syslog.syslog(syslog.LOG_INFO, 'Quit (SIGINT) Due to Keyboard interrupt when not being run as a service')
