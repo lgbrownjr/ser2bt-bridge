@@ -31,6 +31,7 @@ disable_svc=("keyboard-setup.service" "dphys-swapfile.service" "triggerhappy.ser
 base_bin_files=(ser2bt_bridge)
 enhanc_bin_files=(ser2bt_status init_scr shutdown_scr)
 full_bin_files=( "${base_bin_files[@]}" "${enhanc_bin_files[@]}" )
+pisugar2_bin_files=(button_detect)
 base_lib_files=(format.sh)
 enhanc_lib_files=(logo.bmp)
 full_lib_files=( "${base_lib_files[@]}" "${enhanc_lib_files[@]}" )
@@ -38,8 +39,10 @@ etc_files=(ser2bt_bridge.screenrc)
 base_service_files=(rfcomm.service)
 enhanc_service_files=(ser2bt-e-paper.service ser2bt-e-paper-init.service)
 full_service_files=( "${base_service_files[@]}" "${enhanc_service_files[@]}" )
+pisugar2_service_files=(ser2bt_button.service)
 enhanc_service_assoc=(ser2bt_status ser2bt-e-paper.service)
 full_service_assoc=( "${enhanc_service_assoc[@]}" )
+pisugar2_service_assoc=(button_detect ser2bt_button.service)
 removed_service_files=("ser2bt-e-paper-shut.service")
 begin_bashrc_addon_mark="#BEGIN ser2b-bridge .bashrc add-in"
 end_bashrc_addon_mark="#END ser2b-bridge .bashrc add-in"
@@ -47,22 +50,25 @@ serial_fix_file="override.conf"
 serial_fix_file_content="[Service]\nTTYReset=no\nTTYVHangup=no\nTTYVTDisallocate=no"
 bt_service_pre_search="ExecStart=/usr/lib/bluetooth/bluetoothd"
 bt_service_content="ExecStart=/usr/lib/bluetooth/bluetoothd -C --noplugin=sap\nExecStartPost=/usr/bin/sdptool add SP\nExecStartPost=/bin/hciconfig hci0 piscan"
-base_config_txt_addons=("hdmi_blanking=" "disable_splash=" "boot_delay=" "over_voltage=" "dtparam=audio=" "enable_uart=" "gpu_mem=" "initial_turbo=" "dtoverlay=")
+base_config_txt_addons=("hdmi_blanking=" "disable_splash=" "boot_delay=" "dtparam=audio=" "enable_uart=" "gpu_mem=" "initial_turbo=" "dtoverlay=")
 enhanc_config_txt_addons=("dtparam=i2c_arm=" "dtparam=spi=")
-pisugar_config_txt_addons=("dtoverlay=")
+pisugar2_config_txt_addons=("dtoverlay=i2c-rtc,ds1307,addr=")
 full_config_txt_addons=("${base_config_txt_addons[@]}" "${enhanc_config_txt_addons[@]}")
-base_config_txt_values=(2 1 0 0 "off" 1 32 60 "dwc2")
-base_boot_search=("[0-9]" "[0-9]" "[0-9]" "[0-9]" "on" "[0-9]" "[0-9]*" "[0-9]*" "dwc2")
+base_config_txt_values=(2 1 0 "off" 1 32 60 "dwc2")
+base_boot_search=("[0-9]" "[0-9]" "[0-9]" "[0-9]" "on" "[0-9]" "[0-9]\*" "[0-9]\*" "dwc2")
 enhanc_config_txt_values=("on" "on")
-enhanc_boot_search=("off" "off")
+enhanc_boot_search=("\(off\|on\)" "\(off\|on\)")
 full_boot_search=("${base_boot_search[@]}" "${enhanc_boot_search[@]}")
-pisugar2_config_txt_values=("i2c-rtc,ds1307,addr=0x32")
+pisugar2_config_txt_values=("0x32")
+pisugar2_boot_search=("0x[0-9]\*")
 full_config_txt_values=("${base_config_txt_values[@]}" "${enhanc_config_txt_values[@]}")
 
 #Flags
 bin_flag=0
 serial_fix_flag=0
 bt_fix_flag=0
+svc_1_bin_flag=0
+svc_3_bin_flag=0
 
 #Checks before begining:
 # Make sure the script is run with superuser privelages
@@ -120,6 +126,23 @@ if  grep -q "Zero" /proc/device-tree/model; then
 #Starting script here:
 	printf "\n\n${nor}Beginning ${upgrade_path} upgrade of ${yel}ser2bt-bridge${nor}:\n\n"
 
+#If this is not a basic install, check to see which ups is installed.
+if [ "${upgrade_path}"!="basic" ] ; then
+	result=$(i2cdetect -y 1 0x75 0x75 | grep -Eo "UU|75")
+	if [ ${result}="75" ] ;  then
+		ups_type="pisugar"
+	else
+		ups_type="ups_lite"
+	fi
+	if [ $ups_type="pisugar" ] ; then
+		config_txt_addons=("${full_config_txt_addons[@]}" "${pisugar2_config_txt_addons[@]}")
+		config_txt_values=("${full_config_txt_values[@]}" "${pisugar2_config_txt_values[@]}")
+		boot_search=("${enhanc_boot_search[@]}" "${pishugar2_boot_search[@]}")
+		bin_files=("${full_bin_files[@]}" "${pisugar2_bin_files[@]}")
+		service_files=("${full_service_files[@]}" "${pisugar2_service_files[@]}")
+		service_assoc=("${full_service_assoc[@]}" "${pisugar2_service_assoc[@]}")
+	fi
+fi
 #checking and adding modules as needed into /etc/modules:
 	printf "${nor}Check to make sure the the relevent modules are loaded:\n"
 	grep -q -s -o -e "^g_serial" ${etc_folder}modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'g_serial' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully${nor} loaded\n")
@@ -132,18 +155,18 @@ if  grep -q "Zero" /proc/device-tree/model; then
 	for config in "${config_txt_addons[@]}"; do
 		grep -q -s -x -E ^${config}${config_txt_values[num]} ${boot}${boot_config}
 		if [ ${?} -eq 1 ]; then
-			rem_config=$(grep -s -x -E ^#?${config}\(on\|off\|dwc2\|i2c_.*\|spi\=.*\|[0-9]*\)  ${boot}${boot_config})
-			printf " The configuration ${yel}${rem_config}${nor} will be replaced by ${yel}${config}${config_txt_values[num]}${nor}\n"
-			sed -i "/${config}${rem_search}/ { s/^#//; s/${boot_search[num]}$/${config_txt_values[num]}/ }" ${boot}${boot_config} && printf "Good\n" || printf "Bad\n"
-			let change_flag++
+			rem_config=$(grep -s -x -E ^#?${config}\(dwc2\|0x[a-z0-9]*\|[0-9]*\|on\|off\) ${boot}${boot_config})
+			if [ ${?} -eq 0 ]; then
+				printf " The configuration ${yel}${rem_config}${nor} will be replaced by ${yel}${config}${config_txt_values[num]}${nor}..."
+				sed -i "s/^${rem_config}/${config}${config_txt_values[num]}/" ${boot}${boot_config} && printf ${drk_grn}"Good${nor}\n" || printf ${drk_red}"Bad${nor}\n"
+				let change_flag++
+			elif [ ${?} -eq 1 ]; then
+				sed -i "$ a ${config}${config_txt_values[num]}" ${boot}${boot_config}
+				printf " ${yel}${config}${config_txt_values[num]} ${nor}has been added to ${cyn}${boot}${boot_config}${nor}\n"
+				let change_flag++
+			fi
 		fi
-		grep -q -s -x -E ^${config}${config_txt_values[num]} ${boot}${boot_config}
-		if [ ${?} -eq 1 ]; then
-			sed -i "$ a ${config}${config_txt_values[num]}" ${boot}${boot_config}
-			printf "${yel}${config}${config_txt_values[num]} ${nor}has been added to ${cya}${boot}${boot_config}${nor}\n"
-			let change_flag++
-		fi
-	let num++
+		let num++
 	done
 	if [ ${change_flag} -eq 0 ]; then
 		printf "${drk_grn}no changes were needed, continueing${nor}...\n"
@@ -257,11 +280,15 @@ done
 #copy files to proper directories:
 	printf "\nCopying files to the ${cyn}${bin_folder} ${nor}directory:\n"
 	for file in "${bin_files[@]}" ; do
-#		printf "${service_assoc[1]}\n"
 		if cmp --silent "${bin_folder}${file}" "${project_folder}${file}" ; then
 			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
 		else
 			if [ "${file}" == "${service_assoc[0]}" ] ; then
+				svc_1_bin_flag=1
+				bin_flag=1
+			fi
+			if [ "${file}" == "${service_assoc[2]}" ] ; then
+				svc_3_bin_flag=1
 				bin_flag=1
 			fi
 			cp ${project_folder}${file} ${bin_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
@@ -348,9 +375,15 @@ done
 	fi
 
 	if [[ "${bin_flag}" -gt 0 ]] ; then
-		printf "\n${nor}Restarting ${service_assoc[1]} (as needed):${nor}\n"
-		systemctl restart "${service_assoc[1]}" && printf " ${nor}e-paper service ${drk_grn}Successfully ${nor}Restarted.\n" || printf "${drk_red}Failed ${yellow}${svc_file}${nor}!\n"
-		let svc_count++
+		printf "\n${nor}Restarting services that are associated to running scripts (as needed):${nor}\n"
+		if [ "${svc_1_bin_flag}" -eq 1 ] ; then
+			systemctl restart "${service_assoc[1]}" && printf " ${nor}${service_assoc[1]} ${drk_grn}Successfully ${nor}Restarted.\n" || printf "${drk_red}Failed ${yellow}${svc_file}${nor}!\n"
+			let svc_count++
+		fi
+		if [ "${svc_3_bin_flag}" -eq 1 ] ; then
+			systemctl restart "${service_assoc[3]}" && printf " ${nor}${service_assoc[3]} ${drk_grn}Successfully ${nor}Restarted.\n" || printf "${drk_red}Failed ${yellow}${svc_file}${nor}!\n"
+			let svc_count++
+		fi
 	fi
 
 #refreshing .bashrc:
