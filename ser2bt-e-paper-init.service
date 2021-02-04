@@ -1,10 +1,5 @@
 [Unit]
 Description=Serial to Bluetooth init for e-ink displays - ser2bt:
-#Before=poweroff.target reboot.target halt.target shutdown.target
-#After= basic.target
-#Conflicts=shutdown.target
-#Wants=sysinit.target
-#After=network-pre.target network-online.target
 DefaultDependencies=no
 
 [Service]

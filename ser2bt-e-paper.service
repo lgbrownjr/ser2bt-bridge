@@ -1,12 +1,7 @@
 [Unit]
 Description=Serial to Bluetooth status for e-ink displays - ser2bt:
-#Before=poweroff.target reboot.target halt.target shutdown.target
 After= ser2bt-e-paper-init.service
 Requires= ser2bt-e-paper-init.service
-#Conflicts=shutdown.target
-#Wants=sysinit.target
-#After=network-pre.target network-online.target
-#DefaultDependencies=no
 
 [Service]
 Type=simple
