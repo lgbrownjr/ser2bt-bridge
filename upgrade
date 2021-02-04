@@ -62,6 +62,7 @@ full_boot_search=("${base_boot_search[@]}" "${enhanc_boot_search[@]}")
 pisugar2_config_txt_values=("0x32")
 pisugar2_boot_search=("0x[0-9]\*")
 full_config_txt_values=("${base_config_txt_values[@]}" "${enhanc_config_txt_values[@]}")
+ups_type=""
 
 #Flags
 bin_flag=0
@@ -121,20 +122,21 @@ fi
 		boot_search=(${full_boot_search[@]})
 	fi
 
-##Check to make sure this is a rpi zero:
-if  grep -q "Zero" /proc/device-tree/model; then
-#Starting script here:
-	printf "\n\n${nor}Beginning ${upgrade_path} upgrade of ${yel}ser2bt-bridge${nor}:\n\n"
+	##Check to make sure this is a rpi zero:
+	if  grep -q "Zero" /proc/device-tree/model; then
+	#Starting script here:
+		printf "\n\n${nor}Beginning ${upgrade_path} upgrade of ${yel}ser2bt-bridge${nor}:\n\n"
 
-#If this is not a basic install, check to see which ups is installed.
-if [ "${upgrade_path}"!="basic" ] ; then
-	result=$(i2cdetect -y 1 0x75 0x75 | grep -Eo "UU|75")
-	if [ ${result}="75" ] ;  then
-		ups_type="pisugar"
-	else
-		ups_type="ups_lite"
+	#If this is not a basic install, check to see which ups is installed.
+	if [ ${upgrade_path} != "basic" ] ; then
+		result=$(i2cdetect -y 1 0x75 0x75 | grep -Eo "UU|75")
+		if [ ${result}="75" ] ;  then
+			ups_type="pisugar"
+		else
+			ups_type="ups_lite"
+		fi
 	fi
-	if [ $ups_type="pisugar" ] ; then
+	if [ $ups_type="pisugar" ] && [ ${upgrade_path} != "basic" ] ; then
 		config_txt_addons=("${full_config_txt_addons[@]}" "${pisugar2_config_txt_addons[@]}")
 		config_txt_values=("${full_config_txt_values[@]}" "${pisugar2_config_txt_values[@]}")
 		boot_search=("${enhanc_boot_search[@]}" "${pishugar2_boot_search[@]}")
@@ -142,7 +144,6 @@ if [ "${upgrade_path}"!="basic" ] ; then
 		service_files=("${full_service_files[@]}" "${pisugar2_service_files[@]}")
 		service_assoc=("${full_service_assoc[@]}" "${pisugar2_service_assoc[@]}")
 	fi
-fi
 #checking and adding modules as needed into /etc/modules:
 	printf "${nor}Check to make sure the the relevent modules are loaded:\n"
 	grep -q -s -o -e "^g_serial" ${etc_folder}modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'g_serial' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully${nor} loaded\n")
