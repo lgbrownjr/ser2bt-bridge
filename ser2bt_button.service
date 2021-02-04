@@ -1,0 +1,13 @@
+[Unit]
+Description=ser2bt pisugar2 button monitoring service
+DefaultDependencies=no
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/button_detect
+Nice=15
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=ser2bt-e-paper-init.service
