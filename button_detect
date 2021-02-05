@@ -10,6 +10,64 @@ import os
 bus=1
 i2c_bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
 address = 0x75 # pisugar2 i2c address is 0x75 for battery management.
+TAP_ARRAY = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+#Begin Function defenition:
+######################################################################################################
+#Future use:
+def gpio_tap_detect(tap):
+    global TAP_ARRAY
+    if tap > 0:
+        tap = 1
+
+    del TAP_ARRAY[0]
+    TAP_ARRAY.append(tap)
+    string = "".join([str(x) for x in TAP_ARRAY])
+    print (string)
+    print (tap)
+    should_refresh = False
+    current_tap_type = ""
+
+    if string.find("111111110") >= 0:
+        print("long tap event")
+        current_tap_type = "long"
+        should_refresh = True
+
+    if string.find("1010") >= 0 \
+        or string.find("10010") >= 0 \
+        or string.find("10110") >= 0\
+        or string.find("100110") >= 0\
+        or string.find("101110") >= 0\
+        or string.find("1001110") >= 0:
+        print("double tap event")
+        current_tap_type = "double"
+        should_refresh = True
+
+    if string.find("1000") >= 0:
+        print("single tap event")
+        current_tap_type = "single"
+        should_refresh = True
+    if should_refresh:
+        TAP_ARRAY = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+#Future Use
+def button_detect(adddress, bus):
+#   bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
+   button_value = bus.read_byte_data(address, 0x55)
+   print (hex(button_value))
+   try:
+       button_value = bus.read_byte_data(address, 0x55)
+       print (hex(button_value))
+   except:
+       button_press = False
+   if hex(button_value) is 0:
+       button_press = False
+   else:
+       button_press = True
+   return button_press
+#End Function defenition:
+######################################################################################################
+
 
 try: #TRy setting the following attributes, to turn on the button.
 	i2c_bus.write_byte_data(address, 0x51, 0b0000_0100)
@@ -21,4 +79,4 @@ while True:
 	if button_press > 0: #Once the button is pressed...
 		os.system("sudo poweroff -p") #shut the pi down.
 
-	time.sleep(5) #sleep for 5 seconds, before we loop again.
+	time.sleep(1) #sleep for 5 seconds, before we loop again.
