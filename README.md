@@ -2,7 +2,7 @@
 ## Serial to Bluetooth bridge for raspberry pi zero w
 Before we begin, understand that everything in this repository is a work in progress...  :) 
 ### Definitions:
-I tend to use several differenct discripters for each piece thats involved with this project, so I've tried to define them below to helpkeep the reader from being confused.. :)
+I tend to use several different discripters for each piece thats involved with this project, so I've tried to define them below to helpkeep the reader from being confused.. :)
 - The terms *pi*, *bridge*, *ser2bt* all refer to the *raspberry pi zero w* that is being used to run this program.
 - The terms *user*, *you*, *network engineer*, *network administrator*, *administrator*, or *engineer* all refer to the person using this bridge to connect to a switch, or router.
 - The terms *switch*, *router*, or *device* all refer to the device you want to be bridged to.  For main purpose of this project, it is to connect to a router or switch.  However, anything with a console port can be used  such as a server, an appliance, Firewall, Wireless LAN conroller, etc.
@@ -187,10 +187,12 @@ If everything went as planned, your *raspberry pi zero w* should be acting like 
   - Under Widows 10, after pairing, select *More Bluetooth Settings*, under *Related settings*, on the right side of the settings window.
 - Once that's done, go ahead and open your favorite terminal program, and point it to the com/ttyUSBx/tty/ACMx port, and set it up to connect at 115200 bps, n/8/1, xterm.
 ### Full setup:
-#### Installation of *ups-lite* & *waveshare e-ink screen*:
+#### Installation of the *UPS* & *e-ink screen*:
 The addition of am e-paper screen and ups backup will allow you to continue providing power to the Pi while not being plugged into a power source, and to easily tell the status of the bridge (Pi) without having to login to check.
 #### Parts needed for this phase:
-- For battery backup, attach a [ups-lite](https://www.ebay.com/itm/UPS-Lite-for-Raspberry-Pi-Zero-/352888138785).
+- For Battery UPS, we have two supported options:
+  - The first option is a [ups-lite](https://www.ebay.com/itm/UPS-Lite-for-Raspberry-Pi-Zero-/352888138785).
+  - The second option is a PiSugar2 which also has a built-in real time clock, but at double the cost.
 - For status and system health updates, attach a [waveshare.2.13 e-paper](https://www.waveshare.com/2.13inch-e-Paper-HAT.htm) display.
 #### Installation:
 Coming soon:
