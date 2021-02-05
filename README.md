@@ -187,10 +187,12 @@ If everything went as planned, your *raspberry pi zero w* should be acting like 
   - Under Widows 10, after pairing, select *More Bluetooth Settings*, under *Related settings*, on the right side of the settings window.
 - Once that's done, go ahead and open your favorite terminal program, and point it to the com/ttyUSBx/tty/ACMx port, and set it up to connect at 115200 bps, n/8/1, xterm.
 ### Full setup:
-#### Installation of *ups-lite* & *waveshare e-ink screen*:
+#### Installation of the *UPS* & *e-ink screen*:
 The addition of am e-paper screen and ups backup will allow you to continue providing power to the Pi while not being plugged into a power source, and to easily tell the status of the bridge (Pi) without having to login to check.
 #### Parts needed for this phase:
-- For battery backup, attach a [ups-lite](https://www.ebay.com/itm/UPS-Lite-for-Raspberry-Pi-Zero-/352888138785).
+- For Battery UPS, we have two supported options:
+  - The first option is a [ups-lite](https://www.ebay.com/itm/UPS-Lite-for-Raspberry-Pi-Zero-/352888138785).
+  - The second option is a PiSugar2 which also has a built-in real time clock, but at double the cost.
 - For status and system health updates, attach a [waveshare.2.13 e-paper](https://www.waveshare.com/2.13inch-e-Paper-HAT.htm) display.
 #### Installation:
 Coming soon:
