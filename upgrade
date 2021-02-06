@@ -27,7 +27,7 @@ bt_service="bluetooth.service"
 boot_config="config.txt"
 disable_svc=("keyboard-setup.service" "dphys-swapfile.service" "triggerhappy.service" \
 "triggerhappy.socket" "apt-daily.service" "apt-daily.timer" \
-"apt-daily-upgrade.service" "apt-daily-upgrade.timer" "rpi-eeprom-update.service")
+"apt-daily-upgrade.service" "apt-daily-upgrade.timer" "rpi-eeprom-update.service ser2net.service")
 base_bin_files=(ser2bt_bridge)
 enhanc_bin_files=(ser2bt_status init_scr shutdown_scr bat_mon)
 full_bin_files=( "${base_bin_files[@]}" "${enhanc_bin_files[@]}" )

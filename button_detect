@@ -8,6 +8,7 @@ import os
 
 #Var decloration:
 bus=1
+battery_loop_sleep = 1
 i2c_bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
 address = 0x75 # pisugar2 i2c address is 0x75 for battery management.
 TAP_ARRAY = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -69,7 +70,7 @@ def button_detect(adddress, bus):
 ######################################################################################################
 
 
-try: #TRy setting the following attributes, to turn on the button.
+try: #Try setting the following attributes, to turn on the button.
 	i2c_bus.write_byte_data(address, 0x51, 0b0000_0100)
 	i2c_bus.write_byte_data(address, 0x53, 0b0000_0010)
 except: #if we hit except, we exit.
@@ -79,4 +80,4 @@ while True:
 	if button_press > 0: #Once the button is pressed...
 		os.system("poweroff -p") #shut the pi down.
 
-	time.sleep(1) #sleep for 5 seconds, before we loop again.
+	time.sleep(battery_loop_sleep) #sleep for for the duration of battery_loop_sleep, before we loop again.

@@ -114,30 +114,30 @@ try:
     while (bat_cap > min_bat_cap or charge is True):
         bat_cap, charge = read_bat_capacity(ups, address, i2c_bus) #Formatted battery level
         bat_lvl=str(bat_cap)+"%"
-        fb = open('/tmp/bat','w')
-        fb.write(str(bat_lvl))
-        fb.close()
+        bat_file = open('/tmp/bat','w')
+        bat_file.write(str(bat_lvl))
+        bat_file.close()
         time.sleep(60)
 
     #if the bat_cap is less that min_bat_cap, then bail out of the loop, and follow the remaining code to shutdown.
     os.system("poweroff -p")
     syslog.syslog(syslog.LOG_INFO, 'Shutting down - battary has reached critical level')
     syslog.syslog(syslog.LOG_INFO, 'Battary is: '+bat_lvl+'%')
-    fb.close()
+    bat_file.close()
     exit(0)
 
 except KeyboardInterrupt:
     syslog.syslog(syslog.LOG_INFO, 'Quit (SIGINT) Due to Keyboard interrupt when not being run as a service')
-    fb.close()
-    exit()
+    bat_file.close()
+    exit(1)
 
 except SystemExit:
    syslog.syslog(syslog.LOG_INFO, 'Quit (SIGTERM) from service telling us to terminate')
    syslog.syslog(syslog.LOG_INFO, 'Shutting Down/Restarting service - interupted by service stop, from command, shutdown, or reboot')
-   fb.close()
+   fb.close(0)
    exit()
 
 except IOError as e:
    syslog.syslog(syslog.LOG_ERR, 'Shutting Down ser2bt_status - traceback.format_exc():\n%s' ,traceback.format_exc())
-   fb.close()
-   exit()
+   bat_file.close()
+   exit(1)

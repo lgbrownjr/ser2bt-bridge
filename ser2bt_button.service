@@ -4,6 +4,7 @@ DefaultDependencies=no
 
 [Service]
 Type=simple
+SyslogIdentifier=ser2bt-but_mon_svc
 ExecStart=/usr/local/bin/button_detect
 Nice=15
 Restart=on-failure

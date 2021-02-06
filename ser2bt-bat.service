@@ -4,6 +4,7 @@ DefaultDependencies=no
 
 [Service]
 Type=simple
+SyslogIdentifier=ser2bt-bat_mon_svc
 ExecStart=/usr/local/bin/bat_mon
 Nice=15
 Restart=on-failure

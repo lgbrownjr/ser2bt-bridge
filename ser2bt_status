@@ -46,6 +46,9 @@ old_bt_status = "XX"
 old_full_tty_status = "XX"
 old_bt_serial_port = "XX"
 old_wired_serial_port = "XX"
+inactive = "inactive"
+active = "active"
+not_connected = "Not Connected"
 #ups_type = 'none' #pisugar2, ups_lite, or none are the three supported options # No longer used.
 
 #Declare the fonts to be used:
@@ -248,10 +251,20 @@ try:
             if get_lan_service is not False:
                  draw.rectangle((212, 79, 222, 99), fill=255)
                  draw.text((212, 80), get_lan_service, font=f_var_spc_char_font18, fill=0)
-              # This section checkes the tree primary bluetooth services, to make sure they are all up.  if so, then we produce an up arrow.
-
+            #Collect connected ssid and system ip address:
             ssid = get_ssid()
-            ip_host = get_ip()
+            ser2net_svc_status = subprocess.Popen(['systemctl', 'is-active', 'ser2net.service'], stdout=subprocess.PIPE).communicate()[0].decode(encoding='UTF-8')
+            if ssid is not_connected:
+                ip_host = not_connected
+            else:
+                ip_host = get_ip()
+
+            #If there is no ip address, then turn off the ser2net service:
+            if ip_host is not not_connected and inactive in ser2net_svc_status:
+                os.system("systemctl start ser2net.service") #stop the ser2net service.
+            if ip_host is not_connected and active is ser2net_svc_status:
+                os.system("systemctl stop ser2net.service") #stop the ser2net service.
+
             if ssid is not False:
                 draw.rectangle((52, 39, 200, 59), fill=255)
                 draw.text((52, 40), ssid, font=f_var_font18, fill=0)
@@ -295,18 +308,6 @@ try:
         time.sleep(end_of_loop_pause)
 
 # End of while bat_cap > 1 loop...
-# if the bat_cap is less that min_bat_cap, then bail out of the loop, and follow the remaining code to shutdown.
-#    epd.init(epd.FULL_UPDATE)
-#    term_image=Image.new('1', (epd.height, epd.width), 255)  # 255: clear frame
-#    term_draw=ImageDraw.Draw(term_image)
-#    os.system("sudo poweroff -p")
-#    term_draw.text((25, 20), 'Serial to bluetooth', font=f_title_font24, fill=0)
-#    term_draw.text((90, 50), 'bridge', font=f_title_font24, fill=0)
-#    term_draw.text((30, 80), 'Is Shutting Down!', font=f_title_font24, fill=0)
-#    term_draw.text((3, 100), 'Due to Critical Battary level ', font=f_title_font18, fill=0)
-#    epd.display(epd.getbuffer(term_image))
-#    syslog.syslog(syslog.LOG_INFO, 'Shutting down - battary has reached critical level')
-#    syslog.syslog(syslog.LOG_INFO, 'Battary is: '+bat_lvl+'%')
     epd2in13_V2.epdconfig.module_init()
     epd2in13_V2.epdconfig.module_exit()
     exit()
