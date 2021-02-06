@@ -77,6 +77,6 @@ except: #if we hit except, we exit.
 while True:
 	button_press = i2c_bus.read_byte_data(address, 0x55) #Wait for the button press
 	if button_press > 0: #Once the button is pressed...
-		os.system("sudo poweroff -p") #shut the pi down.
+		os.system("poweroff -p") #shut the pi down.
 
 	time.sleep(1) #sleep for 5 seconds, before we loop again.

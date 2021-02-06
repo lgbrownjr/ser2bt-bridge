@@ -292,14 +292,20 @@ done
 			if [ "${file}" == "${service_assoc[0]}" ] ; then
 				svc_1_bin_flag=1
 				bin_flag=1
+			else
+				svc_1_bin_flag=0
 			fi
 			if [ "${file}" == "${service_assoc[2]}" ] ; then
 				svc_3_bin_flag=1
 				bin_flag=1
+			else
+				svc_3_bin_flag=0
 			fi
 			if [ "${file}" == "${service_assoc[4]}" ] ; then
 				svc_5_bin_flag=1
 				bin_flag=1
+			else
+				svc_5_bin_flag=0
 			fi
 			cp ${project_folder}${file} ${bin_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
 		fi

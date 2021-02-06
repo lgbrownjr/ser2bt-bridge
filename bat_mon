@@ -107,7 +107,6 @@ def read_bat_capacity(ups_type, address, bus):
 #End of Function defenition:
 ######################################################################################################
 
-
 #determine UPS type, bus number, and if its charging or not:
 ups, address = init_ups_check(i2c_bus, bus)
 
@@ -121,7 +120,7 @@ try:
         time.sleep(60)
 
     #if the bat_cap is less that min_bat_cap, then bail out of the loop, and follow the remaining code to shutdown.
-    os.system("sudo poweroff -p")
+    os.system("poweroff -p")
     syslog.syslog(syslog.LOG_INFO, 'Shutting down - battary has reached critical level')
     syslog.syslog(syslog.LOG_INFO, 'Battary is: '+bat_lvl+'%')
     fb.close()
