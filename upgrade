@@ -129,11 +129,16 @@ fi
 
 	#If this is not a basic install, check to see which ups is installed.
 	if [ ${upgrade_path} != "basic" ] ; then
-		result=$(i2cdetect -y 1 0x75 0x75 | grep -Eo "UU|75")
+		result=$(i2cdetect -y 1 0x75 0x75 | grep -Eo "UU|36")
 		if [ ${result}="75" ] ;  then
 			ups_type="pisugar"
 		else
-			ups_type="ups_lite"
+			result=$(i2cdetect -y 1 0x36 0x36 | grep -Eo "UU|36")
+			if [ ${result}="36" ] ;  then
+				ups_type="ups_lite"
+			else
+				ups_type="none"
+			fi
 		fi
 	fi
 	if [ $ups_type="pisugar" ] && [ ${upgrade_path} != "basic" ] ; then
