@@ -8,8 +8,8 @@ import time #timers for sleep
 try:
     from waveshare_epd import epd2in13_V2
     from PIL import Image, ImageDraw, ImageFont  # Font handeling
-    import struct  # Capture battary capacity
-    import smbus #both waveshare and UPS-LITE
+#    import struct  # Capture battary capacity
+#    import smbus #both waveshare and UPS-LITE
 
 except:
     print ("No Waveshare e-ink was detected.  Please investigate, and try again\n")
@@ -60,6 +60,7 @@ f_top_line_font16 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 16)
 #Setup logging:  Work in progress
 syslog.openlog(ident="ser2bt-bridge",logoption=syslog.LOG_PID, facility=syslog.LOG_LOCAL7)
 syslog.syslog(syslog.LOG_INFO, 'ser2bt_status was started')
+
 #Define the functions:
 ###################################################################################################################
 def bat_lvl():

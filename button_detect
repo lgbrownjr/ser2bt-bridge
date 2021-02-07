@@ -2,7 +2,7 @@
 # -*- coding:utf-8 -*-
 
 import smbus
-#import syslog
+import syslog
 import time
 import os
 
@@ -12,6 +12,10 @@ battery_loop_sleep = 1
 i2c_bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
 address = 0x75 # pisugar2 i2c address is 0x75 for battery management.
 TAP_ARRAY = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+#Setup logging:  Work in progress
+syslog.openlog(ident="pishugar_button_mon",logoption=syslog.LOG_PID, facility=syslog.LOG_LOCAL7)
+syslog.syslog(syslog.LOG_INFO, ' burron_detect was started')
 
 #Begin Function defenition:
 ######################################################################################################
@@ -54,30 +58,32 @@ def gpio_tap_detect(tap):
 #Future Use
 def button_detect(adddress, bus):
 #   bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
-   button_value = bus.read_byte_data(address, 0x55)
-   print (hex(button_value))
-   try:
-       button_value = bus.read_byte_data(address, 0x55)
-       print (hex(button_value))
-   except:
-       button_press = False
-   if hex(button_value) is 0:
-       button_press = False
-   else:
-       button_press = True
-   return button_press
+    button_value = bus.read_byte_data(address, 0x55)
+    try:
+        button_value = bus.read_byte_data(address, 0x55)
+    except:
+        button_press = False
+    if hex(button_value) is 0:
+        button_press = False
+    else:
+        button_press = True
+    return button_press
 #End Function defenition:
 ######################################################################################################
 
 
 try: #Try setting the following attributes, to turn on the button.
-	i2c_bus.write_byte_data(address, 0x51, 0b0000_0100)
-	i2c_bus.write_byte_data(address, 0x53, 0b0000_0010)
+    i2c_bus.write_byte_data(address, 0x51, 0b0000_0100)
+    i2c_bus.write_byte_data(address, 0x53, 0b0000_0010)
 except: #if we hit except, we exit.
-	exit(1)
+    syslog.syslog(syslog.LOG_INFO, 'Did not find the PiSugar2, exiting....')
+    exit(1)
 while True:
-	button_press = i2c_bus.read_byte_data(address, 0x55) #Wait for the button press
-	if button_press > 0: #Once the button is pressed...
-		os.system("poweroff -p") #shut the pi down.
+    button_press = i2c_bus.read_byte_data(address, 0x55) #Wait for the button press
+    if button_press > 0: #Once the button is pressed...
+        syslog.syslog(syslog.LOG_INFO, 'Button was pressed, shutting down...')
+        os.system("poweroff -p") #shut the pi down.
 
-	time.sleep(battery_loop_sleep) #sleep for for the duration of battery_loop_sleep, before we loop again.
+    time.sleep(battery_loop_sleep) #sleep for for the duration of battery_loop_sleep, before we loop again.
+
+exit(0)

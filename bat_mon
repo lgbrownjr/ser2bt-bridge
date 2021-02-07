@@ -11,11 +11,14 @@ import syslog
 
 
 #Declare Variables:
-min_bat_cap=1  # setting in percent minimum battery capacity before we'll shutdown.
+min_bat_cap=2  # setting in percent minimum battery capacity before we'll shutdown.
 bus=1
 i2c_bus=smbus.SMBus(bus)
 bat_cap = min_bat_cap+1 #Define the initial battery capacity.
 
+#Setup logging:  Work in progress
+syslog.openlog(ident="ser2bt_battery_mon",logoption=syslog.LOG_PID, facility=syslog.LOG_LOCAL7)
+syslog.syslog(syslog.LOG_INFO, 'bat_mon was started')
 
 #Begin Function defenition:
 ######################################################################################################
@@ -47,6 +50,7 @@ def init_ups_check(i2c_bus, bus):
             elif is_not_ups_lite is False and is_not_pisugar is True:
                 ups_type = 'ups_lite'
                 address = 0x36 #Making sure the correct address is set.
+
             syslog.syslog(syslog.LOG_INFO, 'Found and selected the '+ups_type+' UPS option.')
     except:
         bus="error"
@@ -134,8 +138,8 @@ except KeyboardInterrupt:
 except SystemExit:
    syslog.syslog(syslog.LOG_INFO, 'Quit (SIGTERM) from service telling us to terminate')
    syslog.syslog(syslog.LOG_INFO, 'Shutting Down/Restarting service - interupted by service stop, from command, shutdown, or reboot')
-   fb.close(0)
-   exit()
+   bat_file.close(0)
+   exit(0)
 
 except IOError as e:
    syslog.syslog(syslog.LOG_ERR, 'Shutting Down ser2bt_status - traceback.format_exc():\n%s' ,traceback.format_exc())
