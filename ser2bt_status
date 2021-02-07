@@ -49,7 +49,6 @@ old_wired_serial_port = "XX"
 inactive = "inactive"
 active = "active"
 not_connected = "Not Connected"
-#ups_type = 'none' #pisugar2, ups_lite, or none are the three supported options # No longer used.
 
 #Declare the fonts to be used:
 f_title_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 18)
@@ -99,22 +98,33 @@ def get_bt_service_status():
     return (bt_status)
 
 
-def get_lan_service_status():
+def get_lan_service_status(ip_addr):
     global old_lan_status
+    global not_connected
     lan_service = 'ser2net'
     inactive = 'inactive'
     lan_service = subprocess.Popen(['systemctl', 'is-active', lan_service], stdout=subprocess.PIPE).communicate()[0].decode(encoding='UTF-8')
     if inactive in lan_service:
-        lan_status = "↓"  # down arrow
+        #If there is no ip address, then turn off the ser2net service:
+        if ip_addr != not_connected:
+            os.system("systemctl start ser2net") #start the ser2net service.
+            lan_status = "↑"  # up arrow
+        else:
+            lan_status = "↓"  # down arrow
     else:
-        lan_status = "↑"  # up arrow
-
+        #If there is no ip address, then turn off the ser2net service:
+        if ip_addr == not_connected:
+            os.system("systemctl stop ser2net") #start the ser2net service.
+            lan_status = "↓"  # down arrow
+        else:
+            lan_status = "↑"  # up arrow
     if old_lan_status != lan_status:
         old_lan_status = lan_status
+        lan_status_change_flag = True
     else:
-        lan_status = False
+        lan_status_change_flag = False
 
-    return (lan_status)
+    return (lan_status, lan_status_change_flag)
 
 
 def get_ssid():
@@ -151,10 +161,11 @@ def get_ip():
 
     if old_host_ip != host_ip:
         old_host_ip = host_ip
+        host_ip_change = True
     else:
-        host_ip = False
+        host_ip_change = False
 
-    return host_ip
+    return (host_ip, host_ip_change)
 
 
 def cap_wired_serial_port():
@@ -242,33 +253,25 @@ try:
             draw.rectangle((195, 19, 250, 39), fill=255)
             draw.text((195, 20), str(psutil.virtual_memory().percent)+'%', font=f_var_font18, fill=0)
 
+            #Collect connected ssid and system ip address:
+            ssid = get_ssid()
+            ip_host, ip_host_change_flag = get_ip()
+
             # Capture service status for rfcomm, bluetooth, hci, and ser2net.
             get_bt_service = get_bt_service_status()
-            get_lan_service = get_lan_service_status()
+            get_lan_service, get_lan_service_change_flag  = get_lan_service_status(ip_host)
+#            print(get_lan_service)
             if get_bt_service is not False:
                 draw.rectangle((74, 79, 84, 99), fill=255)
                 draw.text((74, 80), get_bt_service, font=f_var_spc_char_font18, fill=0)
-            if get_lan_service is not False:
-                 draw.rectangle((212, 79, 222, 99), fill=255)
-                 draw.text((212, 80), get_lan_service, font=f_var_spc_char_font18, fill=0)
-            #Collect connected ssid and system ip address:
-            ssid = get_ssid()
-            ser2net_svc_status = subprocess.Popen(['systemctl', 'is-active', 'ser2net.service'], stdout=subprocess.PIPE).communicate()[0].decode(encoding='UTF-8')
-            if ssid is not_connected:
-                ip_host = not_connected
-            else:
-                ip_host = get_ip()
-
-            #If there is no ip address, then turn off the ser2net service:
-            if ip_host is not not_connected and inactive in ser2net_svc_status:
-                os.system("systemctl start ser2net.service") #stop the ser2net service.
-            if ip_host is not_connected and active is ser2net_svc_status:
-                os.system("systemctl stop ser2net.service") #stop the ser2net service.
+            if get_lan_service_change_flag is not False:
+                draw.rectangle((212, 79, 222, 99), fill=255)
+                draw.text((212, 80), get_lan_service, font=f_var_spc_char_font18, fill=0)
 
             if ssid is not False:
                 draw.rectangle((52, 39, 200, 59), fill=255)
                 draw.text((52, 40), ssid, font=f_var_font18, fill=0)
-            if ip_host is not False:
+            if ip_host_change_flag is not False:
                 draw.rectangle((52, 59, 200, 79), fill=255)
                 draw.text((52, 60), ip_host, font=f_var_font18, fill=0)
 
