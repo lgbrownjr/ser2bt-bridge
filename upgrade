@@ -30,20 +30,20 @@ disable_svc=("keyboard-setup.service" "dphys-swapfile.service" "triggerhappy.ser
 "apt-daily-upgrade.service" "apt-daily-upgrade.timer" "rpi-eeprom-update.service" \
 "ser2net.service")
 base_bin_files=(ser2bt_bridge)
-enhanc_bin_files=(ser2bt_status init_scr shutdown_scr bat_mon)
+enhanc_bin_files=(ser2bt_status init_scr shutdown_scr)
 full_bin_files=( "${base_bin_files[@]}" "${enhanc_bin_files[@]}" )
-pisugar2_bin_files=(button_detect)
+pisugar2_bin_files=(button_detect bat_mon)
 base_lib_files=(format.sh)
 enhanc_lib_files=(logo.bmp)
 full_lib_files=( "${base_lib_files[@]}" "${enhanc_lib_files[@]}" )
 etc_files=(ser2bt_bridge.screenrc)
 base_service_files=(rfcomm.service)
-enhanc_service_files=(ser2bt-e-paper.service ser2bt-e-paper-init.service ser2bt-bat.service)
+enhanc_service_files=(ser2bt-e-paper.service ser2bt-e-paper-init.service)
 full_service_files=( "${base_service_files[@]}" "${enhanc_service_files[@]}" )
-pisugar2_service_files=(ser2bt_button.service)
-enhanc_service_assoc=(ser2bt_status ser2bt-e-paper.service bat_mon ser2bt-bat.service)
+pisugar2_service_files=(ser2bt_button.service ser2bt-bat.service)
+enhanc_service_assoc=(ser2bt_status ser2bt-e-paper.service)
 full_service_assoc=( "${enhanc_service_assoc[@]}" )
-pisugar2_service_assoc=(button_detect ser2bt_button.service)
+pisugar2_service_assoc=(button_detect ser2bt_button.service bat_mon ser2bt-bat.service)
 removed_service_files=("ser2bt-e-paper-shut.service")
 begin_bashrc_addon_mark="#BEGIN ser2b-bridge .bashrc add-in"
 end_bashrc_addon_mark="#END ser2b-bridge .bashrc add-in"
@@ -63,7 +63,7 @@ full_boot_search=("${base_boot_search[@]}" "${enhanc_boot_search[@]}")
 pisugar2_config_txt_values=("0x32")
 pisugar2_boot_search=("0x[0-9]\*")
 full_config_txt_values=("${base_config_txt_values[@]}" "${enhanc_config_txt_values[@]}")
-ups_type=""
+ups_type="N/A"
 
 #Flags
 bin_flag=0
@@ -130,19 +130,19 @@ fi
 
 	#If this is not a basic install, check to see which ups is installed.
 	if [ ${upgrade_path} != "basic" ] ; then
-		result=$(i2cdetect -y 1 0x75 0x75 | grep -Eo "UU|36")
-		if [ ${result}="75" ] ;  then
-			ups_type="pisugar"
+		result=$(i2cdetect -y 1 0x75 0x75 | grep -Eo "UU|75")
+		if [ ${result} -eq 75 ] ;  then
+			ups_type="pisugar2"
 		else
 			result=$(i2cdetect -y 1 0x36 0x36 | grep -Eo "UU|36")
-			if [ ${result}="36" ] ;  then
+			if [ ${result} -eq 36 ] ;  then
 				ups_type="ups_lite"
 			else
 				ups_type="none"
 			fi
 		fi
 	fi
-	if [ $ups_type="pisugar" ] && [ ${upgrade_path} != "basic" ] ; then
+	if [ "${ups_type}" = "pisugar2" ] && [ "${upgrade_path}" = "full" ] ; then
 		config_txt_addons=("${full_config_txt_addons[@]}" "${pisugar2_config_txt_addons[@]}")
 		config_txt_values=("${full_config_txt_values[@]}" "${pisugar2_config_txt_values[@]}")
 		boot_search=("${enhanc_boot_search[@]}" "${pishugar2_boot_search[@]}")
