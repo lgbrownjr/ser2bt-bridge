@@ -36,9 +36,8 @@ def init_ups_check(i2c_bus, bus):
             is_not_pisugar = True
         try:
             address = 0x36 # ups_lite's address is on 0x36
-            value = i2c_bus.read_word_data(address, 4)
-            swapped = struct.unpack("<H", struct.pack(">H", value))[0]
-            battery_level = swapped/256
+            read_vol = i2c_bus.read_word_data(address, 0x02)
+            read_cap = i2c_bus.read_word_data(address, 0x04)
         except:
             is_not_ups_lite = True
             if is_not_ups_lite is True and is_not_pisugar is True:
@@ -64,7 +63,7 @@ def read_bat_capacity(ups_type, address, bus):
     # connected to the Raspi UPS Hat via the pro$
     battery_curve = [
         [4.16, 5.5, 100, 100],
-        [4.05, 4.16, 87.5, 100],
+        [4.05, 4.16, 87.5, 95],
         [4.00, 4.05, 75, 87.5],
         [3.92, 4.00, 62.5, 75],
         [3.86, 3.92, 50, 62.5],
@@ -81,8 +80,13 @@ def read_bat_capacity(ups_type, address, bus):
     if ups_type == 'ups_lite':
         charge = False
         try:
-            read = bus.read_word_data(address, 4)
-            swapped = struct.unpack("<H", struct.pack(">H", read))[0]
+            #Read Voltage from UPS:
+            read_vol = i2c_bus.read_word_data(address, 0x02)
+            swapped = struct.unpack("<H", struct.pack(">H", read_vol))[0]
+            voltage = swapped * 1.25 /1000/16
+            #Read capacity from UPS to get voltage:
+            read_cap = i2c_bus.read_word_data(address, 0x04)
+            swapped = struct.unpack("<H", struct.pack(">H", read_cap))[0]
             battery_level = swapped/256
         except:
             battery_level = 200.00
@@ -94,20 +98,21 @@ def read_bat_capacity(ups_type, address, bus):
                 low = ~low & 0xff
                 high = ~high & 0x1f
                 v = (((high | 0b1100_0000) << 8) + low)
-                battery_v = (2600.0 - v * 0.26855) / 1000
+                voltage = (2600.0 - v * 0.26855) / 1000
             else:
                 v = ((high & 0x1f) << 8 ) + low
-                battery_v = (2600 + v * 0.26855) / 1000
+                voltage = (2600 + v * 0.26855) / 1000
         except:
             battery_v = 0.0
         for range in battery_curve:
-            if range[0] < battery_v <= range[1]:
-                level_base = ((battery_v - range[0]) / (range[1] - range[0])) * (range[3] - range[2])
+            if range[0] < voltage <= range[1]:
+                level_base = ((voltage - range[0]) / (range[1] - range[0])) * (range[3] - range[2])
                 battery_level = level_base + range[2]
     else:
-        battery_level = 200.00
+        battery_level = Err
         charge = False
-    return [int(battery_level), charge]
+        voltage = Err
+    return [int(battery_level), voltage, charge]
 #End of Function defenition:
 ######################################################################################################
 
@@ -116,7 +121,8 @@ ups, address = init_ups_check(i2c_bus, bus)
 
 try:
     while (bat_cap > min_bat_cap or charge is True):
-        bat_cap, charge = read_bat_capacity(ups, address, i2c_bus) #Formatted battery level
+        bat_cap, volts, charge = read_bat_capacity(ups, address, i2c_bus) #Formatted battery level
+#        print(volts)
         bat_lvl=str(bat_cap)+"%"
         bat_file = open('/tmp/bat','w')
         bat_file.write(str(bat_lvl))
