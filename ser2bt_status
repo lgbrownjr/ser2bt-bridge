@@ -29,6 +29,7 @@ sys.path.append(r'lib')
 epd = epd2in13_V2.EPD()
 host_name=os.uname()[1]  # define host_name
 dev_dir='/dev/'
+bt_ser_short_label='BT'
 bt_ser_label='rfcomm0'
 bt_ser_port=bt_ser_label
 usb_ser_label='USB0'
@@ -199,12 +200,12 @@ def cap_bt_serial_port():
         bt_serial_port = bt_ser_label
         bt_serial_connect = True
         bt_serial_status = "✔"
-        bt_serial_status_pos = 127
+        bt_serial_status_pos = 74
     else:
         bt_serial_port = bt_ser_label
         bt_serial_connect = False
         bt_serial_status = "✖"
-        bt_serial_status_pos = 127
+        bt_serial_status_pos = 74
 
     return [bt_serial_port, bt_serial_status_pos, bt_serial_connect, bt_serial_status]
 ##############################################################################################################
@@ -291,7 +292,7 @@ try:
                 full_tty_status = ""
                 old_full_tty_status = full_tty_status
                 draw.rectangle((52, 99, 149, 122), fill=255)
-                draw.text((52, 100), bt_serial_port, font=f_var_font18, fill=0)
+                draw.text((52, 100), bt_ser_short_label, font=f_var_font18, fill=0)
                 draw.text((bt_serial_status_pos, 100), bt_serial_status, font=f_var_spc_char_font18, fill=0)
                 draw.rectangle((150, 99, 220, 122), fill=255)
                 draw.text((150, 100), wired_serial_port, font=f_var_font18, fill=0)
