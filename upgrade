@@ -4,7 +4,7 @@
 if [ -f /usr/local/lib/format.sh ]; then
 	source /usr/local/lib/format.sh > /dev/null 2>&1
 else
-	printf "\nformat library is not installed, continueing without!\n"
+	printf "\nFormat library is not installed, continuing without!\n"
 fi
 
 #Location settings:
@@ -40,11 +40,11 @@ etc_files=(ser2bt_bridge.screenrc)
 base_service_files=(rfcomm.service)
 enhanc_service_files=(ser2bt-e-paper.service ser2bt-e-paper-init.service)
 full_service_files=( "${base_service_files[@]}" "${enhanc_service_files[@]}" )
-pisugar2_service_files=(ser2bt_button.service ser2bt-bat.service)
+pisugar2_service_files=(ser2bt-button.service ser2bt-battery.service)
 enhanc_service_assoc=(ser2bt_status ser2bt-e-paper.service)
 full_service_assoc=( "${enhanc_service_assoc[@]}" )
-pisugar2_service_assoc=(button_detect ser2bt_button.service bat_mon ser2bt-bat.service)
-removed_service_files=("ser2bt-e-paper-shut.service")
+pisugar2_service_assoc=(button_detect ser2bt-button.service bat_mon ser2bt-battery.service)
+removed_service_files=("ser2bt-e-paper-shut.service" "ser2bt_button.service" "ser2bt-bat.service")
 begin_bashrc_addon_mark="#BEGIN ser2b-bridge .bashrc add-in"
 end_bashrc_addon_mark="#END ser2b-bridge .bashrc add-in"
 serial_fix_file="override.conf"
@@ -71,6 +71,8 @@ serial_fix_flag=0
 bt_fix_flag=0
 svc_1_bin_flag=0
 svc_3_bin_flag=0
+
+last_col=$(tput cols)
 
 #Checks before begining:
 # Make sure the script is run with superuser privelages
@@ -156,7 +158,7 @@ fi
 	grep -q -s -o -e "^dwc2" ${etc_folder}/modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'dwc2' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully ${nor} loaded\n")
 
 #checking and adding modules as needed into /boot/config.txt and /boot/cmdline.txt:
-	printf "\n${nor}Check to make sure the the relevent seetings are made in the boot files:${nor}\n" | fmt -w 80
+	printf "\n${nor}Check to make sure the the relevent seetings are made in the boot files:${nor}\n" | fmt --goal=95 --width=${last_col}
 	change_flag=0
 	num=0
 	for config in "${config_txt_addons[@]}"; do
@@ -176,7 +178,7 @@ fi
 		let num++
 	done
 	if [ ${change_flag} -eq 0 ]; then
-		printf "${drk_grn}no changes were needed, continueing${nor}...\n"
+		printf " ${drk_grn}No changes were needed, continueing${nor}...\n"
 	fi
 
 #Upgrade system files
@@ -217,14 +219,14 @@ fi
 				printf "${official_s_ver}" > "${serial_fix_folder}${serial_fix_file}" && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
 				serial_fix_flag=1
 			else
-				printf "  ${nor}Both versions are the same, skipping...\n" | fmt -w 80
+				printf "  ${nor}Both versions are the same, skipping...\n" | fmt --goal=95 --width=${last_col}
 				serial_fix_flag=0
 			fi
 		fi
 	fi
 
 #Modify/Ammend the bluetooth/bluez service file:
-printf "\n${blu}Bluetooth${nor} service configurations:\n" | fmt -w 80
+printf "\n${blu}Bluetooth${nor} service configurations:\n" | fmt --goal=95 --width=${last_col}
 if [ -f "${lib_service_folder}${bt_service}" ]; then
 	existing_bt_chg=$(awk '/^ExecStart/,/piscan/ { print }' ${lib_service_folder}${bt_service})
 	printf " ${blu}Bluetooth${nor} Service ${drk_grn}was${nor} found, checking content:\n"
@@ -234,10 +236,10 @@ if [ -f "${lib_service_folder}${bt_service}" ]; then
 		bt_fix_flag=1
 	elif [[ $(printf "${existing_bt_chg}") == $(printf "${bt_service_content}") ]]; then
 #grep -e "^${bt_service_content}$" "${lib_service_folder}${bt_service}"; then
-		printf "  ${blu}Bluetooth${nor} Service does ${drk_grn}not need${nor} to be edited.\n" | fmt
+		printf "  ${blu}Bluetooth${nor} Service does ${drk_grn}not need${nor} to be edited.\n" | fmt --goal=95 --width=${last_col}
 		bt_fix_flag=0
 	else
-		printf "  ${drk_red}Error${nor} fatal error, unable to overcome problem in ${yel}${lib_service_folder}${bt_service}${nor}.  Please manually fix\n." | fmt
+		printf "  ${drk_red}Error${nor} fatal error, unable to overcome problem in ${yel}${lib_service_folder}${bt_service}${nor}.  Please manually fix\n." | fmt --goal=95 --width=${last_col}
 		bt_fix_flag=0
 		exit 4
 	fi
@@ -248,14 +250,14 @@ else
 fi
 
 #Disable Unneeded services:
-printf "\nChecking for and disabling unneeded services:\n" | fmt
+printf "\nChecking for and disabling unneeded services:\n"
 for file in "${disable_svc[@]}" ; do
-	status=$(systemctl is-enabled "${file}")
+	status=$(systemctl is-enabled "${file}" 2>/dev/null)
 	if [ "${status}" != "disabled" ] && [ "${status}" != "static" ]; then
-		printf " Status of ${yel}${file}${nor} is ${drk_red}${status}${nor}.\n"
-		systemctl disable ${file}
+		printf " Status of ${yel}${file}${nor} is currently ${drk_red}${status}${nor}..."
+		systemctl disable "${file}"  2>/dev/null && printf " ${drk_grn}Disabeled${nor}.\n" || printf " ${drk_grn}Failed to disable${nor}.\n"
 	else
-		printf " Status of ${yel}${file}${nor} is ${drk_grn}${status}${nor}.\n"
+		printf " Status of ${yel}${file}${nor} is currently ${drk_grn}${status}${nor}.\n"
 	fi
 done
 
@@ -339,7 +341,7 @@ done
 		fi
 	done
 
-	printf "\nCopy service files to the ${cyn}${etc_service_folder} ${nor}directory, then disable and enable copied services:\n" | fmt
+	printf "\nCopy service files to the ${cyn}${etc_service_folder} ${nor}directory, then disable and enable copied services:\n" | fmt --goal=95 --width=${last_col}
 	svc_count=0
 	for svc_file in ${service_files[@]} ; do
 		if cmp --silent "${etc_service_folder}${svc_file}" "${project_folder}${svc_file}" ; then
@@ -364,7 +366,7 @@ done
 		fi
 	done
 	if [[ ${#removed_service_files[@]} -eq ${num} ]]; then
-		printf "${drk_grn}no changes were needed, continueing${nor}...\n"
+		printf " ${drk_grn}No changes were needed, continuing${nor}...\n"
 	fi
 
 #After all of the changes have been made, reload the systemd daemon:
@@ -408,18 +410,18 @@ done
 	fi
 
 #refreshing .bashrc:
-	printf "\nAdding the ${yel}.bashrc${nor} addon (if it's already on, it will be removed and replaced):\n" | fmt --goal=95 --width=100
+	printf "\nAdding the ${yel}.bashrc${nor} addon (if it's already on, it will be removed and replaced):\n" | fmt --goal=95 --width=${last_col}
 #First compare whats in bashrc matches the addendum:
 	existing_ver=$(awk '/^#BEGIN/,/^#END/ { print }' ${home}.bashrc)
 	official_ver=$(awk '/^#BEGIN/,/^#END/ { print }' ${project_folder}bashrc_addendum.sh)
 	if [ "${existing_ver}" != "${official_ver}" ] ; then
-		printf " ${nor}There is a difference between what is supposed to be in ${yel}.bashrc${nor}, will clean and re-apply ${yel}ser2bt-bridge${nor} related configurations:\n"  | fmt
+		printf " ${nor}There is a difference between what is supposed to be in ${yel}.bashrc${nor}, will clean and re-apply ${yel}ser2bt-bridge${nor} related configurations:\n"  | fmt --goal=95 --width=${last_col}
 		sed -i '/^#BEGIN ser2b-bridge .bashrc add-in/, /^#END ser2b-bridge .bashrc add-in/d' ${home}.bashrc
 		cat bashrc_addendum.sh >> ${home}.bashrc && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
 	else
 		printf " ${nor}Both versions are the same, skipping...\n"
 	fi
 else
-	printf "\n${nor}This is ${drk_red}not${nor} a ${yel}Raspberry Zero${nor}, ${drk_red}Aborting ${nor}installation/upgrade.\n" | fmt -g
+	printf "\n${nor}This is ${drk_red}not${nor} a ${yel}Raspberry Zero${nor}, ${drk_red}Aborting ${nor}installation/upgrade.\n" | fmt --goal=95 --width=${last_col}
 fi
 exit 0

@@ -15,9 +15,10 @@ min_bat_cap=2  # setting in percent minimum battery capacity before we'll shutdo
 bus=1
 i2c_bus=smbus.SMBus(bus)
 bat_cap = min_bat_cap+1 #Define the initial battery capacity.
-
+bat_log_dir = "/tmp/"
+bat_log_file = "bat"
 #Setup logging:  Work in progress
-syslog.openlog(ident="ser2bt_battery_mon",logoption=syslog.LOG_PID, facility=syslog.LOG_LOCAL7)
+syslog.openlog(ident="battery_monitor",logoption=syslog.LOG_PID, facility=syslog.LOG_LOCAL7)
 syslog.syslog(syslog.LOG_INFO, 'bat_mon was started')
 
 #Begin Function defenition:
@@ -109,9 +110,9 @@ def read_bat_capacity(ups_type, address, bus):
                 level_base = ((voltage - range[0]) / (range[1] - range[0])) * (range[3] - range[2])
                 battery_level = level_base + range[2]
     else:
-        battery_level = Err
+        battery_level = "Err"
         charge = False
-        voltage = Err
+        voltage = "Err"
     return [int(battery_level), voltage, charge]
 #End of Function defenition:
 ######################################################################################################
@@ -119,20 +120,22 @@ def read_bat_capacity(ups_type, address, bus):
 #determine UPS type, bus number, and if its charging or not:
 ups, address = init_ups_check(i2c_bus, bus)
 
+#Check if logfile exists, create if it does not:
+if not os.path.exists(bat_log_dir+bat_log_file):
+    os.mknod(bat_log_dir+bat_log_file)
 try:
     while (bat_cap > min_bat_cap or charge is True):
         bat_cap, volts, charge = read_bat_capacity(ups, address, i2c_bus) #Formatted battery level
-#        print(volts)
         bat_lvl=str(bat_cap)+"%"
-        bat_file = open('/tmp/bat','w')
+        bat_file = open(bat_log_dir+bat_log_file,'w')
         bat_file.write(str(bat_lvl))
         bat_file.close()
-        time.sleep(60)
+        time.sleep(90)
 
     #if the bat_cap is less that min_bat_cap, then bail out of the loop, and follow the remaining code to shutdown.
     os.system("poweroff -p")
     syslog.syslog(syslog.LOG_INFO, 'Shutting down - battary has reached critical level')
-    syslog.syslog(syslog.LOG_INFO, 'Battary is: '+bat_lvl+'%')
+    syslog.syslog(syslog.LOG_INFO, 'Battary is: '+bat_lvl)
     bat_file.close()
     exit(0)
 
@@ -143,11 +146,11 @@ except KeyboardInterrupt:
 
 except SystemExit:
    syslog.syslog(syslog.LOG_INFO, 'Quit (SIGTERM) from service telling us to terminate')
-   syslog.syslog(syslog.LOG_INFO, 'Shutting Down/Restarting service - interupted by service stop, from command, shutdown, or reboot')
+   syslog.syslog(syslog.LOG_INFO, 'Shutting Down/Restarting bat_mon - interupted by service stop, from command, shutdown, or reboot')
    bat_file.close(0)
    exit(0)
 
 except IOError as e:
-   syslog.syslog(syslog.LOG_ERR, 'Shutting Down ser2bt_status - traceback.format_exc():\n%s' ,traceback.format_exc())
+   syslog.syslog(syslog.LOG_ERR, 'Shutting Down bat_mon - traceback.format_exc():\n%s' ,traceback.format_exc())
    bat_file.close()
    exit(1)

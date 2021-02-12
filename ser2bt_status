@@ -68,6 +68,8 @@ def bat_lvl():
     f = open("/tmp/bat",'r')
     bat = f.read()
     f.close()
+    if bat == "":
+        bat="Err"
     return (bat)
 
 def handler(signum, frame):

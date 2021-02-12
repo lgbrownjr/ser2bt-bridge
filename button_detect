@@ -9,13 +9,12 @@ import os
 #Var decloration:
 bus=1
 battery_loop_sleep = 1
-i2c_bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
 address = 0x75 # pisugar2 i2c address is 0x75 for battery management.
 TAP_ARRAY = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 #Setup logging:  Work in progress
 syslog.openlog(ident="pishugar_button_mon",logoption=syslog.LOG_PID, facility=syslog.LOG_LOCAL7)
-syslog.syslog(syslog.LOG_INFO, ' burron_detect was started')
+syslog.syslog(syslog.LOG_INFO, ' button_detect was started')
 
 #Begin Function defenition:
 ######################################################################################################
@@ -73,11 +72,13 @@ def button_detect(adddress, bus):
 
 
 try: #Try setting the following attributes, to turn on the button.
+    i2c_bus=smbus.SMBus(bus)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
     i2c_bus.write_byte_data(address, 0x51, 0b0000_0100)
     i2c_bus.write_byte_data(address, 0x53, 0b0000_0010)
 except: #if we hit except, we exit.
     syslog.syslog(syslog.LOG_INFO, 'Did not find the PiSugar2, exiting....')
     exit(1)
+syslog.syslog(syslog.LOG_INFO, 'Found the PiSugar2 button.')
 while True:
     button_press = i2c_bus.read_byte_data(address, 0x55) #Wait for the button press
     if button_press > 0: #Once the button is pressed...
@@ -86,4 +87,5 @@ while True:
 
     time.sleep(battery_loop_sleep) #sleep for for the duration of battery_loop_sleep, before we loop again.
 
+syslog.syslog(syslog.LOG_INFO, 'button_detect terminated, exiting...')
 exit(0)
