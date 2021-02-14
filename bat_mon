@@ -64,7 +64,7 @@ def read_bat_capacity(ups_type, address, bus):
     # connected to the Raspi UPS Hat via the pro$
     battery_curve = [
         [4.16, 5.5, 100, 100],
-        [4.05, 4.16, 87.5, 95],
+        [4.05, 4.16, 87.5, 100],
         [4.00, 4.05, 75, 87.5],
         [3.92, 4.00, 62.5, 75],
         [3.86, 3.92, 50, 62.5],
