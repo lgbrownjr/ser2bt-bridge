@@ -96,13 +96,14 @@ def get_bt_service_status():
 #Check if tje bt_status has changed, or if its the samw
     if old_bt_status != bt_status:
         old_bt_status = bt_status
+        bt_status_change_flag = True
     else:
-        bt_status = False
+        bt_status_change_flag = False
 
-    return (bt_status)
+    return (bt_status, bt_status_change_flag)
 
 
-def get_lan_service_status(ip_addr):
+def get_lan_service_status(ssid, ssid_change_flag):
     global old_lan_status
     global not_connected
     lan_service = 'ser2net'
@@ -110,16 +111,20 @@ def get_lan_service_status(ip_addr):
     lan_service = subprocess.Popen(['systemctl', 'is-active', lan_service], stdout=subprocess.PIPE).communicate()[0].decode(encoding='UTF-8')
     if inactive in lan_service:
         #If there is no ip address, then turn off the ser2net service:
-        if ip_addr != not_connected:
+        if ssid != not_connected and ssid_change_flag is True:
             os.system("systemctl start ser2net") #start the ser2net service.
             lan_status = "↑"  # up arrow
+        elif ssid_change_flag is False:
+            lan_status = "↓"  # down arrow
         else:
             lan_status = "↓"  # down arrow
     else:
         #If there is no ip address, then turn off the ser2net service:
-        if ip_addr == not_connected:
+        if ssid == not_connected and ssid_change_flag is True:
             os.system("systemctl stop ser2net") #start the ser2net service.
             lan_status = "↓"  # down arrow
+        elif  ssid_change_flag is False:
+            lan_status = "↑"  # up arrow
         else:
             lan_status = "↑"  # up arrow
     if old_lan_status != lan_status:
@@ -133,22 +138,24 @@ def get_lan_service_status(ip_addr):
 
 def get_ssid():
     global old_ssid
+    global not_connected
     try:
         ssid = subprocess.check_output("iwgetid -r", shell = True).decode(encoding='UTF-8')
         ssid = ssid.strip()
     except subprocess.CalledProcessError:
         # grep did not match any lines
-        ssid = "Not Connected"
+        ssid = not_connected
 
     if ssid == "":
-        ssid = "Not Connected"
+        ssid = not_connected
 
     if old_ssid != ssid:
         old_ssid = ssid
+        ssid_change_flag = True
     else:
-        ssid = False
+        ssid_change_flag = False
 
-    return ssid
+    return (ssid, ssid_change_flag)
 
 
 def get_ip():
@@ -165,11 +172,11 @@ def get_ip():
 
     if old_host_ip != host_ip:
         old_host_ip = host_ip
-        host_ip_change = True
+        host_ip_change_flag = True
     else:
-        host_ip_change = False
+        host_ip_change_flag = False
 
-    return (host_ip, host_ip_change)
+    return (host_ip, host_ip_change_flag)
 
 
 def cap_wired_serial_port():
@@ -257,27 +264,24 @@ try:
             draw.rectangle((195, 19, 250, 39), fill=255)
             draw.text((195, 20), str(psutil.virtual_memory().percent)+'%', font=f_var_font18, fill=0)
 
-            #Collect connected ssid and system ip address:
-            ssid = get_ssid()
-            ip_host, ip_host_change_flag = get_ip()
-
-            # Capture service status for rfcomm, bluetooth, hci, and ser2net.
-            get_bt_service = get_bt_service_status()
-            get_lan_service, get_lan_service_change_flag  = get_lan_service_status(ip_host)
-#            print(get_lan_service)
-            if get_bt_service is not False:
-                draw.rectangle((74, 79, 84, 99), fill=255)
-                draw.text((74, 80), get_bt_service, font=f_var_spc_char_font18, fill=0)
-            if get_lan_service_change_flag is not False:
-                draw.rectangle((212, 79, 222, 99), fill=255)
-                draw.text((212, 80), get_lan_service, font=f_var_spc_char_font18, fill=0)
-
-            if ssid is not False:
+            #Collect connected ssid, system ip address, bt and lan service status:
+            ssid, ssid_change_flag = get_ssid()
+            if ssid_change_flag is True:
+                ip_host, ip_host_change_flag = get_ip()
+                lan_service, get_lan_service_change_flag  = get_lan_service_status(ssid, ssid_change_flag)
                 draw.rectangle((52, 39, 200, 59), fill=255)
                 draw.text((52, 40), ssid, font=f_var_font18, fill=0)
-            if ip_host_change_flag is not False:
                 draw.rectangle((52, 59, 200, 79), fill=255)
                 draw.text((52, 60), ip_host, font=f_var_font18, fill=0)
+                if get_lan_service_change_flag is True:
+                    draw.rectangle((212, 79, 222, 99), fill=255)
+                    draw.text((212, 80), lan_service, font=f_var_spc_char_font18, fill=0)
+
+            # display rfcomm, bluetooth, hci, status.
+            bt_service, bt_service_change_flag = get_bt_service_status()
+            if bt_service_change_flag is True:
+                draw.rectangle((74, 79, 84, 99), fill=255)
+                draw.text((74, 80), bt_service, font=f_var_spc_char_font18, fill=0)
 
             # Setting up the dynamic parts of tty status
             wired_serial_port, wired_serial_status_pos, wired_serial_connect, wired_serial_status = cap_wired_serial_port()
