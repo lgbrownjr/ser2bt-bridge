@@ -255,7 +255,7 @@ for file in "${disable_svc[@]}" ; do
 	status=$(systemctl is-enabled "${file}" 2>/dev/null)
 	if [ "${status}" != "disabled" ] && [ "${status}" != "static" ]; then
 		printf " Status of ${yel}${file}${nor} is currently ${drk_red}${status}${nor}..."
-		systemctl disable "${file}"  2>/dev/null && printf " ${drk_grn}Disabeled${nor}.\n" || printf " ${drk_grn}Failed to disable${nor}.\n"
+		systemctl disable "${file}"  2>/dev/null && printf " ${drk_grn}Disabeled${nor}.\n" || printf " ${drk_red}Failed to disable${nor}.\n"
 	else
 		printf " Status of ${yel}${file}${nor} is currently ${drk_grn}${status}${nor}.\n"
 	fi
@@ -354,7 +354,7 @@ done
 		fi
 	done
 
-#Disable and Remove un-needed services"
+	#Disable and Remove un-needed services"
 	printf "${nor}\nDisable, and remove any services that are no longer required${nor}\n"
 	num=0
 	for svc_file in ${removed_service_files[@]}; do
@@ -369,28 +369,26 @@ done
 		printf " ${drk_grn}No changes were needed, continuing${nor}...\n"
 	fi
 
-#After all of the changes have been made, reload the systemd daemon:
+	#After all of the changes have been made, reload the systemd daemon:
 	if [ "${svc_count}" != "${#service_files[@]}" ] || [[ "${bin_flag}" -gt 0 ]] ; then
 		printf "\n${nor}Restarting systemctl (as needed):${nor}\n"
 		systemctl daemon-reload && printf " ${yel}systemctl daemon-reload${nor} was ${drk_grn}Successfull${nor}.\n" || printf " ${nor}systemctl daemon-reload was ${drk_red}not ${nor}successfull.\n"
 	fi
 
-#Action based on flags:
+	#Action based on flags:
 	if [[ "${bt_fix_flag}" -gt 0 ]] ; then
 		printf "\n${nor}Disabeling, Enabeling and Starting ${bt_service}${nor}:\n"
-		systemctl disable ${bt_service} > /dev/null 2>&1 && printf " ${nor}${bt_service} ${drk_grn}successfully ${nor}disabeled.\n" || printf "Failed\n"
-		systemctl enable ${bt_service} > /dev/null 2>&1 && printf " ${nor}${bt_service} ${drk_grn}successfully ${nor}enabled.\n" || printf "Failed\n"
-		systemctl start ${bt_service} > /dev/null 2>&1 && printf " ${nor}${bt_service} ${drk_grn}successfully ${nor}started.\n" ||  printf "Failed\n"
+		systemctl disable ${bt_service} > /dev/null 2>&1 && printf " ${nor}${bt_service} ${drk_grn}successfully ${nor}disabeled.\n" || printf " ${drk_red}Failed\n"
+		systemctl enable ${bt_service} > /dev/null 2>&1 && printf " ${nor}${bt_service} ${drk_grn}successfully ${nor}enabled.\n" || printf " ${drk_red}Failed\n"
+		systemctl start ${bt_service} > /dev/null 2>&1 && printf " ${nor}${bt_service} ${drk_grn}successfully ${nor}started.\n" ||  printf " ${drk_red}Failed\n"
 		let svc_count++
 	fi
 
 	if [[ "${serial_fix_flag}" -gt 0 ]] ; then
-#		if [ $(systemctl status getty@ttyGS0.service | grep -o "inactive") ]; then
 			printf "\n${nor}Enabeling and starting getty@ttyGS0.service:${nor}\n"
 			systemctl enable getty@ttyGS0.service > /dev/null 2>&1 && printf " ${nor}getty@ttyGS0.service ${drk_grn}successfully ${nor}enabled.\n" || break
 			systemctl start getty@ttyGS0.service > /dev/null 2>&1 && printf " ${nor}getty@ttyGS0.service ${drk_grn}successfully ${nor}started.\n" || break
 			let svc_count++
-#		fi
 	fi
 
 	if [[ "${bin_flag}" -gt 0 ]] ; then
