@@ -217,6 +217,11 @@ def cap_bt_serial_port():
         bt_serial_status_pos = 74
 
     return [bt_serial_port, bt_serial_status_pos, bt_serial_connect, bt_serial_status]
+
+
+def epaper_exit():
+    epd2in13_V2.epdconfig.module_init()
+    epd2in13_V2.epdconfig.module_exit()
 ##############################################################################################################
 #End of Function defenition:
 
@@ -311,16 +316,14 @@ try:
         except IOError as e:
             syslog.syslog(syslog.LOG_INFO, 'traceback.format_exc():\n%s',traceback.format_exc())
             syslog.syslog(syslog.LOG_INFO, 'Shutting Down ser2bt_status - traceback.format_exc():\n%s' ,traceback.format_exc())
-            epd2in13_V2.epdconfig.module_init()
-            epd2in13_V2.epdconfig.module_exit()
+            e_paper_exit()
             exit()
 
         #sleep, then resume.
         time.sleep(end_of_loop_pause)
 
 # End of while bat_cap > 1 loop...
-    epd2in13_V2.epdconfig.module_init()
-    epd2in13_V2.epdconfig.module_exit()
+    e_paper_exit()
     exit()
 
 
@@ -334,8 +337,7 @@ except KeyboardInterrupt:
     term_draw.text((15, 80), 'Has Stopped due to SIGINT', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(term_image))
     syslog.syslog(syslog.LOG_INFO, 'Shutting Down ser2bt_status - interupted by Control C')
-    epd2in13_V2.epdconfig.module_init()
-    epd2in13_V2.epdconfig.module_exit()
+    e_paper_exit()
     exit()
 
 except SystemExit:
@@ -348,12 +350,10 @@ except SystemExit:
     term_draw.text((15, 80), 'Is exiting Due to SIGTERM', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(term_image))
     syslog.syslog(syslog.LOG_INFO, 'Shutting Down/Restarting service - interupted by service stop, from command, shutdown, or reboot')
-    epd2in13_V2.epdconfig.module_init()
-    epd2in13_V2.epdconfig.module_exit()
+    e_paper_exit()
     exit()
 
 except IOError as e:
     syslog.syslog(syslog.LOG_ERR, 'Shutting Down ser2bt_status - traceback.format_exc():\n%s' ,traceback.format_exc())
-    epd2in13_V2.epdconfig.module_init()
-    epd2in13_V2.epdconfig.module_exit()
+    e_paper_exit()
     exit()
