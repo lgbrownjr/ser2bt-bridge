@@ -153,12 +153,12 @@ fi
 		service_assoc=("${full_service_assoc[@]}" "${pisugar2_service_assoc[@]}")
 	fi
 #checking and adding modules as needed into /etc/modules:
-	printf "${nor}Check to make sure the the relevent modules are loaded:\n"
+	printf "${nor}Check to make sure the the relavent modules are loaded:\n"
 	grep -q -s -o -e "^g_serial" ${etc_folder}modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'g_serial' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully${nor} loaded\n")
 	grep -q -s -o -e "^dwc2" ${etc_folder}/modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'dwc2' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully ${nor} loaded\n")
 
 #checking and adding modules as needed into /boot/config.txt and /boot/cmdline.txt:
-	printf "\n${nor}Check to make sure the the relevent seetings are made in the boot files:${nor}\n" | fmt --goal=91 --width=${last_col}
+	printf "\n${nor}Check to make sure the the relavent seetings are made in the boot files:${nor}\n" | fmt --goal=91 --width=${last_col}
 	change_flag=0
 	num=0
 	for config in "${config_txt_addons[@]}"; do
@@ -208,7 +208,7 @@ fi
 		printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
 		mkdir -p ${serial_fix_folder}
 	else
-		printf " ${nor}Directory ${drk_grn}already ${nor}exist, checking for ${yel}${serial_fix_folder}${serial_fix_file}${nor}:\n"
+		printf " ${nor}Directory ${drk_grn}already ${nor}exists, checking for ${cyn}${serial_fix_folder}${yel}${serial_fix_file}${nor}:\n"
 		if [ ! -f ${serial_fix_folder}${serial_fix_file} ]; then
 			printf " ${yel}${serial_fix_file}${nor}does ${drk_red}not${nor}exist, creating..."
 			printf "${official_s_ver}" > "${serial_fix_folder}${serial_fix_file}" && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"

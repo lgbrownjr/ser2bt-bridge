@@ -87,16 +87,18 @@ done
 resize > /dev/null 2>&1
 printf "\n"
 count=0
+wire_count=1
 for serial_port in ${wire_port[@]}; do
-	printf "Both sides are connected, bridging ${cyn}${bt_port}${nor} with ${cyn}${serial_port}${nor}..."
+	printf "Both sides are connected, assigning screen ${cyn}${wire_count}${nor} with ${cyn}${serial_port}${nor}..."
 	eval $(screen -c ${screen_config} -S ${switch_name[count]} -d -m -t "${serial_port}${space}${switch_name[count]}" ${serial_port} -L ${baud} -T ${terminal}) && printf "${drk_grn}Done${nor}.\n\n" || printf "${drk_red}Failed${nor}!\n\n"
 	let count++
+	let wire_count++
 done
 
 session_count=$(screen -r | grep Detached | cut -d "." -f 2 | cut -f 1 | wc -w)
 if [[ ${session_count} > 1 ]]; then
 	screen -r | grep Detached | cut -d "." -f 2 | cut -f 1
-	printf "\nUse screen -r switch name (listed above).\n"
+	printf "\nUse ${yel}screen -r${mag} switch_name${nor} (listed above).\n"
 elif [[ ${session_count} = 1 ]]; then
 	screen -r
 else
