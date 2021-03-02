@@ -8,8 +8,6 @@ import time #timers for sleep
 try:
     from waveshare_epd import epd2in13_V2
     from PIL import Image, ImageDraw, ImageFont  # Font handeling
-#    import struct  # Capture battary capacity
-#    import smbus #both waveshare and UPS-LITE
 
 except:
     print ("No Waveshare e-ink was detected.  Please investigate, and try again\n")
@@ -38,7 +36,7 @@ acm_ser_label='ACM0'
 acm_ser_port='tty'+acm_ser_label
 roboto_font_dir='/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/'
 dejavu_font_dir='/usr/share/fonts/truetype/dejavu/'
-end_of_loop_pause = 30 #sleep time in seconds.  Will be used at the end of the loop so as not to kill the cpu.
+end_of_loop_pause = 60 #sleep time in seconds.  Will be used at the end of the loop so as not to kill the cpu.
 full_tty_status = "No tty Connections"
 old_ssid = "XX"
 old_host_ip = "XX"
@@ -316,16 +314,15 @@ try:
         except IOError as e:
             syslog.syslog(syslog.LOG_INFO, 'traceback.format_exc():\n%s',traceback.format_exc())
             syslog.syslog(syslog.LOG_INFO, 'Shutting Down ser2bt_status - traceback.format_exc():\n%s' ,traceback.format_exc())
-            e_paper_exit()
+            epaper_exit()
             exit()
 
         #sleep, then resume.
         time.sleep(end_of_loop_pause)
 
-# End of while bat_cap > 1 loop...
-    e_paper_exit()
+# End of while true loop...
+    epaper_exit()
     exit()
-
 
 except KeyboardInterrupt:
     syslog.syslog(syslog.LOG_INFO, 'Quit (SIGINT) Due to Keyboard interrupt when not being run as a service')
@@ -337,7 +334,7 @@ except KeyboardInterrupt:
     term_draw.text((15, 80), 'Has Stopped due to SIGINT', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(term_image))
     syslog.syslog(syslog.LOG_INFO, 'Shutting Down ser2bt_status - interupted by Control C')
-    e_paper_exit()
+    epaper_exit()
     exit()
 
 except SystemExit:
@@ -350,10 +347,10 @@ except SystemExit:
     term_draw.text((15, 80), 'Is exiting Due to SIGTERM', font=f_title_font18, fill=0)
     epd.display(epd.getbuffer(term_image))
     syslog.syslog(syslog.LOG_INFO, 'Shutting Down/Restarting service - interupted by service stop, from command, shutdown, or reboot')
-    e_paper_exit()
+    epaper_exit()
     exit()
 
 except IOError as e:
     syslog.syslog(syslog.LOG_ERR, 'Shutting Down ser2bt_status - traceback.format_exc():\n%s' ,traceback.format_exc())
-    e_paper_exit()
+    epaper_exit()
     exit()
