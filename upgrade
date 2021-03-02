@@ -258,8 +258,7 @@ for file in "${disable_svc[@]}" ; do
 	if [ "${ups_type}" == "none" ] && [ "${file}" == "ser2net.service" ] && [ "${status}" == "disabled" ]; then
 		printf " Status of ${yel}${file}${nor} is currently ${drk_red}${status}${nor}..."
 		systemctl enable "${file}"  2>/dev/null && printf " ${drk_grn}Enabled${nor}.\n" || printf " ${drk_red}Failed to enable${nor}.\n"
-	fi
-	if [ "${status}" != "disabled" ] && [ "${status}" != "static" ]; then
+	elif [ "${status}" != "disabled" ] && [ "${status}" != "static" ]; then
 		printf " Status of ${yel}${file}${nor} is currently ${drk_red}${status}${nor}..."
 		systemctl disable "${file}"  2>/dev/null && printf " ${drk_grn}Disabeled${nor}.\n" || printf " ${drk_red}Failed to disable${nor}.\n"
 	else
