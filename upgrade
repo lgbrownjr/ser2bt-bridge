@@ -71,6 +71,7 @@ serial_fix_flag=0
 bt_fix_flag=0
 svc_1_bin_flag=0
 svc_3_bin_flag=0
+svc_5_bin_flag=0
 
 last_col=$(tput cols)
 
@@ -295,21 +296,18 @@ done
 			if [ "${file}" == "${service_assoc[0]}" ] ; then
 				svc_1_bin_flag=1
 				bin_flag=1
-			else
-				svc_1_bin_flag=0
 			fi
+			printf "${svc_1_bin_flag}\n"
 			if [ "${file}" == "${service_assoc[2]}" ] ; then
 				svc_3_bin_flag=1
 				bin_flag=1
-			else
-				svc_3_bin_flag=0
 			fi
+			printf "${svc_3_bin_flag}\n"
 			if [ "${file}" == "${service_assoc[4]}" ] ; then
 				svc_5_bin_flag=1
 				bin_flag=1
-			else
-				svc_5_bin_flag=0
 			fi
+			printf "${svc_5_bin_flag}\n"
 			cp ${project_folder}${file} ${bin_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
 		fi
 	done
@@ -385,14 +383,14 @@ done
 	fi
 
 	if [[ "${serial_fix_flag}" -gt 0 ]] ; then
-			printf "\n${nor}Enabeling and starting getty@ttyGS0.service:${nor}\n"
-			systemctl enable getty@ttyGS0.service > /dev/null 2>&1 && printf " ${nor}getty@ttyGS0.service ${drk_grn}successfully ${nor}enabled.\n" || break
-			systemctl start getty@ttyGS0.service > /dev/null 2>&1 && printf " ${nor}getty@ttyGS0.service ${drk_grn}successfully ${nor}started.\n" || break
-			let svc_count++
+		printf "\n${nor}Enabeling and starting getty@ttyGS0.service:${nor}\n"
+		systemctl enable getty@ttyGS0.service > /dev/null 2>&1 && printf " ${nor}getty@ttyGS0.service ${drk_grn}successfully ${nor}enabled.\n" || break
+		systemctl start getty@ttyGS0.service > /dev/null 2>&1 && printf " ${nor}getty@ttyGS0.service ${drk_grn}successfully ${nor}started.\n" || break
+		let svc_count++
 	fi
-
-	if [[ "${bin_flag}" -gt 0 ]] ; then
-		printf "\n${nor}Restarting services that are associated to running scripts (as needed):${nor}\n"
+	svc_count=0
+	if [ "${bin_flag}" -gt 0 ] ; then
+		printf "\n${nor}Restarting services that are associated to running scripts:${nor}\n"
 		if [ "${svc_1_bin_flag}" -eq 1 ] ; then
 			systemctl restart "${service_assoc[1]}" && printf " ${nor}${service_assoc[1]} ${drk_grn}Successfully ${nor}Restarted.\n" || printf "${drk_red}Failed ${yellow}${svc_file}${nor}!\n"
 			let svc_count++
