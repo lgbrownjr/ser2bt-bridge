@@ -9,8 +9,8 @@ import smbus #both waveshare and UPS-LITE
 import syslog
 #import signal # Check for incomming signals from the service and react if there is term signal.
 
-
 #Declare Variables:
+sleep_time = 120
 min_bat_cap=2  # setting in percent minimum battery capacity before we'll shutdown.
 bus=1
 i2c_bus=smbus.SMBus(bus)
@@ -130,13 +130,13 @@ try:
         bat_file = open(bat_log_dir+bat_log_file,'w')
         bat_file.write(str(bat_lvl))
         bat_file.close()
-        time.sleep(90)
+        time.sleep(sleep_time)
 
     #if the bat_cap is less that min_bat_cap, then bail out of the loop, and follow the remaining code to shutdown.
-    os.system("poweroff -p")
     syslog.syslog(syslog.LOG_INFO, 'Shutting down - battary has reached critical level')
-    syslog.syslog(syslog.LOG_INFO, 'Battary is: '+bat_lvl)
+    syslog.syslog(syslog.LOG_INFO, 'Battary is: '+bat_lvl+'Uptime was: '+str(os.system("uptime -p")))
     bat_file.close()
+    os.system("poweroff -p")
     exit(0)
 
 except KeyboardInterrupt:
@@ -147,7 +147,7 @@ except KeyboardInterrupt:
 except SystemExit:
    syslog.syslog(syslog.LOG_INFO, 'Quit (SIGTERM) from service telling us to terminate')
    syslog.syslog(syslog.LOG_INFO, 'Shutting Down/Restarting bat_mon - interupted by service stop, from command, shutdown, or reboot')
-   bat_file.close(0)
+   bat_file.close()
    exit(0)
 
 except IOError as e:
