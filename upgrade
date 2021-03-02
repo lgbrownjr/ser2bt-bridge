@@ -103,6 +103,7 @@ fi
 		config_txt_addons=("${base_config_txt_addons[@]}")
 		config_txt_values=("${base_config_txt_values[@]}")
 		boot_search=(${base_boot_search[@]})
+		ups_type="none"
 	fi
 
 	if [ "${upgrade_path}" = "enhanced" ] ; then
