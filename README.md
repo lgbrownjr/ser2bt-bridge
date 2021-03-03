@@ -211,3 +211,9 @@ Features I want to add to this project:
 - Continue testing *Overlay FS* as a means to protect the SD cards from corruption.
 - Make the ser2bt_status script run more effeciently - if possible.
 Again, will be constantly updating the documentation, so check back for more.
+#### How to use:
+1. Power on the *bridge*:
+   1. For the basic option, Plug the power into the *bridges* power port.  See 
+   2. If your version of the *bridge* has a UPS, then slide the switch to the on position.
+   3. To charge the UPS, insert the power cord into the UPS's power input plug, do not power the pi using the pi's power port.
+![image](https://user-images.githubusercontent.com/15677301/109876709-13fc8700-7c40-11eb-8a3b-0795a1f350c1.png)
