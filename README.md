@@ -193,11 +193,11 @@ The addition of am e-paper screen and ups backup will allow you to continue prov
 #### Parts needed for this phase:
 - For Battery UPS, we have two supported options:
   - The first option is a [ups-lite](https://www.ebay.com/itm/UPS-Lite-for-Raspberry-Pi-Zero-/352888138785).
-  - The second option is a PiSugar2 which also has a built-in real time clock, but at double the cost.
+  - The second UPS option is a PiSugar2 which also has a built-in real time clock, and a button that can be controlled via software, but at double the cost as the &ups_lite*.
 - For status and system health updates, attach a [waveshare.2.13 e-paper](https://www.waveshare.com/2.13inch-e-Paper-HAT.htm) display.
-#### Installation:
+#### Full Installation:
 Coming soon:
-## Known Bugs:
+## Known issues:
 - With respect to full installation, I can't get the services to load in a manner where the e-paper screen does not wake up soon enough in the boot sequence and takes 20 seconds for the pi to completely to start the status screen.
   - Basic installation has not boot issues.
 - For some reason, while connected via bluetooth, one cannot update the OS, or githib repositories.  A workaround, is to open a `screen` session, tehn perform any update taskes.  Another workaround would be to ssh into it as well...
