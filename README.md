@@ -286,3 +286,5 @@ You should now all of your device terminal programs setup to easily connect to t
 5. If you're lost, and you need to reconnect to the *slave* were connected to, type `ser2bt_bridge` to relaunch the discovery script.  if that gives you an error, then reboot.
 6. To shutdown your bridge, type `sudo poweroff`
 7. To resize your terminal, suspend/exit and *screen* sessions, and type `resize`
+8. WHen you are within a screen session, configuring, or administering a *slave*:
+  1. use page up to enter scrolback mode, then continue to use *page up*/*page down* or *up*/*down* arrows to move up and down your buffer.  Use the *escape* key to exit, and go back to the normal mode.
