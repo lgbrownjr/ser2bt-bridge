@@ -30,9 +30,9 @@ time.sleep(2)
 epd.init(epd.FULL_UPDATE)
 exit_image.paste(bmp, (0,0))
 exit_draw.text((19,5), 'Serial to Bluetooth Bridge  ', font=f_title_font18,fill=0)
-exit_draw.text((50,47), 'master', font=f_top_line_font16,fill=0)
+exit_draw.text((4,47), 'master', font=f_top_line_font16,fill=0)
 exit_draw.text((122,47), host_name, font=f_top_line_font16,fill=0)
-exit_draw.text((200,47), 'slave', font=f_top_line_font16,fill=0)
+exit_draw.text((205,47), 'slave', font=f_top_line_font16,fill=0)
 epd.display(epd.getbuffer(exit_image))
 
 #Exit:
