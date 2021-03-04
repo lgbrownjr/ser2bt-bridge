@@ -1,8 +1,8 @@
 # ser2bt-bridge
 ## Serial to Bluetooth bridge for raspberry pi zero w
-Before we begin, understand that everything in this repository is a work in progress...  :) 
+Before we begin, understand that everything in this repository is a work in progress...  :slightly_smiling_face:
 ### Definitions:
-I tend to use several different discripters for each piece thats involved with this project, so I've tried to define them below to helpkeep the reader from being confused.. :)
+I tend to use several different discripters for each piece thats involved with this project, so I've tried to define them below to helpkeep the reader from being confused.. :slightly_smiling_face:
 - For the purpose of this project, the terms *slave* refers to a router or switch.  However, anything with a console port can be used  such as a server, appliance, Firewall, Wireless LAN Conroller, etc will work as well.
 - The terms *master*  refers to the PC, laptop, phone, or tablet.
 - The terms *pi*, *bridge*, *ser2bt* all refer to the *raspberry pi zero w*, and is being used as a *bridge* to connect *master* with *slave*.
@@ -217,4 +217,4 @@ Again, will be constantly updating the documentation, so check back for more.
    2. If your version of the *bridge* has a UPS, then slide the switch to the on position.
    3. To charge the UPS, insert the power cord into the UPS's power input plug, do not power the pi using the pi's power port.
 
-![image](https://user-images.githubusercontent.com/15677301/109876709-13fc8700-7c40-11eb-8a3b-0795a1f350c1.png)
+![Raspberry Pi Zero usb port location and definition:][https://lgbrownjr.github.com/readme_md_images/rpi0_diagram_port.png]
