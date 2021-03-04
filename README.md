@@ -12,15 +12,18 @@ This project is a set of scripts, services and libraries, that allow one to conn
 #### How it works at a high level/Feature List:
 These scripts and services basicaly utilize screen and rfcomm to bridge each connection between the *master*, and the *slave* you are attempting to connect to. 
 * Bluetooth was setup to be wide open, and is constantly paieable, so connectivity should be painless.
+ * This has been tested with the following Operating Systems: Linux, Android, Windows 10, and ChromeOS (with caveats).
+* Connection between the *master* and the bridge will be 9600 Baud - this is to maximize the possible range.
 * Once the *master* is connected to the *bridge*, it will attempt to look for any available usb or acm ports.  At this point one of three things are expected to occur:
   * If the *bridge* was connected to a single *slave*, then it will open a *screen* session to that serial port outomagically.
   * If the *bridge* was connected (via OTG usb hub), then it will create one *screen* session for each serial port it found, list them on your display, and exit to shell.
   * If the *bridge* does not detect any new usb/acm ports, then it will state that fact and then drop to the *bridges* bash shell.
+* The connection between the bidge and the *slave* is set to 9600 Baud.  I'm looking to set this as a configurable element in the future.
 * While connected to a *slave*, the *bridge* will begin logging all session traffic between the *master* and *slave*. (This is why it is important to make sure the *bridge* somehow receives time from and external source, or and onboard rtc.)
 * If your setup has one of the two UPS's listed below, then services that will monitor battery level, and will automatically shutdown if the battery level reaches 2%.
  * If you are using the PiSugar2 UPS option, then you get several added benefits:
   * An on board RTC.
-  * A button to ruen off the *bridge* when you are done using it.  (This makes it so much easier then having to login just to power it off!)
+  * A button to safely turn off the *bridge* when you are done using it.  (This makes it so much easier then having to login just to power it off!)
 * If your setup has a waveshare e-ink screen, then there are services that will monitor and display uptades as to the systems health/status.
 ### Considerations:
 Some things to think about while you are happily administering your switch, router, or whatever:
@@ -87,33 +90,39 @@ You are now done with this section, safely eject the SD card, and insert it into
 - Power on the bridge, and give it about a minute to boot.
  - Using your favorite SSH client, login into your pi: `pi@<[hostname|IP Address]>`, where *hostname*, or *IP Address* are = to your Pi's.
 
-**Note: Finding the IP address can be painful unless you have a utility on your PC or phone that can scan the network for active devices.  Recommend trying the default hostname *raspberrypi.local* first.**
+---
+**Note**
 
+Finding the IP address can be painful unless you have a utility on your PC or phone that can scan the network for active devices.  Recommend trying the default hostname *raspberrypi.local* first.**
+
+---
 ###### Update OS:
 ```bash
 sudo apt update && sudo apt full-upgrade -y
 ```
-- Reboot your Pi when the upgrade is complete.
+Reboot your Pi when the upgrade is complete.
 ###### Additional OS Setup:
-- Setup using raspi-config `sudo raspi-config`:
-  - From the main menu, under *Advanced Options*.
-    - select *Expand Filesystem* to expand.
-  - From the main menu, under *System Options*.
-    - Select *Hostname*, then change.
-- REBOOt!
-- Setup using raspi-config `sudo raspi-config`:
-  - From the main menu, under *System Options*.
-    - select *Boot / Autologin*, then select *Console Autologin*.
-    - select *Password* and change.
-    - select *Network at boot*, then select *No* to Disable *Waiting for network on boot*.
-  - Select *localization Options*, and verify, or set:
-    - Setup locals.
-    - Set timezone on the pi.
-    - Keyboard.
-    - wifi location.
-  - Select *Performance Options*:
-    - Select *GPU Memory* and set *GPU memory* to 32MB.
-  - Under the *Main Menu*, select *Finish*, and if you are asked to reboot, do so.
+###### Setup using raspi-config
+* Enter `sudo raspi-config`:
+* From the main menu, under *Advanced Options*.
+  * select *Expand Filesystem* to expand.
+* From the main menu, under *System Options*.
+  * Select *Hostname*, then change to a name with 6 characters.
+###### REBOOT!
+* Setup using raspi-config `sudo raspi-config`:
+  * From the main menu, under *System Options*.
+    * Select *Boot / Autologin*, then select *Console Autologin*.
+    * Select *Password* and change.
+    * Select *Network at boot*, then select *No* to Disable *Waiting for network on boot*.
+###### Select *localization Options*, and verify, or set:
+* Setup locals.
+  * Set timezone on the pi.
+  * Keyboard.
+  * wifi location.
+  * Select *Performance Options*:
+  * Select *GPU Memory* and set *GPU memory* to 32MB.
+###### Complete:
+Under the *Main Menu*, select *Finish*, and if you are asked to reboot, do so.
 ###### Install dependencies:
 ```bash
 sudo apt install screen git minicom tio rfkill xterm ser2net -y
@@ -210,15 +219,41 @@ Features I want to add to this project:
 Again, will be constantly updating the documentation, so check back for more.
 #### How to use:
 ![Raspberry Pi Zero usb port location and definition:](/readme_md_images/rpi0_diagram_port.png)
-1. Power on the *bridge*:
-  1. Different ways, depending on your setup:
-    1. For the basic *bridge* option, Plug the power into the *bridges* power port.  See 
-    2. If your version of the *bridge* has a UPS, then slide the switch to the on position.
-    3. To charge the UPS, insert the power cord into the UPS's power input plug, do not power the pi using the pi's power port.
-  2. It will take up to 30 seconds to boot to a point where a *master* can connect to it via bluetooth.
+##### Power on the *bridge*:
+1. Different ways, depending on your setup:
+  1. For the basic *bridge* option, Plug the power into the *bridges* power port.  See 
+  2. If your version of the *bridge* has a UPS, then slide the switch to the on position.
+  3. To charge the UPS, insert the power cord into the UPS's power input plug, do not power the pi using the pi's power port.
+  4. It will take up to 30 seconds to boot to a point where a *master* can connect to it via bluetooth.
 ---
 **NOTE**
 
-If you are interested in accurate time, I advise you let it connect to an available hotspot, or wlan within range.
+If you are interested in accurate time, I advise you let it connect to an available hotspot, or wlan within range. See:
+[Additional Network Setup](README.md#additional-network-setup)
 
 ---
+##### First time connecting to your *bridge*:
+###### Pairing:
+1. The Bridge is set to allways be available top pair with it, so this set should go by fairly easily, and painlessly:
+  1. Open bluetooth settings and pair with the bridge - the name of the bridge should be the hostname you assigned it during the setup.  See [Additional OS Setup:](README.md#Additional-OS-Setup).
+  2. Assign com/tty ports to the *bridge* device.
+Pairing should now be complete!
+
+###### Setting up your Favourite Terminal application to connect to your *Bridge*:
+1. In your favourite terminal program (screen/minicom/putty/securecrt/etc).
+2. Ccreate a connection profile to connect to your bridge using serial, and assign the profile the com/tty port that was assigned during pairing.
+3. Use N81, and 9600 baud as the speed.
+4. use xterm as your terminal type.
+5. Now save and test.
+6. Repeat steps for all devices that you might think that will need to connect.
+You should now all of your device terminal programs setup to easily connect to the *bridge* as needed.
+
+###### Connecting to your *bridge*:
+1. open your terminal program.
+2. Click on and launch/open the connection profile you just built.
+3. A terminal should open up, and you should see the banner appear, along with the results of your bridges attemtps to connect to the slave(s), and then either the the login prompt of the slave, or a list of possible slaves you can conncect with.
+
+###### Navigating the screen:
+1. if you were dropped off in the *bridg*'s bash shell, you have access to perform updates, play games, set the time, whatever, here are some ideas:
+  1. Set the timezone (for those travelers)
+    1. open  
