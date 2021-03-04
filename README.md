@@ -50,10 +50,11 @@ The following steps will guide you through the process getting this system to wo
 #### Parts needed for Basic setup:
 You will need:
 - A *raspberry pi zero w* - at a minimum, but if you don't like soldering, and have at least a desire to expand, get the *raspberry pi zero wh* instead.
-- An SD card with a minimum size of 8G.  Actually, you can get smaller, but for the price, 8G or 16G is a good choice.
+- An SD card with a minimum size of 8G.  Don't skimp hear, you'll need to get a quality card to weather any accidental power-cuts.  an good example is: [Example](https://www.amazon.com/SanDisk-Extreme-MicroSDXC-Everything-Stromboli/dp/B087SNYQLJ?pd_rd_w=gwWVo&pf_rd_p=19ad5bd3-3223-4635-a9ad-e42b3305d40b&pf_rd_r=H004CN0Q32QCP6VHNET2&pd_rd_r=9e6d3d01-28b1-4ade-87f1-e02d15f8f8ae&pd_rd_wg=uCCau&pd_rd_i=B087SNYQLJ&psc=1&ref_=pd_bap_d_rp_10_t)
 - A USB micro to USB type A for power.  [Example](https://www.amazon.com/6in-Micro-USB-Cable-6-inches/dp/B003YKX6WM/ref=sr_1_18?dchild=1&keywords=usb+micro+to+usb+a+male+6+inch+uart+cable&qid=1599147190&s=electronics&sr=1-18)
 - A USB micro to USB type A Female to connect to a USB type A to RJ45 serial cable to connect to a Cisco RJ45 console port.  USB to RJ45 [Example](https://www.amazon.com/gp/product/B01AFNBC3K/ref=ppx_yo_dt_b_asin_title_o07_s00?ie=UTF8&psc=1); micro to type A [example](https://www.amazon.com/UGREEN-Adapter-Samsung-Controller-Smartphone/dp/B00LN3LQKQ/ref=sr_1_2?dchild=1&keywords=usb%2Bmicro%2Bto%2Busb%2Ba%2Bfemale%2Bcable&qid=1599146495&s=electronics&sr=1-2&th=1).
 - A Micro USB (Pi side) to Mini USB (switch side) to connect between the raspberry pi's usb port to the switches USB-console port.  Here is an [example](https://www.amazon.com/gp/product/B018M8YNDG/ref=ox_sc_act_title_1?smid=ATVPDKIKX0DER&psc=1)
+- Optional: A Micro USB (pi side) to USB A female OTG Hub.  This will permit you to connect the *bridge* to multiple *slave* devices, so you won't have to keep walking back to switch the cable back and forth.  A good example is if you have VSS/Stack, or a FHRP pair.  [Example](https://www.amazon.com/gp/product/B01HYJLZH6/ref=ppx_yo_dt_b_asin_title_o01_s00?ie=UTF8&psc=1)
 - A case to house the pi.  Check this [example](https://www.amazon.com/Flirc-Raspberry-Pi-Zero-Case/dp/B08837L144/ref=sr_1_11_sspa?dchild=1&keywords=raspberry+pi+zero+battery+hat&qid=1600716473&sr=8-11-spons&psc=1&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUE0V0NONk1LS0hLNEEmZW5jcnlwdGVkSWQ9QTA5ODgwMDExTzgzV1hIVUxSQVJEJmVuY3J5cHRlZEFkSWQ9QTAxMTk0NDQySzdKM0UwV1FESTdBJndpZGdldE5hbWU9c3BfbXRmJmFjdGlvbj1jbGlja1JlZGlyZWN0JmRvTm90TG9nQ2xpY2s9dHJ1ZQ==) out for a good example, slightly pricey, but in my opinion, worth the cost.
 #### Installation:
 ##### OS installation and setup:
@@ -217,4 +218,4 @@ Again, will be constantly updating the documentation, so check back for more.
    2. If your version of the *bridge* has a UPS, then slide the switch to the on position.
    3. To charge the UPS, insert the power cord into the UPS's power input plug, do not power the pi using the pi's power port.
 
-![Raspberry Pi Zero usb port location and definition:][https://lgbrownjr.github.com/readme_md_images/rpi0_diagram_port.png]
+![Raspberry Pi Zero usb port location and definition:](/readme_md_images/rpi0_diagram_port.png)
