@@ -9,18 +9,19 @@ I tend to use several different discripters for each piece thats involved with t
 - The terms *user*, *you*, *network engineer*, *network administrator*, *administrator*, or *engineer* all refer to the person using this *bridge* to connect the link between it, and the *master*, and it and the *slave*.
 ### Preamble:
 This project is a set of scripts, services and libraries, that allow one to connect to a *raspberry pi zero w* from their phone/tablet/laptop using a serial/bluetooth connection, then be "bridged" over a usb to console connection to a switch/router/etc.  This allows the network/system engineer to manage devices via a console port, while enjoying the benefit of not having to be tethered right up to it.
-#### How it works at a high level:
-These scripts and services basicaly utilize screen and rfcomm to make the connection between a laptop/phone/etc, and the router or switch you are trying to connect to.  The connection between your
-After completing the installation and setup, one will need to pair their laptop to the pi and then assign it to a com/tty port. This is a one time (per device) process, so going forward, connecting to the brisge is extremely easy, reguardless of the operating system your computer using.
-
-Afer connecting to the bridge via bluetooth, it will attempt to determine if the pi is also connected serially to a device.(swich/router/etc)  If so, the pi will "bridge" you through to the device.  If not, the pi will politely let you know, and exit to the bash terminal.
-
-If you connect to the bridge via ssh or standard telnet, it will assume you have logged in for maintenance, or any other purpose, and not attempt to bridge you through to the end device.
-
-If you connect to the bridge via telnet using the ser2net special ports, then you will be automatically "bridged" in with the connected end device.
-
-If you login using bluetooth, and are successfully connected to an end device (switch, router, etc), the pi will automatically begin logging your session.  Logs are sent to `~/console_logging/` and are timestamped.
-Finally, once done, press `<CTRL>` + `A`, then `\` to exit *GNU screen*, then `sudo poweroff` to properly shut the bridge down.
+#### How it works at a high level/Feature List:
+These scripts and services basicaly utilize screen and rfcomm to bridge each connection between the *master*, and the *slave* you are attempting to connect to. 
+* Bluetooth was setup to be wide open, and is constantly paieable, so connectivity should be painless.
+* Once the *master* is connected to the *bridge*, it will attempt to look for any available usb or acm ports.  At this point one of three things are expected to occur:
+  * If the *bridge* was connected to a single *slave*, then it will open a *screen* session to that serial port outomagically.
+  * If the *bridge* was connected (via OTG usb hub), then it will create one *screen* session for each serial port it found, list them on your display, and exit to shell.
+  * If the *bridge* does not detect any new usb/acm ports, then it will state that fact and then drop to the *bridges* bash shell.
+* While connected to a *slave*, the *bridge* will begin logging all session traffic between the *master* and *slave*. (This is why it is important to make sure the *bridge* somehow receives time from and external source, or and onboard rtc.)
+* If your setup has one of the two UPS's listed below, then services that will monitor battery level, and will automatically shutdown if the battery level reaches 2%.
+ * If you are using the PiSugar2 UPS option, then you get several added benefits:
+  * An on board RTC.
+  * A button to ruen off the *bridge* when you are done using it.  (This makes it so much easier then having to login just to power it off!)
+* If your setup has a waveshare e-ink screen, then there are services that will monitor and display uptades as to the systems health/status.
 ### Considerations:
 Some things to think about while you are happily administering your switch, router, or whatever:
 #### Security:
@@ -208,9 +209,16 @@ Features I want to add to this project:
 - Make the ser2bt_status script run more effeciently - if possible.
 Again, will be constantly updating the documentation, so check back for more.
 #### How to use:
-1. Power on the *bridge*:
-   1. For the basic option, Plug the power into the *bridges* power port.  See 
-   2. If your version of the *bridge* has a UPS, then slide the switch to the on position.
-   3. To charge the UPS, insert the power cord into the UPS's power input plug, do not power the pi using the pi's power port.
-
 ![Raspberry Pi Zero usb port location and definition:](/readme_md_images/rpi0_diagram_port.png)
+1. Power on the *bridge*:
+  1. Different ways, depending on your setup:
+    1. For the basic *bridge* option, Plug the power into the *bridges* power port.  See 
+    2. If your version of the *bridge* has a UPS, then slide the switch to the on position.
+    3. To charge the UPS, insert the power cord into the UPS's power input plug, do not power the pi using the pi's power port.
+  2. It will take up to 30 seconds to boot to a point where a *master* can connect to it via bluetooth.
+---
+**NOTE**
+
+If you are interested in accurate time, I advise you let it connect to an available hotspot, or wlan within range.
+
+---
