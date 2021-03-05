@@ -1,4 +1,5 @@
 # ser2bt-bridge
+---
 ## Serial to Bluetooth bridge for raspberry pi zero w
 Before we begin, understand that everything in this repository is a work in progress...  :slightly_smiling_face:
 ### Definitions:
@@ -34,10 +35,9 @@ These scripts and services basicaly utilize screen and rfcomm to bridge each con
   * Add a battery backup, to allow the pi to weather those pesky, but necessary.  This will allow the pi to be moved around between closets, or devices without powering it down, and back up.  See below for more details.
   * Turn on *Overlay FS*.  This basically, turns your pi's sd card into a read only drive, so the risk of corrupting your SD card goes way, way down.  The down side is that you need to turn *Overlay FS* Off to update it or to make configuration adjustments, then turn it back on.  I'm till testing this feature to see how well it works over the long run.
 #### Screen size:
-During a bluetooth/serial seesion witn the *bridge*, you will notice that if after you adjust the size of youre terminal program's window, the colums and rows will not automatically adjust as they do for a telnet, or sshsession.  The solution is to resize the screen.  See [Navigating the screen](#Navigating-the-screen) to find out how.
-#### Accurate time:
-I don't think i have to get into why we need accurate time - even on this pi.  The only way it works now is to attatch it to a wifi network, such as your hotspot so that it can obtain time.  The use of a battery-powered RTC board would also help, and reduce the need to connect you're pi to a network.  In the instructions below, 
+During a bluetooth/serial seesion witn the *bridge*, you will notice that if after you adjust the size of youre terminal program's window, the colums and rows will not automatically adjust as they do for a telnet, or ssh session.  The solution is to resize the screen.  See [Navigating the screen](#Navigating-the-screen) to find out how.
 
+---
 ## Setup:
 There are two different setup options, basic, and full.
 * Basic should be used if you are only using a pi, and do not wish (at this point) to add a screen, or an external battery.
@@ -186,6 +186,8 @@ If everything went as planned, your *raspberry pi zero w* should be acting like 
   - Keep in mind, that no pin will be requested.  Your PC should just pair with the pi
   - Under Widows 10, after pairing, select *More Bluetooth Settings*, under *Related settings*, on the right side of the settings window.
 - Once that's done, go ahead and open your favorite terminal program, and point it to the com/ttyUSBx/tty/ACMx port, and set it up to connect at 115200 bps, n/8/1, xterm.
+---
+
 ### Full setup:
 #### Installation of the *UPS* & *e-ink screen*:
 The addition of am e-paper screen and ups backup will allow you to continue providing power to the Pi while not being plugged into a power source, and to easily tell the status of the bridge (Pi) without having to login to check.
@@ -196,10 +198,8 @@ The addition of am e-paper screen and ups backup will allow you to continue prov
 - For status and system health updates, attach a [waveshare.2.13 e-paper](https://www.waveshare.com/2.13inch-e-Paper-HAT.htm) display.
 #### Full Installation:
 Coming soon:
-## Known issues:
-- With respect to full installation, I can't get the services to load in a manner where the e-paper screen does not wake up soon enough in the boot sequence and takes 20 seconds for the pi to completely to start the status screen.
-  - Basic installation has not boot issues.
-- For some reason, while connected via bluetooth, one cannot update the OS, or githib repositories.  A workaround, is to open a `screen` session, tehn perform any update taskes.  Another workaround would be to ssh into it as well...
+---
+
 ## How to use:
 ![Raspberry Pi Zero usb port location and definition:](/readme_md_images/rpi0_diagram_port.png)
 ### Power on the *bridge*:
@@ -271,6 +271,9 @@ You should now all of your device terminal programs setup to easily connect to t
 7. To resize your terminal, suspend/exit and *screen* sessions, and type `resize`
 8. When you are within a screen session, configuring, or administering a *slave*:
   1. Use the *PageUp* key to enter scrolback mode, then continue to use *PageUp*/*PageDown* or *Up*/*Down* arrows to move up and down your buffer.  Use the *Escape* key to exit, and go back to the normal mode.
+
+---
+
 ## Improvements:
 Features I want to add to this project:
 - [X] Add a session logging feature for sessions that are connected to a switch, or router.
@@ -280,3 +283,9 @@ Features I want to add to this project:
 - [ ] I'm not sure if this even doable, but attempt to allow multiple concurrent bluetooth connections, especially if the item listed above is completed.
 - [ ] Continue testing *Overlay FS* as a means to protect the SD cards from corruption.
 - [ ] Make the ser2bt_status script run more effeciently - if possible.
+---
+
+## Known issues:
+- With respect to full installation, I can't get the services to load in a manner where the e-paper screen does not wake up soon enough in the boot sequence and takes 20 seconds for the pi to completely to start the status screen.
+  - Basic installation has not boot issues.
+- For some reason, while connected via bluetooth, one cannot update the OS, or githib repositories.  A workaround, is to open a `screen` session, tehn perform any update taskes.  Another workaround would be to ssh into it as well...
