@@ -186,20 +186,18 @@ If everything went as planned, your *raspberry pi zero w* should be acting like 
   - Keep in mind, that no pin will be requested.  Your PC should just pair with the pi
   - Under Widows 10, after pairing, select *More Bluetooth Settings*, under *Related settings*, on the right side of the settings window.
 - Once that's done, go ahead and open your favorite terminal program, and point it to the com/ttyUSBx/tty/ACMx port, and set it up to connect at 115200 bps, n/8/1, xterm.
----
-
 ### Full setup:
 #### Installation of the *UPS* & *e-ink screen*:
 The addition of am e-paper screen and ups backup will allow you to continue providing power to the Pi while not being plugged into a power source, and to easily tell the status of the bridge (Pi) without having to login to check.
 #### Parts needed for this phase:
 - For Battery UPS, we have two supported options:
-  - The first option is a [ups-lite](https://www.ebay.com/itm/UPS-Lite-for-Raspberry-Pi-Zero-/352888138785).
-  - The second UPS option is a PiSugar2 which also has a built-in real time clock, and a button that can be controlled via software, but at double the cost as the &ups_lite*.
+  + The first option is a [ups-lite](https://www.ebay.com/itm/UPS-Lite-for-Raspberry-Pi-Zero-/352888138785).
+  + The second UPS option is a PiSugar2 which also has a built-in real time clock, and a button that can be controlled via software, but at double the cost as the &ups_lite*.
 - For status and system health updates, attach a [waveshare.2.13 e-paper](https://www.waveshare.com/2.13inch-e-Paper-HAT.htm) display.
 #### Full Installation:
-Coming soon:
----
+Coming soon!
 
+---
 ## How to use:
 ![Raspberry Pi Zero usb port location and definition:](/readme_md_images/rpi0_diagram_port.png)
 ### Power on the *bridge*:
@@ -213,8 +211,6 @@ Coming soon:
 
 If you are interested in accurate time, I advise you let it connect to an available hotspot, or wlan within range. See:
 [Additional Network Setup](#additional-network-setup)
-
----
 ### First time connecting to your *bridge*:
 #### Pairing:
 1. The Bridge is set to allways be available top pair with it, so this set should go by fairly easily, and painlessly:
@@ -271,7 +267,6 @@ You should now all of your device terminal programs setup to easily connect to t
 7. To resize your terminal, suspend/exit and *screen* sessions, and type `resize`
 8. When you are within a screen session, configuring, or administering a *slave*:
   1. Use the *PageUp* key to enter scrolback mode, then continue to use *PageUp*/*PageDown* or *Up*/*Down* arrows to move up and down your buffer.  Use the *Escape* key to exit, and go back to the normal mode.
-
 ---
 
 ## Improvements:
