@@ -3,7 +3,7 @@
 ## Serial to Bluetooth bridge for raspberry pi zero w
 Before we begin, understand that everything in this repository is a work in progress...  :slightly_smiling_face:
 ### Definitions:
-I tend to use several different discripters for each piece thats involved with this project, so I've tried to define them below to helpkeep the reader from being confused.. :slightly_smiling_face:
+I tend to use several different discipters for each piece thats involved with this project, so I've tried to define them below to helpkeep the reader from being confused.. :slightly_smiling_face:
 - For the purpose of this project, the terms *slave* refers to a router or switch.  However, anything with a console port can be used  such as a server, appliance, Firewall, Wireless LAN Conroller, etc will work as well.
 - The terms *master*  refers to the PC, laptop, phone, or tablet.
 - The terms *pi*, *bridge*, *ser2bt* all refer to the *raspberry pi zero w*, and is being used as a *bridge* to connect *master* with *slave*.
@@ -34,8 +34,6 @@ These scripts and services basicaly utilize screen and rfcomm to bridge each con
 * If you are relying on that end device's USB port to ppower your bridge, and decide to reboot it, your pi will most likely be un-gracefully powercycled along with it.  This is not good as there is a risk that your pi's SD card will become corrupted, and stop working all-to-gether.  There are two possible ways around this:
   * Add a battery backup, to allow the pi to weather those pesky, but necessary.  This will allow the pi to be moved around between closets, or devices without powering it down, and back up.  See below for more details.
   * Turn on *Overlay FS*.  This basically, turns your pi's sd card into a read only drive, so the risk of corrupting your SD card goes way, way down.  The down side is that you need to turn *Overlay FS* Off to update it or to make configuration adjustments, then turn it back on.  I'm till testing this feature to see how well it works over the long run.
-#### Screen size:
-During a bluetooth/serial seesion witn the *bridge*, you will notice that if after you adjust the size of youre terminal program's window, the colums and rows will not automatically adjust as they do for a telnet, or ssh session.  The solution is to resize the screen.  See [Navigating the screen](#Navigating-the-screen) to find out how.
 
 ---
 ## Setup:
@@ -202,15 +200,18 @@ Coming soon!
 ![Raspberry Pi Zero usb port location and definition:](/readme_md_images/rpi0_diagram_port.png)
 ### Power on the *bridge*:
 1. Different ways, depending on your setup:
-  1. For the basic *bridge* option, Plug the power into the *bridges* power port.  See 
-  2. If your version of the *bridge* has a UPS, then slide the switch to the on position.
-  3. To charge the UPS, insert the power cord into the UPS's power input plug, do not power the pi using the pi's power port.
-  4. It will take up to 30 seconds to boot to a point where a *master* can connect to it via bluetooth.
+   1. For the basic *bridge* option, Plug the power into the *bridges* power port.  See 
+   2. If your version of the *bridge* has a UPS, then slide the switch to the on position.
+   3. To charge the UPS, insert the power cord into the UPS's power input plug, do not power the pi using the pi's power port.
+   4. It will take up to 30 seconds to boot to a point where a *master* can connect to it via bluetooth.
+
 ---
 **NOTE**
 
 If you are interested in accurate time, I advise you let it connect to an available hotspot, or wlan within range. See:
 [Additional Network Setup](#additional-network-setup)
+
+---
 ### First time connecting to your *bridge*:
 #### Pairing:
 1. The Bridge is set to allways be available top pair with it, so this set should go by fairly easily, and painlessly:
@@ -281,6 +282,4 @@ Features I want to add to this project:
 ---
 
 ## Known issues:
-- With respect to full installation, I can't get the services to load in a manner where the e-paper screen does not wake up soon enough in the boot sequence and takes 20 seconds for the pi to completely to start the status screen.
-  - Basic installation has not boot issues.
 - For some reason, while connected via bluetooth, one cannot update the OS, or githib repositories.  A workaround, is to open a `screen` session, tehn perform any update taskes.  Another workaround would be to ssh into it as well...
