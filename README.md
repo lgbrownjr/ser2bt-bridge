@@ -215,8 +215,8 @@ If you are interested in accurate time, I advise you let it connect to an availa
 ### First time connecting to your *bridge*:
 #### Pairing:
 1. The Bridge is set to allways be available top pair with it, so this set should go by fairly easily, and painlessly:
-  1. Open bluetooth settings and pair with the bridge - the name of the bridge should be the hostname you assigned it during the setup.  See [Additional OS Setup:](#Additional-OS-Setup).
-  2. Assign com/tty ports to the *bridge* device.
+   1. Open bluetooth settings and pair with the bridge - the name of the bridge should be the hostname you assigned it during the setup.  See [Additional OS Setup:](#Additional-OS-Setup).
+   2. Assign com/tty ports to the *bridge* device.
 Pairing should now be complete!
 
 #### Setting up your Favourite Terminal application to connect to your *Bridge*:
@@ -235,39 +235,39 @@ You should now all of your device terminal programs setup to easily connect to t
 
 #### Navigating the screen:
 1. If you were dropped off in the *bridg*'s bash shell, you have access to perform updates, play games, set the time, whatever, here are some ideas:
-  1. Set the timezone (for those travelers)
-    1. follow from here: [Setup Using raspi-config](#setup-using-raspi-config)
-  2. Set the date and time (if you don't have an onboard rtc, or access to a network:
-    1. `sudo date --set="4 MAR 2021 18:00:00"
-  3. Update the ser2bt software:
-    1. `screen`
-    2. `cd /home/pi/Projects/ser2bt/`
-    3. `git pull`
-    4. `sudo ./upgrade [full|basic|screen|ups]`
-    5. `exit` to exit out of acreen.
-  4. Update the OS:
-    1. `screen` Need to use screen to be able to access network resources, this is a workaround to an issue that prevents reliable network communications while an admin is logged in.
-    2. `sudo apt update -y`
-      1. If the result of the above command included `no updates available`, then skip to step 4.
-    3. `sudo apt full-upgrade -y`
-    4. `exit` to exit out of screen.
-2. For situations were your *bridge* is connected to a single *slave*:
-  1. If you are in the *slave* (read switch), and you want to get out to do something, and come back, then:
-    1. `ctrl` + `a`, then `d` to suspend you screen session.
+   1. Set the timezone (for those travelers)
+      1. follow from here: [Setup Using raspi-config](#setup-using-raspi-config)
+   2. Set the date and time (if you don't have an onboard rtc, or access to a network:
+      1. `sudo date --set="4 MAR 2021 18:00:00"
+   3. Update the ser2bt software:
+      1. `screen`
+      2. `cd /home/pi/Projects/ser2bt/`
+      3. `git pull`
+      4. `sudo ./upgrade [full|basic|screen|ups]`
+      5. `exit` to exit out of acreen.
+   4. Update the OS:
+      1. `screen` Need to use screen to be able to access network resources, this is a workaround to an issue that prevents reliable network communications while an admin is logged in.
+      2. `sudo apt update -y`
+        1. If the result of the above command included `no updates available`, then skip to step 4.
+      3. `sudo apt full-upgrade -y`
+      4. `exit` to exit out of screen.
+ 2. For situations were your *bridge* is connected to a single *slave*:
+    1. If you are in the *slave* (read switch), and you want to get out to do something, and come back, then:
+       1. `ctrl` + `a`, then `d` to suspend you screen session.
     2. To return to configuraing, or administering the switch, then type `screen -r`
-3. For situations were your *bridge* is connected to multiple *slaves*:
-  1. If you are in the *slave* (read switch), and you want to get out to do something or enter another switch, and come back, then:
-    1. `ctrl` + `a`, then `d ` to suspend you screen session allowing you to return later.
-    2. `ctrl` + `a`, then `\` to terminate your screen session. (you can always re-enter. 
-    3. To re-nter a switch that has been suspended, type `screen -r Switch_x`.
-    4. To enter a switch that has never been entered, or had its screen session terminated, type `screen Switch_x` where x = the connection number.
-    5. To list the available switches that you can enter, type `screen -l`
-4. To Reboot your bridge, type `sudo reboot`
-5. If you're lost, and you need to reconnect to the *slave* were connected to, type `ser2bt_bridge` to relaunch the discovery script.  if that gives you an error, then reboot.
-6. To shutdown your bridge, type `sudo poweroff`
-7. To resize your terminal, suspend/exit and *screen* sessions, and type `resize`
-8. When you are within a screen session, configuring, or administering a *slave*:
-  1. Use the *PageUp* key to enter scrolback mode, then continue to use *PageUp*/*PageDown* or *Up*/*Down* arrows to move up and down your buffer.  Use the *Escape* key to exit, and go back to the normal mode.
+ 3. For situations were your *bridge* is connected to multiple *slaves*:
+    1. If you are in the *slave* (read switch), and you want to get out to do something or enter another switch, and come back, then:
+       1. `ctrl` + `a`, then `d ` to suspend you screen session allowing you to return later.
+       2. `ctrl` + `a`, then `\` to terminate your screen session. (you can always re-enter. 
+       3. To re-nter a switch that has been suspended, type `screen -r Switch_x`.
+       4. To enter a switch that has never been entered, or had its screen session terminated, type `screen Switch_x` where x = the connection number.
+       5. To list the available switches that you can enter, type `screen -l`
+ 4. To Reboot your bridge, type `sudo reboot`
+ 5. If you're lost, and you need to reconnect to the *slave* were connected to, type `ser2bt_bridge` to relaunch the discovery script.  if that gives you an error, then reboot.
+ 6. To shutdown your bridge, type `sudo poweroff`
+ 7. To resize your terminal, suspend/exit and *screen* sessions, and type `resize`
+ 8. When you are within a screen session, configuring, or administering a *slave*:
+    1. Use the *PageUp* key to enter scrolback mode, then continue to use *PageUp*/*PageDown* or *Up*/*Down* arrows to move up and down your buffer.  Use the *Escape* key to exit, and go back to the normal mode.
 ---
 
 ## Improvements:
@@ -282,4 +282,4 @@ Features I want to add to this project:
 ---
 
 ## Known issues:
-- For some reason, while connected via bluetooth, one cannot update the OS, or githib repositories.  A workaround, is to open a `screen` session, tehn perform any update taskes.  Another workaround would be to ssh into it as well...
+- [ ] For some reason, while connected via bluetooth, one cannot update the OS, or githib repositories.  A workaround, is to open a `screen` session, tehn perform any update taskes.  Another workaround would be to ssh into it as well...
