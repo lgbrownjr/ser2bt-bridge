@@ -29,11 +29,11 @@ disable_svc=("keyboard-setup.service" "dphys-swapfile.service" "triggerhappy.ser
 "triggerhappy.socket" "apt-daily.service" "apt-daily.timer" \
 "apt-daily-upgrade.service" "apt-daily-upgrade.timer" "rpi-eeprom-update.service" \
 "ser2net.service")
-base_bin_files=(ser2bt_bridge)
+base_bin_files=(ser2bt_bridge screen_bat_mon)
 enhanc_bin_files=(ser2bt_status init_scr shutdown_scr)
 full_bin_files=( "${base_bin_files[@]}" "${enhanc_bin_files[@]}" )
-pisugar2_bin_files=(button_detect bat_mon screen_bat_mon)
-ups_lite_bin_files=(bat_mon screen_bat_mon)
+pisugar2_bin_files=(button_detect bat_mon)
+ups_lite_bin_files=(bat_mon)
 base_lib_files=(format.sh)
 enhanc_lib_files=(logo.bmp)
 full_lib_files=( "${base_lib_files[@]}" "${enhanc_lib_files[@]}" )
