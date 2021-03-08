@@ -3,7 +3,7 @@
 # 2018-12-29: generate a number for a backtick command in screen, just
 # the current battery percentage.
 if [ -e /tmp/bat ]; then
-	cat /tmp/bat
+	grep -Eo [0-9]+ /tmp/bat
 else
 	echo "N/A"
 fi
