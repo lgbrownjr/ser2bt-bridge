@@ -308,17 +308,14 @@ done
 				svc_1_bin_flag=1
 				bin_flag=1
 			fi
-			printf "${svc_1_bin_flag}\n"
 			if [ "${file}" == "${service_assoc[2]}" ] ; then
 				svc_3_bin_flag=1
 				bin_flag=1
 			fi
-			printf "${svc_3_bin_flag}\n"
 			if [ "${file}" == "${service_assoc[4]}" ] ; then
 				svc_5_bin_flag=1
 				bin_flag=1
 			fi
-			printf "${svc_5_bin_flag}\n"
 			cp ${project_folder}${file} ${bin_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
 		fi
 	done
