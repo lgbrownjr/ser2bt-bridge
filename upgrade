@@ -33,6 +33,7 @@ base_bin_files=(ser2bt_bridge)
 enhanc_bin_files=(ser2bt_status init_scr shutdown_scr)
 full_bin_files=( "${base_bin_files[@]}" "${enhanc_bin_files[@]}" )
 pisugar2_bin_files=(button_detect bat_mon screen_bat_mon)
+ups_lite_bin_files=(bat_mon screen_bat_mon)
 base_lib_files=(format.sh)
 enhanc_lib_files=(logo.bmp)
 full_lib_files=( "${base_lib_files[@]}" "${enhanc_lib_files[@]}" )
@@ -41,9 +42,11 @@ base_service_files=(rfcomm.service)
 enhanc_service_files=(ser2bt-e-paper.service ser2bt-e-paper-init.service)
 full_service_files=( "${base_service_files[@]}" "${enhanc_service_files[@]}" )
 pisugar2_service_files=(ser2bt-button.service ser2bt-battery.service)
+ups_lite_service_files=(ser2bt-battery.service)
 enhanc_service_assoc=(ser2bt_status ser2bt-e-paper.service)
 full_service_assoc=( "${enhanc_service_assoc[@]}" )
 pisugar2_service_assoc=(button_detect ser2bt-button.service bat_mon ser2bt-battery.service)
+ups_lite_service_assoc=(bat_mon ser2bt-battery.service)
 removed_service_files=("ser2bt-e-paper-shut.service" "ser2bt_button.service" "ser2bt-bat.service")
 begin_bashrc_addon_mark="#BEGIN ser2b-bridge .bashrc add-in"
 end_bashrc_addon_mark="#END ser2b-bridge .bashrc add-in"
@@ -153,6 +156,10 @@ fi
 		bin_files=("${full_bin_files[@]}" "${pisugar2_bin_files[@]}")
 		service_files=("${full_service_files[@]}" "${pisugar2_service_files[@]}")
 		service_assoc=("${full_service_assoc[@]}" "${pisugar2_service_assoc[@]}")
+	elif [ "${ups_type}" = "ups_lite" ] && [ "${upgrade_path}" = "full" ] ; then
+		bin_files=("${full_bin_files[@]}" "${ups_lite_bin_files[@]}")
+		service_files=("${full_service_files[@]}" "${ups_lite_service_files[@]}")
+		service_assoc=("${full_service_assoc[@]}" "${ups_lite_service_assoc[@]}")
 	fi
 #checking and adding modules as needed into /etc/modules:
 	printf "${nor}Check to make sure the the relavent modules are loaded:\n"
