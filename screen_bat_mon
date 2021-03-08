@@ -5,5 +5,5 @@
 if [ -e /tmp/bat ]; then
 	grep -Eo [0-9]+ /tmp/bat
 else
-	echo "N/A"
+	echo "Null"
 fi
