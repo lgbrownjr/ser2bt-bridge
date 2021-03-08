@@ -1,0 +1,9 @@
+#!/bin/bash
+#    I saved this as 'screen_backtick_battery'
+# 2018-12-29: generate a number for a backtick command in screen, just
+# the current battery percentage.
+if [ -e /tmp/bat ]; then
+	cat /tmp/bat
+else
+	echo "N/A"
+fi
