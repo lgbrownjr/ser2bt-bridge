@@ -127,5 +127,5 @@ bindkey "^[[6~" eval 'copy' 'stuff ^F' # PgDown | Enter copy/scrollback mode and
 # SCREEN LAYOUT
 # ------------------------------------------------------------------------------
 hardstatus alwaysfirstline "%{= kb}[%{= kr}$USER%{+ kw}@%{+ ky}%H%{+ kb}][%=%{= kK}(%{+ km}%n %{+ kg}%t%{+ kK})%=%{+ kb}][%{+ ky}%m%{+ kw}/%{-}%d%{+ kw}/%{-}%Y %{+ kc}%c%{+ kb}]"
-caption always "%{+ Bk}[%{+ Wk}To exit session, press: %{+ Yk}<CTRL>%{-} +%{+ Yk} a%{-}, then%{+ Yk} \%{-}.%{+ Bk}][%=%{+ Wk}Battery: %{+ Gk}%1`%:%{+ Wk}%%%=%{+ Bk}][%{+ Wk}To suspend session, press: %{+ Yk}<CTRL>%{-} +%{+ Yk} a%{-}, then%{+ Yk} d%{-}.%{+ Bk}]"
+caption always "%{+ Bk}[%{+ Wk}Press: %{+ Yk}<CTRL>%{-} +%{+ Yk} a%{-}, then%{+ Yk} \%{-} to exit, or%{+ Yk} d%{-} to suspend session.%{+ Bk}][%=][%{+ Wk}Battery: %{+ Gk}%1`%:%{+ Wk}%%%{+ Bk}]"
 #idle 300 exec termsaver starwars
