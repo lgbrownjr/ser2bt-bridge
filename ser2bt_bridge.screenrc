@@ -52,7 +52,7 @@ bind I login on
 bind O login off
 bind } history
 
-backtick 1 30 90 screen_bat_mon > /dev/null 2>&1
+backtick 1 30 90 screen_bat_mon
 # An example of a "screen scraper" which will launch urlview on the current
 # screen window
 #

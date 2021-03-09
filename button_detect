@@ -83,6 +83,7 @@ while True:
     button_press = i2c_bus.read_byte_data(address, 0x55) #Wait for the button press
     if button_press > 0: #Once the button is pressed...
         syslog.syslog(syslog.LOG_INFO, 'Button was pressed, shutting down...')
+        os.system('wall -n "shutdown by way of the power button being pressed!"')
         os.system("poweroff -p") #shut the pi down.
 
     time.sleep(battery_loop_sleep) #sleep for for the duration of battery_loop_sleep, before we loop again.

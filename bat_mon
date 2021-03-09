@@ -7,6 +7,7 @@ import time #timers for sleep
 import struct  # Capture battary capacity
 import smbus #both waveshare and UPS-LITE
 import syslog
+import stat
 #import signal # Check for incomming signals from the service and react if there is term signal.
 
 #Declare Variables:
@@ -124,6 +125,7 @@ ups, address = init_ups_check(i2c_bus, bus)
 if not os.path.exists(bat_log_dir+bat_log_file):
     os.mknod(bat_log_dir+bat_log_file)
 try:
+    os.chmod(bat_log_dir+bat_log_file, 0o644)
     while (bat_cap > min_bat_cap or charge is True):
         bat_cap, volts, charge = read_bat_capacity(ups, address, i2c_bus) #Formatted battery level
         bat_lvl=str(bat_cap)+"%"
@@ -136,6 +138,7 @@ try:
     syslog.syslog(syslog.LOG_INFO, 'Shutting down - battary has reached critical level')
     syslog.syslog(syslog.LOG_INFO, 'Battary is: '+bat_lvl+'Uptime was: '+str(os.system("uptime -p")))
     bat_file.close()
+    os.system('wall -n "Shutdown by way of low battery!"')
     os.system("poweroff -p")
     exit(0)
 
