@@ -2,3 +2,4 @@ RPi.GPIO
 spidev
 smbus
 psutil
+netifaces
