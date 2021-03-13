@@ -32,7 +32,7 @@ bt_ser_label='rfcomm0'
 bt_ser_port=bt_ser_label
 usb_ser_label='USB0'
 usb_ser_port='tty'+usb_ser_label
-acm_ser_label='ACM0'
+acm_ser_label='ACM'
 acm_ser_port='tty'+acm_ser_label
 roboto_font_dir='/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/'
 dejavu_font_dir='/usr/share/fonts/truetype/dejavu/'
@@ -180,10 +180,20 @@ def get_ip():
 def cap_wired_serial_port():
 #Capturess the existing wired serial port in use.
     global old_wired_serial_port
+    n = 0
     if os.path.exists(dev_dir + usb_ser_port):
+        usb_ports = os.listdir(dev_dir)
+        print (usb_ports)
+        for port in usb_ports:
+            if usb_ser_label in port:
+                n += 1
+#                print (port)
+#                print(str(n))
+#    if os.path.exists(dev_dir + usb_ser_port):
         wired_serial_port = usb_ser_label
         wired_serial_connect = True
-        wired_serial_status = "✔"
+#        wired_serial_status = "✔"
+        wired_serial_status = str(n)
         wired_serial_status_pos = 196
 
     elif os.path.exists(dev_dir + acm_ser_port):
