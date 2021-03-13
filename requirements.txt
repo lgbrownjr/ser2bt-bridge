@@ -2,13 +2,3 @@ RPi.GPIO
 spidev
 smbus
 psutil
-netifaces
-os
-sys
-syslog
-struct
-signal
-subprocess
-time
-PIL
-waveshare_epd
