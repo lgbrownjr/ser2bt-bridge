@@ -219,16 +219,14 @@ def cap_acm_serial_port():
 def cap_bt_serial_port():
 # Grabs existing bluetooth serial ports:
     global old_bt_serial_port
+    bt_serial_status_pos = 74
+    bt_serial_port = bt_ser_label
     if os.path.exists(dev_dir + bt_ser_port):
-        bt_serial_port = bt_ser_label
         bt_serial_connect = True
-        bt_serial_status = "✔"
-        bt_serial_status_pos = 74
+        bt_serial_status = "1"
     else:
-        bt_serial_port = bt_ser_label
         bt_serial_connect = False
-        bt_serial_status = "✖"
-        bt_serial_status_pos = 74
+        bt_serial_status = "0"
 
     return [bt_serial_port, bt_serial_status_pos, bt_serial_connect, bt_serial_status]
 
