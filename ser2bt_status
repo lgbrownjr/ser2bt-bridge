@@ -187,9 +187,6 @@ def cap_usb_serial_port():
     if os.path.exists(dev_dir + usb_ser_port + str(n)):
         for i in range(0, 3, 1):
             if os.path.exists(dev_dir + usb_ser_port + str(i)):
-#                usb_ports = os.listdir(dev_dir)
-#                for port in usb_ports:
-#                     if usb_ser_label in port:
                 n += 1
         usb_serial_connect = True
         usb_serial_status = str(n)
@@ -209,9 +206,6 @@ def cap_acm_serial_port():
     if os.path.exists(dev_dir + acm_ser_port + str(n)):
         for i in range(0, 3, 1):
             if os.path.exists(dev_dir + acm_ser_port + str(i)):
-#                acm_ports = os.listdir(dev_dir)
-#                for port in acm_ports:
-#                    if acm_ser_label in port:
                 n += 1
         acm_serial_connect = True
         acm_serial_status = str(n)
