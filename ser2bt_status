@@ -184,17 +184,18 @@ def cap_usb_serial_port():
     n = 0
     usb_serial_port = usb_ser_label + ':'
     usb_serial_status_pos = 130
-    for i in range(0, 3, 1):
-        if os.path.exists(dev_dir + usb_ser_port + str(i)):
-#            usb_ports = os.listdir(dev_dir)
-#            for port in usb_ports:
-#                if usb_ser_label in port:
-            n += 1
-            usb_serial_connect = True
-            usb_serial_status = str(n)
-        else:
-            usb_serial_connect = False
-            usb_serial_status = str(n)
+    if os.path.exists(dev_dir + usb_ser_port + str(n)):
+        for i in range(0, 3, 1):
+            if os.path.exists(dev_dir + usb_ser_port + str(i)):
+#                usb_ports = os.listdir(dev_dir)
+#                for port in usb_ports:
+#                     if usb_ser_label in port:
+                n += 1
+        usb_serial_connect = True
+        usb_serial_status = str(n)
+    else:
+        usb_serial_connect = False
+        usb_serial_status = str(n)
 
     return [usb_serial_port, usb_serial_status_pos, usb_serial_connect, usb_serial_status]
 
@@ -205,17 +206,18 @@ def cap_acm_serial_port():
     n = 0
     acm_serial_port = acm_ser_label + ':'
     acm_serial_status_pos = 196
-    for i in range(0, 3, 1):
-        if os.path.exists(dev_dir + acm_ser_port + str(i)):
-#            acm_ports = os.listdir(dev_dir)
-#            for port in acm_ports:
-#                if acm_ser_label in port:
-            n += 1
-            acm_serial_connect = True
-            acm_serial_status = str(n)
-        else:
-            acm_serial_connect = False
-            acm_serial_status = str(n)
+    if os.path.exists(dev_dir + acm_ser_port + str(n)):
+        for i in range(0, 3, 1):
+            if os.path.exists(dev_dir + acm_ser_port + str(i)):
+#                acm_ports = os.listdir(dev_dir)
+#                for port in acm_ports:
+#                    if acm_ser_label in port:
+                n += 1
+        acm_serial_connect = True
+        acm_serial_status = str(n)
+    else:
+        acm_serial_connect = False
+        acm_serial_status = str(n)
 
     return [acm_serial_port, acm_serial_status_pos, acm_serial_connect, acm_serial_status]
 
