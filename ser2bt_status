@@ -190,11 +190,11 @@ def cap_usb_serial_port():
 #            for port in usb_ports:
 #                if usb_ser_label in port:
             n += 1
-        usb_serial_connect = True
-        usb_serial_status = str(n)
-    else:
-        usb_serial_connect = False
-        usb_serial_status = str(n)
+            usb_serial_connect = True
+            usb_serial_status = str(n)
+        else:
+            usb_serial_connect = False
+            usb_serial_status = str(n)
 
     return [usb_serial_port, usb_serial_status_pos, usb_serial_connect, usb_serial_status]
 
@@ -211,11 +211,11 @@ def cap_acm_serial_port():
 #            for port in acm_ports:
 #                if acm_ser_label in port:
             n += 1
-        acm_serial_connect = True
-        acm_serial_status = str(n)
-    else:
-        acm_serial_connect = False
-        acm_serial_status = str(n)
+            acm_serial_connect = True
+            acm_serial_status = str(n)
+        else:
+            acm_serial_connect = False
+            acm_serial_status = str(n)
 
     return [acm_serial_port, acm_serial_status_pos, acm_serial_connect, acm_serial_status]
 
