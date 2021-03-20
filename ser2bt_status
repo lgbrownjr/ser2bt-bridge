@@ -30,9 +30,9 @@ dev_dir='/dev/'
 bt_ser_short_label='BT'
 bt_ser_label='rfcomm0'
 bt_ser_port=bt_ser_label
-usb_ser_label='USB0'
+usb_ser_label='USB'
 usb_ser_port='tty'+usb_ser_label
-acm_ser_label='ACM0'
+acm_ser_label='ACM'
 acm_ser_port='tty'+acm_ser_label
 roboto_font_dir='/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/'
 dejavu_font_dir='/usr/share/fonts/truetype/dejavu/'
@@ -44,7 +44,8 @@ old_lan_status = "XX"
 old_bt_status = "XX"
 old_full_tty_status = "XX"
 old_bt_serial_port = "XX"
-old_wired_serial_port = "XX"
+old_usb_serial_port = "XX"
+old_acm_serial_port = "XX"
 inactive = "inactive"
 active = "active"
 not_connected = "Not Connected"
@@ -177,42 +178,55 @@ def get_ip():
     return (host_ip, host_ip_change_flag)
 
 
-def cap_wired_serial_port():
+def cap_usb_serial_port():
 #Capturess the existing wired serial port in use.
-    global old_wired_serial_port
-    if os.path.exists(dev_dir + usb_ser_port):
-        wired_serial_port = usb_ser_label
-        wired_serial_connect = True
-        wired_serial_status = "✔"
-        wired_serial_status_pos = 196
-
-    elif os.path.exists(dev_dir + acm_ser_port):
-        wired_serial_port = acm_ser_label
-        wired_serial_connect = True
-        wired_serial_status = "✔"
-        wired_serial_status_pos = 204
+    global old_usb_serial_port
+    n = 0
+    usb_serial_port = usb_ser_label + ':'
+    usb_serial_status_pos = 137
+    if os.path.exists(dev_dir + usb_ser_port + str(n)):
+        for i in range(0, 3, 1):
+            if os.path.exists(dev_dir + usb_ser_port + str(i)):
+                n += 1
+        usb_serial_connect = True
+        usb_serial_status = str(n)
     else:
-        wired_serial_port = "None"
-        wired_serial_connect = False
-        wired_serial_status = "✖"
-        wired_serial_status_pos = 194
+        usb_serial_connect = False
+        usb_serial_status = str(n)
 
-    return [wired_serial_port, wired_serial_status_pos, wired_serial_connect, wired_serial_status]
+    return [usb_serial_port, usb_serial_status_pos, usb_serial_connect, usb_serial_status]
+
+
+def cap_acm_serial_port():
+#Capturess the existing wired serial port in use.
+    global old_acm_serial_port
+    n = 0
+    acm_serial_port = acm_ser_label + ':'
+    acm_serial_status_pos = 206
+    if os.path.exists(dev_dir + acm_ser_port + str(n)):
+        for i in range(0, 3, 1):
+            if os.path.exists(dev_dir + acm_ser_port + str(i)):
+                n += 1
+        acm_serial_connect = True
+        acm_serial_status = str(n)
+    else:
+        acm_serial_connect = False
+        acm_serial_status = str(n)
+
+    return [acm_serial_port, acm_serial_status_pos, acm_serial_connect, acm_serial_status]
 
 
 def cap_bt_serial_port():
 # Grabs existing bluetooth serial ports:
     global old_bt_serial_port
+    bt_serial_status_pos = 79
+    bt_serial_port = bt_ser_label + ':'
     if os.path.exists(dev_dir + bt_ser_port):
-        bt_serial_port = bt_ser_label
         bt_serial_connect = True
-        bt_serial_status = "✔"
-        bt_serial_status_pos = 74
+        bt_serial_status = "1"
     else:
-        bt_serial_port = bt_ser_label
         bt_serial_connect = False
-        bt_serial_status = "✖"
-        bt_serial_status_pos = 74
+        bt_serial_status = "0"
 
     return [bt_serial_port, bt_serial_status_pos, bt_serial_connect, bt_serial_status]
 
@@ -287,11 +301,12 @@ try:
                 draw.text((74, 80), bt_service, font=f_var_spc_char_font18, fill=0)
 
             # Setting up the dynamic parts of tty status
-            wired_serial_port, wired_serial_status_pos, wired_serial_connect, wired_serial_status = cap_wired_serial_port()
+            usb_serial_port, usb_serial_status_pos, usb_serial_connect, usb_serial_status = cap_usb_serial_port()
+            acm_serial_port, acm_serial_status_pos, acm_serial_connect, acm_serial_status = cap_acm_serial_port()
             bt_serial_port, bt_serial_status_pos, bt_serial_connect, bt_serial_status = cap_bt_serial_port()
             # first, if nothing is connected, then just say that:
             #IF there are no tty connections, then display full_tty_status variable (saying nothing is attached).
-            if bt_serial_connect is False and wired_serial_connect is False:
+            if bt_serial_connect is False and usb_serial_connect is False and acm_serial_connect is False:
                 full_tty_status = "No tty Connections"
                 if old_full_tty_status != full_tty_status:
                     old_full_tty_status = full_tty_status
@@ -301,11 +316,14 @@ try:
                 full_tty_status = ""
                 old_full_tty_status = full_tty_status
                 draw.rectangle((52, 99, 149, 122), fill=255)
-                draw.text((52, 100), bt_ser_short_label, font=f_var_font18, fill=0)
+                draw.text((52, 100), bt_ser_short_label + ':', font=f_var_font18, fill=0)
                 draw.text((bt_serial_status_pos, 100), bt_serial_status, font=f_var_spc_char_font18, fill=0)
-                draw.rectangle((150, 99, 220, 122), fill=255)
-                draw.text((150, 100), wired_serial_port, font=f_var_font18, fill=0)
-                draw.text((wired_serial_status_pos, 100), wired_serial_status, font=f_var_spc_char_font18, fill=0)
+                draw.rectangle((98, 99, 156, 122), fill=255)
+                draw.text((98, 100), usb_serial_port, font=f_var_font18, fill=0)
+                draw.text((usb_serial_status_pos, 100), usb_serial_status, font=f_var_spc_char_font18, fill=0)
+                draw.rectangle((160, 99, 220, 122), fill=255)
+                draw.text((160, 100), acm_serial_port, font=f_var_font18, fill=0)
+                draw.text((acm_serial_status_pos, 100), acm_serial_status, font=f_var_spc_char_font18, fill=0)
             #This block draws the rectangles, then places the refreshable text/variables into them.
 
             epd.displayPartial(epd.getbuffer(image)) #update the screeen to actually print the above to the e-ink display.
