@@ -231,7 +231,7 @@ You should now all of your device terminal programs setup to easily connect to t
 #### Connecting to your *bridge*:
 1. open your terminal program.
 2. Click on and launch/open the connection profile you just built.
-3. A terminal should open up, and you should see the banner appear, along with the results of your bridges attemtps to connect to the slave(s), and then either the the login prompt of the slave, or a list of possible slaves you can conncect with.
+3. A terminal should open up, and you should see the banner appear, along with the results of your bridges attemtps to connect to the slave(s), and then either the login prompt of the slave, or a list of possible slaves you can conncect with.
 
 #### Navigating the screen:
 1. If you were dropped off in the *bridg*'s bash shell, you have access to perform updates, play games, set the time, whatever, here are some ideas:
