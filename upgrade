@@ -80,6 +80,14 @@ last_col=$(tput cols)
 
 #Checks before begining:
 # Make sure the script is run with superuser privelages
+	##Check to make sure this is a rpi zero:
+if  grep -q "Zero" /proc/device-tree/model; then
+	#Starting script here:
+	printf "\n\n${nor}Beginning ${upgrade_path} upgrade of ${yel}ser2bt-bridge${nor}:\n\n"
+else
+	printf "\n${nor}This is ${drk_red}not${nor} a ${yel}Raspberry Zero${nor}, ${drk_red}Aborting ${nor}installation/upgrade.\n" | fmt --goal=91 --width=${last_col}
+	exit 1
+fi
 if [[ "${UID}" -ne 0 ]]; then
 	printf "\n${nor}You do ${drk_red}not ${nor}have the permissions to successfully run this script.\n"
 	exit 1
@@ -97,79 +105,74 @@ if [[ "${#}" -lt 1 ]]; then
 fi
 
 #assign the upgrade path to the first argument
-	upgrade_path="${1}"
-	shift
-	if [ "${upgrade_path}" = "basic" ] ; then
-		bin_files=( "${base_bin_files[@]}" )
-		lib_files=( "${base_lib_files[@]}" )
-		service_files=( "${base_service_files[@]}" )
-		config_txt_addons=("${base_config_txt_addons[@]}")
-		config_txt_values=("${base_config_txt_values[@]}")
-		boot_search=(${base_boot_search[@]})
-		ups_type="none"
-	fi
+upgrade_path="${1}"
+shift
+if [ "${upgrade_path}" = "basic" ] ; then
+	bin_files=( "${base_bin_files[@]}" )
+	lib_files=( "${base_lib_files[@]}" )
+	service_files=( "${base_service_files[@]}" )
+	config_txt_addons=("${base_config_txt_addons[@]}")
+	config_txt_values=("${base_config_txt_values[@]}")
+	boot_search=(${base_boot_search[@]})
+	ups_type="none"
+fi
 
-	if [ "${upgrade_path}" = "enhanced" ] ; then
-		bin_files=(${enhanc_bin_files[@]})
-		lib_files=(${enhanc_lib_files[@]})
-		service_files=(${enhanc_service_files[@]})
-		service_assoc=(${enhanc_service_assoc[@]})
-		config_txt_addons=(${enhanc_config_txt_addons[@]})
-		config_txt_values=("${enhanc_config_txt_values[@]}")
-		boot_search=(${enhanc_boot_search[@]})
-	fi
+if [ "${upgrade_path}" = "enhanced" ] ; then
+	bin_files=(${enhanc_bin_files[@]})
+	lib_files=(${enhanc_lib_files[@]})
+	service_files=(${enhanc_service_files[@]})
+	service_assoc=(${enhanc_service_assoc[@]})
+	config_txt_addons=(${enhanc_config_txt_addons[@]})
+	config_txt_values=("${enhanc_config_txt_values[@]}")
+	boot_search=(${enhanc_boot_search[@]})
+fi
 
-	if [ "${upgrade_path}" = "full" ] ; then
-		bin_files=(${full_bin_files[@]})
-		lib_files=(${base_lib_files[@]})
-		ser2bt_lib_files=(${enhanc_lib_files[@]})
-		service_files=(${full_service_files[@]})
-		service_assoc=(${full_service_assoc[@]})
-		config_txt_addons=(${full_config_txt_addons[@]})
-		config_txt_values=("${full_config_txt_values[@]}")
-		boot_search=(${full_boot_search[@]})
-	fi
+if [ "${upgrade_path}" = "full" ] ; then
+	bin_files=(${full_bin_files[@]})
+	lib_files=(${base_lib_files[@]})
+	ser2bt_lib_files=(${enhanc_lib_files[@]})
+	service_files=(${full_service_files[@]})
+	service_assoc=(${full_service_assoc[@]})
+	config_txt_addons=(${full_config_txt_addons[@]})
+	config_txt_values=("${full_config_txt_values[@]}")
+	boot_search=(${full_boot_search[@]})
+fi
 
-	##Check to make sure this is a rpi zero:
-	if  grep -q "Zero" /proc/device-tree/model; then
-	#Starting script here:
-		printf "\n\n${nor}Beginning ${upgrade_path} upgrade of ${yel}ser2bt-bridge${nor}:\n\n"
-
-	#If this is not a basic install, check to see which ups is installed.
-	if [ ${upgrade_path} != "basic" ] ; then
-		result=$(i2cdetect -y 1 0x75 0x75 | grep -Eo "UU|75")
-		if [ ${result} -eq 75 ] ;  then
-			ups_type="pisugar2"
+#If this is not a basic install, check to see which ups is installed.
+if [ ${upgrade_path} != "basic" ] ; then
+	result=$(i2cdetect -y 1 0x75 0x75 | grep -Eo "UU|75")
+	if [ ${result} -eq 75 ] ;  then
+		ups_type="pisugar2"
+	else
+		result=$(i2cdetect -y 1 0x36 0x36 | grep -Eo "UU|36")
+		if [ ${result} -eq 36 ] ;  then
+			ups_type="ups_lite"
 		else
-			result=$(i2cdetect -y 1 0x36 0x36 | grep -Eo "UU|36")
-			if [ ${result} -eq 36 ] ;  then
-				ups_type="ups_lite"
-			else
-				ups_type="none"
-			fi
+			ups_type="none"
 		fi
 	fi
-	if [ "${ups_type}" = "pisugar2" ] && [ "${upgrade_path}" = "full" ] ; then
-		config_txt_addons=("${full_config_txt_addons[@]}" "${pisugar2_config_txt_addons[@]}")
-		config_txt_values=("${full_config_txt_values[@]}" "${pisugar2_config_txt_values[@]}")
-		boot_search=("${enhanc_boot_search[@]}" "${pishugar2_boot_search[@]}")
-		bin_files=("${full_bin_files[@]}" "${pisugar2_bin_files[@]}")
-		service_files=("${full_service_files[@]}" "${pisugar2_service_files[@]}")
-		service_assoc=("${full_service_assoc[@]}" "${pisugar2_service_assoc[@]}")
-	elif [ "${ups_type}" = "ups_lite" ] && [ "${upgrade_path}" = "full" ] ; then
-		bin_files=("${full_bin_files[@]}" "${ups_lite_bin_files[@]}")
-		service_files=("${full_service_files[@]}" "${ups_lite_service_files[@]}")
-		service_assoc=("${full_service_assoc[@]}" "${ups_lite_service_assoc[@]}")
-	fi
+fi
+if [ "${ups_type}" = "pisugar2" ] && [ "${upgrade_path}" = "full" ] ; then
+	config_txt_addons=("${full_config_txt_addons[@]}" "${pisugar2_config_txt_addons[@]}")
+	config_txt_values=("${full_config_txt_values[@]}" "${pisugar2_config_txt_values[@]}")
+	boot_search=("${enhanc_boot_search[@]}" "${pishugar2_boot_search[@]}")
+	bin_files=("${full_bin_files[@]}" "${pisugar2_bin_files[@]}")
+	service_files=("${full_service_files[@]}" "${pisugar2_service_files[@]}")
+	service_assoc=("${full_service_assoc[@]}" "${pisugar2_service_assoc[@]}")
+elif [ "${ups_type}" = "ups_lite" ] && [ "${upgrade_path}" = "full" ] ; then
+	bin_files=("${full_bin_files[@]}" "${ups_lite_bin_files[@]}")
+	service_files=("${full_service_files[@]}" "${ups_lite_service_files[@]}")
+	service_assoc=("${full_service_assoc[@]}" "${ups_lite_service_assoc[@]}")
+fi
 #checking and adding modules as needed into /etc/modules:
-	printf "${nor}Check to make sure the the relavent modules are loaded:\n"
-	grep -q -s -o -e "^g_serial" ${etc_folder}modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'g_serial' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully${nor} loaded\n")
-	grep -q -s -o -e "^dwc2" ${etc_folder}/modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'dwc2' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully ${nor} loaded\n")
+printf "${nor}Check to make sure the the relavent modules are loaded:\n"
+grep -q -s -o -e "^g_serial" ${etc_folder}modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'g_serial' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully${nor} loaded\n")
+grep -q -s -o -e "^dwc2" ${etc_folder}/modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'dwc2' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully ${nor} loaded\n")
 
 #checking and adding modules as needed into /boot/config.txt and /boot/cmdline.txt:
-	printf "\n${nor}Check to make sure the the relavent seetings are made in the boot files:${nor}\n" | fmt --goal=91 --width=${last_col}
-	change_flag=0
-	num=0
+printf "\n${nor}Check to make sure the the relavent seetings are made in the boot files:${nor}\n" | fmt --goal=91 --width=${last_col}
+change_flag=0
+num=0
 	for config in "${config_txt_addons[@]}"; do
 		grep -q -s -x -E ^${config}${config_txt_values[num]} ${boot}${boot_config}
 		if [ ${?} -eq 1 ]; then
@@ -425,7 +428,4 @@ done
 	else
 		printf " ${nor}Both versions are the same, skipping...\n"
 	fi
-else
-	printf "\n${nor}This is ${drk_red}not${nor} a ${yel}Raspberry Zero${nor}, ${drk_red}Aborting ${nor}installation/upgrade.\n" | fmt --goal=91 --width=${last_col}
-fi
 exit 0
