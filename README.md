@@ -282,4 +282,4 @@ Features I want to add to this project:
 ---
 
 ## Known issues:
-- [ ] For some reason, while connected via bluetooth, one cannot update the OS, or githib repositories.  A workaround, is to open a `screen` session, tehn perform any update taskes.  Another workaround would be to ssh into it as well...
+- [ ] For some reason, while connected via bluetooth, one cannot update the OS, or githib repositories.  A workaround, is to open a `screen` session in the bridge, then perform any update taskes.  Another workaround would be to ssh into it instead of using bluetoothe.
