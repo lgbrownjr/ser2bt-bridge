@@ -11,7 +11,7 @@ import stat
 #import signal # Check for incomming signals from the service and react if there is term signal.
 
 #Declare Variables:
-sleep_time = 90
+sleep_time = 60
 min_bat_cap=2  # setting in percent minimum battery capacity before we'll shutdown.
 bus=1
 i2c_bus=smbus.SMBus(bus)
