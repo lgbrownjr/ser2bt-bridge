@@ -183,7 +183,7 @@ def cap_usb_serial_port():
     global old_usb_serial_port
     n = 0
     usb_serial_port = usb_ser_label + ':'
-    usb_serial_status_pos = 137
+    usb_serial_status_pos = 235
     if os.path.exists(dev_dir + usb_ser_port + str(n)):
         for i in range(0, 3, 1):
             if os.path.exists(dev_dir + usb_ser_port + str(i)):
@@ -202,7 +202,7 @@ def cap_acm_serial_port():
     global old_acm_serial_port
     n = 0
     acm_serial_port = acm_ser_label + ':'
-    acm_serial_status_pos = 206
+    acm_serial_status_pos = 235
     if os.path.exists(dev_dir + acm_ser_port + str(n)):
         for i in range(0, 3, 1):
             if os.path.exists(dev_dir + acm_ser_port + str(i)):
@@ -219,7 +219,7 @@ def cap_acm_serial_port():
 def cap_bt_serial_port():
 # Grabs existing bluetooth serial ports:
     global old_bt_serial_port
-    bt_serial_status_pos = 79
+    bt_serial_status_pos = 80
     bt_serial_port = bt_ser_label + ':'
     if os.path.exists(dev_dir + bt_ser_port):
         bt_serial_connect = True
@@ -252,15 +252,15 @@ try:
     epd.init(epd.FULL_UPDATE)
     #Draw the non variablers to the to the screen
     draw.text((0, 0), host_name, font = f_top_line_font16, fill = 0)
-    draw.text((52, 0), 'Bat:', font = f_top_line_font16, fill = 0)
+    draw.text((50, 0), 'Bat:', font = f_top_line_font16, fill = 0)
     draw.line([(0, 17), (250, 17)], fill = 0, width = 2)
     draw.text((0, 20), 'Load:', font = f_title_font18, fill = 0)
-    draw.text((52, 20), 'CPU', font = f_var_font18, fill = 0)
+    draw.text((50, 20), 'CPU', font = f_var_font18, fill = 0)
     draw.text((150, 20), 'Mem', font = f_var_font18, fill = 0)
     draw.text((0, 40), 'SSID:', font = f_title_font18, file = 0)
     draw.text((0, 60), 'IP:', font = f_title_font18, fill = 0)
     draw.text((0, 80), 'Svcs:', font = f_title_font18, fill = 0)
-    draw.text((52, 80), 'BT', font = f_var_font18, fill = 0)
+    draw.text((50, 80), 'BT', font = f_var_font18, fill = 0)
     draw.text((150, 80), 'ser2net', font = f_var_font18, fill = 0)
     draw.text((0, 100), 'TTY:', font = f_title_font18, fill = 0)
 
@@ -276,8 +276,8 @@ try:
             draw.text((82, 0), bat_lvl(), font=f_top_line_font16, fill=0)
             draw.rectangle((137, 0, 250, 16), fill=255)
             draw.text((137, 0), time.strftime('%D %H:%M'), font=f_top_line_font16, fill=0)
-            draw.rectangle((91, 19, 149, 39), fill=255)
-            draw.text((91, 20), str(psutil.cpu_percent())+'%', font=f_var_font18, fill=0)
+            draw.rectangle((89, 19, 140, 39), fill=255)
+            draw.text((89, 20), str(psutil.cpu_percent())+'%', font=f_var_font18, fill=0)
             draw.rectangle((195, 19, 250, 39), fill=255)
             draw.text((195, 20), str(psutil.virtual_memory().percent)+'%', font=f_var_font18, fill=0)
 
@@ -286,44 +286,45 @@ try:
             if ssid_change_flag is True:
                 ip_host, ip_host_change_flag = get_ip()
                 lan_service, get_lan_service_change_flag  = get_lan_service_status(ssid, ssid_change_flag)
-                draw.rectangle((52, 39, 200, 59), fill=255)
-                draw.text((52, 40), ssid, font=f_var_font18, fill=0)
-                draw.rectangle((52, 59, 200, 79), fill=255)
-                draw.text((52, 60), ip_host, font=f_var_font18, fill=0)
+                draw.rectangle((50, 39, 198, 59), fill=255)
+                draw.text((50, 40), ssid, font=f_var_font18, fill=0)
+                draw.rectangle((50, 59, 198, 79), fill=255)
+                draw.text((50, 60), ip_host, font=f_var_font18, fill=0)
                 if get_lan_service_change_flag is True:
-                    draw.rectangle((212, 79, 222, 99), fill=255)
+                    draw.rectangle((212, 79, 225, 99), fill=255)
                     draw.text((212, 80), lan_service, font=f_var_spc_char_font18, fill=0)
 
             # display rfcomm, bluetooth, hci, status.
             bt_service, bt_service_change_flag = get_bt_service_status()
             if bt_service_change_flag is True:
-                draw.rectangle((74, 79, 84, 99), fill=255)
-                draw.text((74, 80), bt_service, font=f_var_spc_char_font18, fill=0)
+                draw.rectangle((72, 79, 84, 99), fill=255)
+                draw.text((72, 80), bt_service, font=f_var_spc_char_font18, fill=0)
 
             # Setting up the dynamic parts of tty status
             usb_serial_port, usb_serial_status_pos, usb_serial_connect, usb_serial_status = cap_usb_serial_port()
             acm_serial_port, acm_serial_status_pos, acm_serial_connect, acm_serial_status = cap_acm_serial_port()
             bt_serial_port, bt_serial_status_pos, bt_serial_connect, bt_serial_status = cap_bt_serial_port()
+            total_serial_lines = int(usb_serial_status) + int(acm_serial_status)
             # first, if nothing is connected, then just say that:
             #IF there are no tty connections, then display full_tty_status variable (saying nothing is attached).
             if bt_serial_connect is False and usb_serial_connect is False and acm_serial_connect is False:
                 full_tty_status = "No tty Connections"
                 if old_full_tty_status != full_tty_status:
                     old_full_tty_status = full_tty_status
-                    draw.rectangle((52, 99, 220, 122), fill=255)
-                    draw.text((52, 100), full_tty_status, font=f_var_font18, fill=0)
+                    draw.rectangle((50, 99, 220, 122), fill=255)
+                    draw.text((50, 100), full_tty_status, font=f_var_font18, fill=0)
             else: #Otherwise, display the inidividual state of the ttys.
                 full_tty_status = ""
                 old_full_tty_status = full_tty_status
-                draw.rectangle((52, 99, 149, 122), fill=255)
-                draw.text((52, 100), bt_ser_short_label + ':', font=f_var_font18, fill=0)
-                draw.text((bt_serial_status_pos, 100), bt_serial_status, font=f_var_spc_char_font18, fill=0)
-                draw.rectangle((98, 99, 156, 122), fill=255)
-                draw.text((98, 100), usb_serial_port, font=f_var_font18, fill=0)
-                draw.text((usb_serial_status_pos, 100), usb_serial_status, font=f_var_spc_char_font18, fill=0)
-                draw.rectangle((160, 99, 220, 122), fill=255)
-                draw.text((160, 100), acm_serial_port, font=f_var_font18, fill=0)
-                draw.text((acm_serial_status_pos, 100), acm_serial_status, font=f_var_spc_char_font18, fill=0)
+                draw.rectangle((50, 99, 144, 122), fill=255)
+                draw.text((50, 100), bt_ser_short_label + ':', font=f_var_font18, fill=0)
+                draw.text((bt_serial_status_pos, 100), bt_serial_status, font=f_var_font18, fill=0)
+                draw.rectangle((150, 99, 240, 122), fill=255)
+                draw.text((150, 100), 'Serial Out:', font=f_var_font18, fill=0)
+                draw.text((usb_serial_status_pos, 100),str(total_serial_lines), font=f_var_font18, fill=0)
+#                draw.rectangle((160, 99, 220, 122), fill=255)
+#                draw.text((160, 100), acm_serial_port, font=f_var_font18, fill=0)
+#                draw.text((acm_serial_status_pos, 100), acm_serial_status, font=f_var_font18, fill=0)
             #This block draws the rectangles, then places the refreshable text/variables into them.
 
             epd.displayPartial(epd.getbuffer(image)) #update the screeen to actually print the above to the e-ink display.
