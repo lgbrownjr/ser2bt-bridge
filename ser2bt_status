@@ -183,7 +183,7 @@ def cap_usb_serial_port():
     global old_usb_serial_port
     n = 0
     usb_serial_port = usb_ser_label + ':'
-    usb_serial_status_pos = 235
+    usb_serial_status_pos = 236
     if os.path.exists(dev_dir + usb_ser_port + str(n)):
         for i in range(0, 3, 1):
             if os.path.exists(dev_dir + usb_ser_port + str(i)):
@@ -202,7 +202,7 @@ def cap_acm_serial_port():
     global old_acm_serial_port
     n = 0
     acm_serial_port = acm_ser_label + ':'
-    acm_serial_status_pos = 235
+    acm_serial_status_pos = 236
     if os.path.exists(dev_dir + acm_ser_port + str(n)):
         for i in range(0, 3, 1):
             if os.path.exists(dev_dir + acm_ser_port + str(i)):
@@ -311,15 +311,15 @@ try:
                 full_tty_status = "No tty Connections"
                 if old_full_tty_status != full_tty_status:
                     old_full_tty_status = full_tty_status
-                    draw.rectangle((50, 99, 220, 122), fill=255)
+                    draw.rectangle((50, 99, 245, 122), fill=255)
                     draw.text((50, 100), full_tty_status, font=f_var_font18, fill=0)
             else: #Otherwise, display the inidividual state of the ttys.
                 full_tty_status = ""
                 old_full_tty_status = full_tty_status
-                draw.rectangle((50, 99, 144, 122), fill=255)
+                draw.rectangle((50, 99, 149, 122), fill=255)
                 draw.text((50, 100), bt_ser_short_label + ':', font=f_var_font18, fill=0)
                 draw.text((bt_serial_status_pos, 100), bt_serial_status, font=f_var_font18, fill=0)
-                draw.rectangle((150, 99, 240, 122), fill=255)
+                draw.rectangle((150, 99, 245, 122), fill=255)
                 draw.text((150, 100), 'Serial Out:', font=f_var_font18, fill=0)
                 draw.text((usb_serial_status_pos, 100),str(total_serial_lines), font=f_var_font18, fill=0)
 #                draw.rectangle((160, 99, 220, 122), fill=255)
