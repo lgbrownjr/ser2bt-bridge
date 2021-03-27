@@ -13,25 +13,25 @@ This project is a set of scripts, services and libraries, that allow one to conn
 #### How it works at a high level/Feature List:
 These scripts and services basicaly utilize screen and rfcomm to bridge each connection between the *master*, and the *slave* you are attempting to connect to. 
 * By design, this prject does not have security in mind, preferring instead to focus on easy discovery, pairing, and connectivity to allow the network administrator to focus on getting their work done.
- * The Bridge will always be discoverable, and will not require a pin to complete the pairing process.
- * This has been tested with the following Operating Systems: Linux, Android, Windows 10, and ChromeOS (with caveats).
- * When connecting to the bridge over bluetooth, the administrator will be auto logged-in as pi.
- * The Administrator will not be challanged for sign-in credentials - however, the admin will still be required enter credentials to gain access to the *slave* device. 
+  * The Bridge will always be discoverable, and will not require a pin to complete the pairing process.
+  * This has been tested with *master* devices using the following Operating Systems: Linux, Android, Windows 10, and ChromeOS (with caveats).
+  * When connecting to the bridge over bluetooth, the administrator will be auto logged-in as pi.
+    * This will in no way affect access to the slave device. If the Slave requires a username/password to access it, you will still be required to use those credentials.
 * Connection between the *master* and the bridge will be 9600 Baud - this is to maximize the possible range.
-* Once the *master* is connected to the *bridge*, it will attempt to look for any available usb or acm ports.  At this point one of three things are expected to occur:
+* Once the *master* is connected to the *bridge*, it will attempt to look for any available serial (usb or acm) ports.  At this point one of three things are expected to occur:
   * If the *bridge* was connected to a single *slave*, then it will open a *screen* session to that serial port outomagically.
   * If the *bridge* was connected (via OTG usb hub), then it will create one *screen* session for each serial port it found, list them on your display, and exit to shell.
   * If the *bridge* does not detect any new usb/acm ports, then it will state that fact and then drop to the *bridges* bash shell.
 * The connection between the bidge and the *slave* is set to 9600 Baud.  I'm looking to set this as a configurable element in the future.
-* While connected to a *slave*, the *bridge* will begin logging all session traffic between the *master* and *slave*. (This is why it is important to make sure the *bridge* somehow receives time from and external source, or and onboard rtc.)
+* While connected to a *slave*, the *bridge* will begin logging all session traffic between the *master* and *slave*. (This is why it is important to make sure the *bridge* somehow receives time from an external source, and/or onboard rtc.)
 * If you become disconnected from the *bridge*, and want to reconnect, do not try to use the terminal program's *reconnect* feature.  Close the window, and then re-open the connection profile.
 * If your setup has one of the two UPS's listed below, then services that will monitor battery level, and will automatically shutdown if the battery level reaches 2%.
  * If you are using the PiSugar2 UPS option, then you get several added benefits:
-  * An on board RTC.
-  * A button to safely turn off the *bridge* when you are done using it.  (This makes it so much easier then having to login just to power it off!)
-* If your setup has a waveshare e-ink screen, then there are services that will monitor and display uptades as to the systems health/status.
-* Telnet is installed and is used for bridging to serial connections via ser2net
-* If you are relying on that end device's USB port to ppower your bridge, and decide to reboot it, your pi will most likely be un-gracefully powercycled along with it.  This is not good as there is a risk that your pi's SD card will become corrupted, and stop working all-to-gether.  There are two possible ways around this:
+   * An on board RTC.
+   * A button to safely turn off the *bridge* when you are done using it.  (This makes it so much easier then having to login just to power it off!)
+* If your setup has a *waveshare* e-ink screen, then there are services that will monitor and display uptades as to the systems health/status.
+* Telnet is installed and is used for bridging to serial connections via *ser2net*.
+* If you are relying on the *slave's* USB port to supply power to your bridge, and decide to reboot the slave, your bridge will most likely be un-gracefully powercycled along with it.  This is not good as there is a risk that your pi's SD card will become corrupted, and stop working all-to-gether.  There are two possible ways around this:
   * Add a battery backup, to allow the pi to weather those pesky, but necessary.  This will allow the pi to be moved around between closets, or devices without powering it down, and back up.  See below for more details.
   * Turn on *Overlay FS*.  This basically, turns your pi's sd card into a read only drive, so the risk of corrupting your SD card goes way, way down.  The down side is that you need to turn *Overlay FS* Off to update it or to make configuration adjustments, then turn it back on.  I'm till testing this feature to see how well it works over the long run.
 
