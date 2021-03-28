@@ -84,9 +84,10 @@ You are now done with this section, safely eject the SD card, and insert it into
 ---
 **Note**
 
-Finding the IP address can be painful unless you have a utility on your PC or phone that can scan the network for active devices.  Recommend trying the default hostname *raspberrypi.local* first.**
+Finding the IP address can be painful unless you have a utility on your PC or phone that can scan the network for active devices.  Recommend trying the default hostname *raspberrypi.local* first.
 
 ---
+
 ###### Update OS:
 ```bash
 sudo apt update && sudo apt full-upgrade -y
@@ -98,7 +99,7 @@ Reboot your Pi when the upgrade is complete.
 * From the main menu, under *Advanced Options*.
   * select *Expand Filesystem* to expand.
 * From the main menu, under *System Options*.
-  * Select *Hostname*, then change to a name with 6 characters.
+  * Select *Hostname*, then change to a name with **6 characters**.
 ###### REBOOT!
 * Setup using raspi-config `sudo raspi-config`:
   * From the main menu, under *System Options*.
