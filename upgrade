@@ -295,8 +295,8 @@ else
 	exit 3
 fi
 echo $bt_fix_flag
-#Disable Unneeded services:
-printf "\nChecking for and disabling unneeded services:\n"
+#Disable Un-needed services:
+printf "\nChecking for and disabling un-needed services:\n"
 for file in "${disable_svc[@]}" ; do
 	status=$(systemctl is-enabled "${file}" 2>/dev/null)
 	if [ "${ups_type}" == "none" ] && [ "${file}" == "ser2net.service" ] && [ "${status}" == "disabled" ]; then
