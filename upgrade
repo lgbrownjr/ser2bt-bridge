@@ -12,6 +12,7 @@ home="/home/${SUDO_USER}/"
 etc_folder="/etc/"
 lib_folder="/lib/"
 boot="/boot/"
+bt_folder="bluetooth/"
 project_folder="${home}Projects/ser2bt-bridge/"
 support_folder="${home}Projects/support/"
 logging_folder="${home}console_logs/"
@@ -24,6 +25,7 @@ serial_fix_folder="${etc_service_folder}getty@ttyGS0.service.d/"
 
 #File list:
 bt_service="bluetooth.service"
+bt_config="main.conf"
 boot_config="config.txt"
 disable_svc=("keyboard-setup.service" "dphys-swapfile.service" "triggerhappy.service" \
 "triggerhappy.socket" "apt-daily.service" "apt-daily.timer" \
@@ -57,6 +59,9 @@ bt_service_content="ExecStart=/usr/lib/bluetooth/bluetoothd -C --noplugin=sap\nE
 base_config_txt_addons=("hdmi_blanking=" "disable_splash=" "boot_delay=" "dtparam=audio=" "enable_uart=" "gpu_mem=" "initial_turbo=" "dtoverlay=")
 enhanc_config_txt_addons=("dtparam=i2c_arm=" "dtparam=spi=")
 pisugar2_config_txt_addons=("dtoverlay=i2c-rtc,ds1307,addr=")
+bt_config_change=("DiscoverableTimeout = " "PairableTimeout = ")
+bt_config_search=("[01]" "[01]")
+bt_config_value=(0 0)
 full_config_txt_addons=("${base_config_txt_addons[@]}" "${enhanc_config_txt_addons[@]}")
 base_config_txt_values=(2 1 0 "off" 1 32 60 "dwc2")
 base_boot_search=("[0-9]" "[0-9]" "[0-9]" "[0-9]" "on" "[0-9]" "[0-9]\*" "[0-9]\*" "dwc2")
@@ -193,6 +198,29 @@ num=0
 		printf " ${drk_grn}No changes were needed, continueing${nor}...\n"
 	fi
 
+#Check and edit bluetooth configuration file(s) as needed.
+printf "\n${nor}Check to make sure the the relavent seetings are made in the ${blu}bluetooth${nor} configuration files:${nor}\n" | fmt --goal=91 --width=${last_col}
+change_flag=0
+num=0
+	for config in "${bt_config_change[@]}"; do
+#		echo ${config}${bt_config_value[num]}
+#		echo ${etc_folder}${bt_folder}${bt_config}
+		grep -q -s -x -E "^${config}${bt_config_value[num]}" ${etc_folder}${bt_folder}${bt_config}
+		if [ ${?} -eq 1 ]; then
+			rem_config=$(grep -s -x -E "^#?${config}${bt_config_search[num]}" ${etc_folder}${bt_folder}${bt_config})
+			if [ ${?} -eq 0 ]; then
+				printf " The configuration ${yel}${rem_config}${nor} will be replaced by ${yel}${config}${bt_config_value[num]}${nor}..."
+				sed -i "s/^${rem_config}/${config}${bt_config_value[num]}/" ${etc_folder}${bt_folder}${bt_config} && printf ${drk_grn}"Good${nor}\n" || printf ${drk_red}"Bad${nor}\n"
+				let change_flag++
+			elif [ ${?} -eq 1 ]; then
+				sed -i "$ a ${config}${bt_config_value[num]}" ${etc_folder}${bt_folder}${bt_config}
+				printf " ${yel}${config}${bt_config_value[num]} ${nor}has been added to ${cyn}${etc_folder}${bt_folder}${yel}${bt_config}${nor}\n"
+				let change_flag++
+			fi
+
+		fi
+		let num++
+	done
 #Upgrade system files
 #printf "\n${nor}Update package manager:\n"
 #apt update > /dev/null 2>&1

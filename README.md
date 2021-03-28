@@ -135,33 +135,6 @@ git clone https://github.com/lgbrownjr/ser2bt-bridge.git
 cd ser2bt-bridge/
 sudo ./upgrade basic
 ```
-###### Bluetooth setup:
-- Open `/etc/bluetooth/main.conf`
-
-`sudo nano /etc/bluetooth/main.conf`
-  - Uncomment and/or change the following settings:
-    - `DiscoverableTimeout = 0`
-    - `PairableTimeout = 0`
-  - Save and close `/etc/bluetooth/main.conf`
-- Restart the bluetooth service:
-```bash
-sudo systemctl restart bluetooth.service
-```
-- type in `sudo bluetoothctl`, and press enter.
-  - You should see *Agent Registered*, then a prompt.
-  - Type in `show`
-  - You are looking for three items in the output:
-    - Powered: yes
-    - Discoverable: Yes
-    - Pairable: Yes
-  - If all three items match with what is on your screen, then type `exit` and skip over the rest of the bluetooth section.
-  - Otherwise, type in the following:
-```sh
-power on
-discoverable on
-pairable on
-```
-  - Type in `show` to verify, then `exit` to leave bluetooth control and return to bash.
 ###### Additional Network Setup:
 In order for your pi to keep the correct time, perform updates, or allow an alternate way to access the pi, it is advisable you add more networks into your *wpa_supplicant.conf*.  Examples include: allowable work networks, your home network, your hotspot, and even hotspots of your peer's phones (as allowed).
 - Open `/etc/wpa_supplicant/wpa_supplicant.conf`, and add the following:
