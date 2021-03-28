@@ -3,15 +3,15 @@
 ## Serial to Bluetooth bridge for raspberry pi zero w
 Before we begin, understand that everything in this repository is a work in progress...  :slightly_smiling_face:
 ### Definitions:
-I tend to use several different discipters for each piece thats involved with this project, so I've tried to define them below to helpkeep the reader from being confused.. :slightly_smiling_face:
-- For the purpose of this project, the terms *slave* refers to a router or switch.  However, anything with a console port can be used  such as a server, appliance, Firewall, Wireless LAN Conroller, etc will work as well.
-- The terms *master*  refers to the PC, laptop, phone, or tablet.
-- The terms *pi*, *bridge*, *ser2bt* all refer to the *raspberry pi zero w*, and is being used as a *bridge* to connect *master* with *slave*.
-- The terms *user*, *you*, *network engineer*, *network administrator*, *administrator*, or *engineer* all refer to the person using this *bridge* to connect the link between it, and the *master*, and it and the *slave*.
+I tend to use several different discipters for each piece thats involved with this project, so I've tried to define them below to helpkeep the reader from being confused:
+* For the purpose of this project, the terms *slave* refers to a end device you want to connect to, such as a router, switch, Firewall, Wireless LAN Controller, or any appliance that has a console interfiace.
+* The terms *master*  refers to the PC, laptop, phone, or tablet.
+* The terms *bridge*, or *pi* refer to the *raspberry pi zero w*, that is being used as a *bridge* to connect *master* to *slave*(s).
+* The terms *user*, *you*, *network engineer*, *network administrator*, *administrator*, or *engineer* all refer to the person using this *bridge*.
 ### Preamble:
-This project is a set of scripts, services and libraries, that allow one to connect to a *raspberry pi zero w* from their phone/tablet/laptop using a serial/bluetooth connection, then be "bridged" over a usb to console connection to a switch/router/etc.  This allows the network/system engineer to manage devices via a console port, while enjoying the benefit of not having to be tethered right up to it.
+This project is made up of a set of scripts, services and libraries, that allow a user to connect "through" a *raspberry pi zero w* from their phone/tablet/laptop using a serial/bluetooth connection, to the console port of a *slave* device such as a switch, router, firewall, etc.  This allows the network/system engineer to manage devices via it's console port, while enjoying the benefit of not having to be tethered right up to it.
 #### How it works at a high level/Feature List:
-These scripts and services basicaly utilize screen and rfcomm to bridge each connection between the *master*, and the *slave* you are attempting to connect to. 
+These scripts and services basicaly utilize *screen* and *rfcomm* to "bridge" each connection between the *master*, and the *slave* you are attempting to connect to. 
 * By design, this prject does not have security in mind, preferring instead to focus on easy discovery, pairing, and connectivity to allow the network administrator to focus on getting their work done.
   * The Bridge will always be discoverable, and will not require a pin to complete the pairing process.
   * This has been tested with *master* devices using the following Operating Systems: Linux, Android, Windows 10, and ChromeOS (with caveats).
