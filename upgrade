@@ -12,6 +12,7 @@ home="/home/${SUDO_USER}/"
 etc_folder="/etc/"
 lib_folder="/lib/"
 boot="/boot/"
+bt_folder="bluetooth/"
 project_folder="${home}Projects/ser2bt-bridge/"
 support_folder="${home}Projects/support/"
 logging_folder="${home}console_logs/"
@@ -24,6 +25,7 @@ serial_fix_folder="${etc_service_folder}getty@ttyGS0.service.d/"
 
 #File list:
 bt_service="bluetooth.service"
+bt_config="main.conf"
 boot_config="config.txt"
 disable_svc=("keyboard-setup.service" "dphys-swapfile.service" "triggerhappy.service" \
 "triggerhappy.socket" "apt-daily.service" "apt-daily.timer" \
@@ -57,6 +59,9 @@ bt_service_content="ExecStart=/usr/lib/bluetooth/bluetoothd -C --noplugin=sap\nE
 base_config_txt_addons=("hdmi_blanking=" "disable_splash=" "boot_delay=" "dtparam=audio=" "enable_uart=" "gpu_mem=" "initial_turbo=" "dtoverlay=")
 enhanc_config_txt_addons=("dtparam=i2c_arm=" "dtparam=spi=")
 pisugar2_config_txt_addons=("dtoverlay=i2c-rtc,ds1307,addr=")
+bt_config_change=("DiscoverableTimeout = " "PairableTimeout = ")
+bt_config_search=("[01]" "[01]")
+bt_config_value=(0 0)
 full_config_txt_addons=("${base_config_txt_addons[@]}" "${enhanc_config_txt_addons[@]}")
 base_config_txt_values=(2 1 0 "off" 1 32 60 "dwc2")
 base_boot_search=("[0-9]" "[0-9]" "[0-9]" "[0-9]" "on" "[0-9]" "[0-9]\*" "[0-9]\*" "dwc2")
@@ -193,6 +198,37 @@ num=0
 		printf " ${drk_grn}No changes were needed, continueing${nor}...\n"
 	fi
 
+#Check and edit bluetooth configuration file(s) as needed.
+printf "\n${nor}Check to make sure the the relavent seetings are made in the ${blu}bluetooth${nor} configuration files:${nor}\n" | fmt --goal=91 --width=${last_col}
+change_flag=0
+num=0
+	for config in "${bt_config_change[@]}"; do
+#		echo ${config}${bt_config_value[num]}
+#		echo ${etc_folder}${bt_folder}${bt_config}
+		grep -q -s -x -E "^${config}${bt_config_value[num]}" ${etc_folder}${bt_folder}${bt_config}
+		if [ ${?} -eq 1 ]; then
+			rem_config=$(grep -s -x -E "^#?${config}${bt_config_search[num]}" ${etc_folder}${bt_folder}${bt_config})
+			if [ ${?} -eq 0 ]; then
+				printf " The configuration ${yel}${rem_config}${nor} will be replaced by ${yel}${config}${bt_config_value[num]}${nor}..."
+				sed -i "s/^${rem_config}/${config}${bt_config_value[num]}/" ${etc_folder}${bt_folder}${bt_config} && printf ${drk_grn}"Good${nor}\n" || printf ${drk_red}"Bad${nor}\n"
+				let change_flag++
+				let bt_fix_flag++
+			elif [ ${?} -eq 1 ]; then
+				sed -i "$ a ${config}${bt_config_value[num]}" ${etc_folder}${bt_folder}${bt_config}
+				printf " ${yel}${config}${bt_config_value[num]} ${nor}has been added to ${cyn}${etc_folder}${bt_folder}${yel}${bt_config}${nor}\n"
+				let change_flag++
+				let bt_fix_flag++
+			fi
+
+		fi
+		let num++
+	done
+
+	if [ ${change_flag} -eq 0 ]; then
+		printf " ${drk_grn}No changes were needed, continueing${nor}...\n"
+	else
+		let bt_fix_flag++
+	fi
 #Upgrade system files
 #printf "\n${nor}Update package manager:\n"
 #apt update > /dev/null 2>&1
@@ -245,14 +281,14 @@ if [ -f "${lib_service_folder}${bt_service}" ]; then
 	if grep -q -e "^${bt_service_pre_search}$" "${lib_service_folder}${bt_service}"; then
 		printf "  ${blu}Bluetooth${nor} Service ${drk_yel}needs${nor} to be edited..."
 		sed -i "s+${bt_service_pre_search}+${bt_service_content}+g" "${lib_service_folder}${bt_service}" && printf "${drk_grn}Done${nor}\n" || printf "\n"
-		bt_fix_flag=1
+		let bt_fix_flag++
 	elif [[ $(printf "${existing_bt_chg}") == $(printf "${bt_service_content}") ]]; then
 #grep -e "^${bt_service_content}$" "${lib_service_folder}${bt_service}"; then
 		printf "  ${blu}Bluetooth${nor} Service does ${drk_grn}not need${nor} to be edited.\n" | fmt --goal=91 --width=${last_col}
-		bt_fix_flag=0
+		let bt_fix_flag--
 	else
 		printf "  ${drk_red}Error${nor} fatal error, unable to overcome problem in ${yel}${lib_service_folder}${bt_service}${nor}.  Please manually fix\n." | fmt --goal=91 --width=${last_col}
-		bt_fix_flag=0
+		let bt_fix_flag--
 		exit 4
 	fi
 else
@@ -260,9 +296,8 @@ else
 	bt_fix_flag=0
 	exit 3
 fi
-
-#Disable Unneeded services:
-printf "\nChecking for and disabling unneeded services:\n"
+#Disable Un-needed services:
+printf "\nChecking for and disabling un-needed services:\n"
 for file in "${disable_svc[@]}" ; do
 	status=$(systemctl is-enabled "${file}" 2>/dev/null)
 	if [ "${ups_type}" == "none" ] && [ "${file}" == "ser2net.service" ] && [ "${status}" == "disabled" ]; then
@@ -387,9 +422,9 @@ done
 	#Action based on flags:
 	if [[ "${bt_fix_flag}" -gt 0 ]] ; then
 		printf "\n${nor}Disabeling, Enabeling and Starting ${bt_service}${nor}:\n"
-		systemctl disable ${bt_service} > /dev/null 2>&1 && printf " ${nor}${bt_service} ${drk_grn}successfully ${nor}disabeled.\n" || printf " ${drk_red}Failed\n"
-		systemctl enable ${bt_service} > /dev/null 2>&1 && printf " ${nor}${bt_service} ${drk_grn}successfully ${nor}enabled.\n" || printf " ${drk_red}Failed\n"
-		systemctl start ${bt_service} > /dev/null 2>&1 && printf " ${nor}${bt_service} ${drk_grn}successfully ${nor}started.\n" ||  printf " ${drk_red}Failed\n"
+		systemctl disable ${bt_service} > /dev/null 2>&1 && printf " ${yel}${bt_service} ${drk_grn}successfully disabeled${nor}.\n" || printf " ${drk_red}Failed${nor}.\n"
+		systemctl enable ${bt_service} > /dev/null 2>&1 && printf " ${yel}${bt_service} ${drk_grn}successfully enabled${nor}.\n" || printf " ${drk_red}Failed${nor}.\n"
+		systemctl start ${bt_service} > /dev/null 2>&1 && printf " ${yel}${bt_service} ${drk_grn}successfully started${nor}.\n" ||  printf " ${drk_red}Failed${nor}.\n"
 		let svc_count++
 	fi
 
