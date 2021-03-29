@@ -219,7 +219,7 @@ def cap_acm_serial_port():
 def cap_bt_serial_port():
 # Grabs existing bluetooth serial ports:
     global old_bt_serial_port
-    bt_serial_status_pos = 80
+    bt_serial_status_pos = 97
     bt_serial_port = bt_ser_label + ':'
     if os.path.exists(dev_dir + bt_ser_port):
         bt_serial_connect = True
@@ -317,7 +317,7 @@ try:
                 full_tty_status = ""
                 old_full_tty_status = full_tty_status
                 draw.rectangle((50, 99, 149, 122), fill=255)
-                draw.text((50, 100), bt_ser_short_label + ':', font=f_var_font18, fill=0)
+                draw.text((50, 100), bt_ser_short_label + ' In:', font=f_var_font18, fill=0)
                 draw.text((bt_serial_status_pos, 100), bt_serial_status, font=f_var_font18, fill=0)
                 draw.rectangle((150, 99, 245, 122), fill=255)
                 draw.text((150, 100), 'Serial Out:', font=f_var_font18, fill=0)
