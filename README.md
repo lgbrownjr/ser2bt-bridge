@@ -207,7 +207,7 @@ You should now all of your device terminal programs setup to easily connect to t
 2. Click on and launch/open the connection profile you just built.
 3. A terminal should open up, and you should see the banner appear, along with the results of your bridges attemtps to connect to the slave(s), and then either the login prompt of the slave, or a list of possible slaves you can conncect with.
 
-#### Navigating the screen:
+#### How To:
 1. If you were dropped off in the *bridg*'s bash shell, you have access to perform updates, play games, set the time, whatever, here are some ideas:
    1. Set the timezone (for those travelers)
       1. follow from here: [Setup Using raspi-config](#setup-using-raspi-config)
@@ -225,17 +225,18 @@ You should now all of your device terminal programs setup to easily connect to t
          1. If the result of the above command included `no updates available`, then skip to step 4.
       3. `sudo apt full-upgrade -y`
       4. `exit` to exit out of screen.
-2. For situations were your *bridge* is connected to a single *slave*:
-   1. If you are in the *slave* (read switch), and you want to get out to do something, and come back, then:
-      1. `ctrl` + `a`, then `d` to suspend you screen session.
-   2. To return to configuraing, or administering the switch, then type `screen -r`
-3. For situations were your *bridge* is connected to multiple *slaves*:
+2. If your *bridge* is connected to a single *slave*:
+   1. `ctrl` + `a`, then `d` to suspend you screen session.
+   2. `ctrl` + `a`, then `\` to terminate your screen session. (you can always re-enter).
+   3. If you want to enter a serial session, and you either terminated the session prior, or plugged a cable in after boot, then run `ser2bt_bridge`.
+   3. To return to an existing session after it has been suspended, then type `screen -r`
+3. If your *bridge* is connected to multiple *slaves*:
    1. If you are in the *slave* (read switch), and you want to get out to do something or enter another switch, and come back, then:
       1. `ctrl` + `a`, then `d ` to suspend you screen session allowing you to return later.
-      2. `ctrl` + `a`, then `\` to terminate your screen session. (you can always re-enter. 
-      3. To re-nter a switch that has been suspended, type `screen -r Switch_x`.
-      4. To enter a switch that has never been entered, or had its screen session terminated, type `screen Switch_x` where x = the connection number.
-      5. To list the available switches that you can enter, type `screen -l`
+      2. `ctrl` + `a`, then `\` to terminate your screen session. (you can always re-enter). 
+   2. To re-nter a session that has been suspended, type `screen -r Switch_x`.
+   3. To enter a switch that has never been entered, or had its screen session terminated, type `screen Switch_x` where x = the connection number.
+   4. To list the available switches that you can enter, type `screen -l`
 4. To Reboot your bridge, type `sudo reboot`
 5. If you're lost, and you need to reconnect to the *slave* were connected to, type `ser2bt_bridge` to relaunch the discovery script.  if that gives you an error, then reboot.
 6. To shutdown your bridge, type `sudo poweroff`
