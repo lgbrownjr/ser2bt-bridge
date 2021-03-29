@@ -253,7 +253,6 @@ Features I want to add to this project:
 - [X] Add support for USB micro to OTG HUB's to allow connectivity to more than one *slave* at a time.
 - [ ] I'm not sure if this even doable, but attempt to allow multiple concurrent bluetooth connections, especially if the item listed above is completed.
 - [ ] Continue testing *Overlay FS* as a means to protect the SD cards from corruption.
-- [ ] Make the ser2bt_status script run more effeciently - if possible.
 ---
 
 ## Known issues:
