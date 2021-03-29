@@ -9,7 +9,7 @@ I tend to use several different discipters for each piece thats involved with th
 * The terms *bridge*, or *pi* refer to the *raspberry pi zero w*, that is being used as a *bridge* to connect *master* to *slave*(s).
 * The terms *user*, *you*, *network engineer*, *network administrator*, *administrator*, or *engineer* all refer to the person using this *bridge*.
 ### Preamble:
-This project is made up of a set of scripts, services and libraries, that allow a user to connect "through" a *raspberry pi zero w* from their phone/tablet/laptop using a serial/bluetooth connection, to the console port of a *slave* device such as a switch, router, firewall, etc.  This allows the network/system engineer to manage devices via it's console port, while enjoying the benefit of not having to be tethered right up to it.
+This project is made up of a set of scripts, services and libraries that allow a user to connect "through" a *raspberry pi zero w* from their phone/tablet/laptop's bluetooth interface, to the console port of a *slave* device such as a switch, router, firewall, etc.  This allows the network/system engineer to manage devices via it's console port, while enjoying the benefit of not having to be tethered right up to it.
 #### How it works at a high level/Feature List:
 These scripts and services basicaly utilize *screen* and *rfcomm* to "bridge" each connection between the *master*, and the *slave* you are attempting to connect to. 
 * By design, this prject does not have security in mind, preferring instead to focus on easy discovery, pairing, and connectivity to allow the network administrator to focus on getting their work done.
@@ -26,9 +26,9 @@ These scripts and services basicaly utilize *screen* and *rfcomm* to "bridge" ea
 * While connected to a *slave*, the *bridge* will begin logging all session traffic between the *master* and *slave*. (This is why it is important to make sure the *bridge* somehow receives time from an external source, and/or onboard rtc.)
 * If you become disconnected from the *bridge*, and want to reconnect, do not try to use the terminal program's *reconnect* feature.  Close the window, and then re-open the connection profile.
 * If your setup has one of the two UPS's listed below, then services that will monitor battery level, and will automatically shutdown if the battery level reaches 2%.
- * If you are using the PiSugar2 UPS option, then you get several added benefits:
-   * An on board RTC.
-   * A button to safely turn off the *bridge* when you are done using it.  (This makes it so much easier then having to login just to power it off!)
+  * If you are using the PiSugar2 UPS option, then you get several added benefits:
+    * An on board RTC.
+    * A button to safely turn off the *bridge* when you are done using it.  (This makes it so much easier then having to login just to power it off!)
 * If your setup has a *waveshare* e-ink screen, then there are services that will monitor and display uptades as to the systems health/status.
 * Telnet is installed and is used for bridging to serial connections via *ser2net*.
 * If you are relying on the *slave's* USB port to supply power to your bridge, and decide to reboot the slave, your bridge will most likely be un-gracefully powercycled along with it.  This is not good as there is a risk that your pi's SD card will become corrupted, and stop working all-to-gether.  There are two possible ways around this:
@@ -79,7 +79,7 @@ network={
 You are now done with this section, safely eject the SD card, and insert it into you *raspberry pi zero*.
 ###### First login:
 - Power on the bridge, and give it about a minute to boot.
- - Using your favorite SSH client, login into your pi: `pi@<[hostname|IP Address]>`, where *hostname*, or *IP Address* are = to your Pi's.
+  - Using your favorite SSH client, login into your pi: `pi@<[hostname|IP Address]>`, where *hostname*, or *IP Address* are = to your Pi's.
 
 ---
 **Note**
@@ -147,8 +147,8 @@ network={
 }
 ```
 - One block for each network you want to add.
- - Make sure to set the ssid and psk as needed.
- - **Be sure to test each network.**
+  - Make sure to set the ssid and psk as needed.
+  - **Be sure to test each network.**
 ###### We're Done!
 If everything went as planned, your *raspberry pi zero w* should be acting like a bluetooth to serial bridge, allowing you to connect to a switches console port via bluetooth from your computer.
 - Now, reboot your *raspberry pi zero w*.
@@ -174,10 +174,10 @@ Coming soon!
 ![Raspberry Pi Zero usb port location and definition:](/readme_md_images/rpi0_diagram_port.png)
 ### Power on the *bridge*:
 1. Different ways, depending on your setup:
-   1. For the basic *bridge* option, Plug the power into the *bridges* power port.  See 
-   2. If your version of the *bridge* has a UPS, then slide the switch to the on position.
-   3. To charge the UPS, insert the power cord into the UPS's power input plug, do not power the pi using the pi's power port.
-   4. It will take up to 30 seconds to boot to a point where a *master* can connect to it via bluetooth.
+  1. For the basic *bridge* option, Plug the power into the *bridges* power port.  See 
+  2. If your version of the *bridge* has a UPS, then slide the switch to the on position.
+  3. To charge the UPS, insert the power cord into the UPS's power input plug, do not power the pi using the pi's power port.
+  4. It will take up to 30 seconds to boot to a point where a *master* can connect to it via bluetooth.
 
 ---
 **NOTE**
@@ -188,7 +188,7 @@ If you are interested in accurate time, I advise you let it connect to an availa
 ---
 ### First time connecting to your *bridge*:
 #### Pairing:
-1. The Bridge is set to allways be available top pair with it, so this set should go by fairly easily, and painlessly:
+1. The *Bridge* is set to allways be available to pair with it, so this step should go by fairly easily and painlessly:
    1. Open bluetooth settings and pair with the bridge - the name of the bridge should be the hostname you assigned it during the setup.  See [Additional OS Setup:](#Additional-OS-Setup).
    2. Assign com/tty ports to the *bridge* device.
 Pairing should now be complete!
@@ -196,7 +196,7 @@ Pairing should now be complete!
 #### Setting up your Favourite Terminal application to connect to your *Bridge*:
 1. In your favourite terminal program (screen/minicom/putty/securecrt/etc).
 2. Ccreate a connection profile to connect to your bridge using serial, and assign the profile the com/tty port that was assigned during pairing.
-3. Use N81, and 9600 baud as the speed.
+3. Use N81, and 9600 baud.
 4. use xterm as your terminal type.
 5. Now save and test.
 6. Repeat steps for all devices that you might think that will need to connect.
@@ -222,26 +222,26 @@ You should now all of your device terminal programs setup to easily connect to t
    4. Update the OS:
       1. `screen` Need to use screen to be able to access network resources, this is a workaround to an issue that prevents reliable network communications while an admin is logged in.
       2. `sudo apt update -y`
-        1. If the result of the above command included `no updates available`, then skip to step 4.
+         1. If the result of the above command included `no updates available`, then skip to step 4.
       3. `sudo apt full-upgrade -y`
       4. `exit` to exit out of screen.
- 2. For situations were your *bridge* is connected to a single *slave*:
-    1. If you are in the *slave* (read switch), and you want to get out to do something, and come back, then:
-       1. `ctrl` + `a`, then `d` to suspend you screen session.
-    2. To return to configuraing, or administering the switch, then type `screen -r`
- 3. For situations were your *bridge* is connected to multiple *slaves*:
-    1. If you are in the *slave* (read switch), and you want to get out to do something or enter another switch, and come back, then:
-       1. `ctrl` + `a`, then `d ` to suspend you screen session allowing you to return later.
-       2. `ctrl` + `a`, then `\` to terminate your screen session. (you can always re-enter. 
-       3. To re-nter a switch that has been suspended, type `screen -r Switch_x`.
-       4. To enter a switch that has never been entered, or had its screen session terminated, type `screen Switch_x` where x = the connection number.
-       5. To list the available switches that you can enter, type `screen -l`
- 4. To Reboot your bridge, type `sudo reboot`
- 5. If you're lost, and you need to reconnect to the *slave* were connected to, type `ser2bt_bridge` to relaunch the discovery script.  if that gives you an error, then reboot.
- 6. To shutdown your bridge, type `sudo poweroff`
- 7. To resize your terminal, suspend/exit and *screen* sessions, and type `resize`
- 8. When you are within a screen session, configuring, or administering a *slave*:
-    1. Use the *PageUp* key to enter scrolback mode, then continue to use *PageUp*/*PageDown* or *Up*/*Down* arrows to move up and down your buffer.  Use the *Escape* key to exit, and go back to the normal mode.
+2. For situations were your *bridge* is connected to a single *slave*:
+   1. If you are in the *slave* (read switch), and you want to get out to do something, and come back, then:
+      1. `ctrl` + `a`, then `d` to suspend you screen session.
+   2. To return to configuraing, or administering the switch, then type `screen -r`
+3. For situations were your *bridge* is connected to multiple *slaves*:
+   1. If you are in the *slave* (read switch), and you want to get out to do something or enter another switch, and come back, then:
+      1. `ctrl` + `a`, then `d ` to suspend you screen session allowing you to return later.
+      2. `ctrl` + `a`, then `\` to terminate your screen session. (you can always re-enter. 
+      3. To re-nter a switch that has been suspended, type `screen -r Switch_x`.
+      4. To enter a switch that has never been entered, or had its screen session terminated, type `screen Switch_x` where x = the connection number.
+      5. To list the available switches that you can enter, type `screen -l`
+4. To Reboot your bridge, type `sudo reboot`
+5. If you're lost, and you need to reconnect to the *slave* were connected to, type `ser2bt_bridge` to relaunch the discovery script.  if that gives you an error, then reboot.
+6. To shutdown your bridge, type `sudo poweroff`
+7. To resize your terminal, suspend/exit and *screen* sessions, and type `resize`
+8. When you are within a screen session, configuring, or administering a *slave*:
+   1. Use the *PageUp* key to enter scrolback mode, then continue to use *PageUp*/*PageDown* or *Up*/*Down* arrows to move up and down your buffer.  Use the *Escape* key to exit, and go back to the normal mode.
 ---
 
 ## Improvements:
