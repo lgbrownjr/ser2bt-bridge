@@ -44,8 +44,7 @@ old_lan_status = "XX"
 old_bt_status = "XX"
 old_full_tty_status = "XX"
 old_bt_serial_port = "XX"
-old_usb_serial_port = "XX"
-old_acm_serial_port = "XX"
+old_total_serial_lines = "XX"
 inactive = "inactive"
 active = "active"
 not_connected = "Not Connected"
@@ -180,10 +179,9 @@ def get_ip():
 
 def cap_usb_serial_port():
 #Capturess the existing wired serial port in use.
-    global old_usb_serial_port
     n = 0
     usb_serial_port = usb_ser_label + ':'
-    usb_serial_status_pos = 236
+    usb_serial_status_pos = 237
     if os.path.exists(dev_dir + usb_ser_port + str(n)):
         for i in range(0, 3, 1):
             if os.path.exists(dev_dir + usb_ser_port + str(i)):
@@ -199,10 +197,9 @@ def cap_usb_serial_port():
 
 def cap_acm_serial_port():
 #Capturess the existing wired serial port in use.
-    global old_acm_serial_port
     n = 0
     acm_serial_port = acm_ser_label + ':'
-    acm_serial_status_pos = 236
+    acm_serial_status_pos = 237
     if os.path.exists(dev_dir + acm_ser_port + str(n)):
         for i in range(0, 3, 1):
             if os.path.exists(dev_dir + acm_ser_port + str(i)):
@@ -218,7 +215,6 @@ def cap_acm_serial_port():
 
 def cap_bt_serial_port():
 # Grabs existing bluetooth serial ports:
-    global old_bt_serial_port
     bt_serial_status_pos = 97
     bt_serial_port = bt_ser_label + ':'
     if os.path.exists(dev_dir + bt_ser_port):
@@ -256,12 +252,12 @@ try:
     draw.line([(0, 17), (250, 17)], fill = 0, width = 2)
     draw.text((0, 20), 'Load:', font = f_title_font18, fill = 0)
     draw.text((50, 20), 'CPU', font = f_var_font18, fill = 0)
-    draw.text((150, 20), 'Mem', font = f_var_font18, fill = 0)
+    draw.text((153, 20), 'Mem', font = f_var_font18, fill = 0)
     draw.text((0, 40), 'SSID:', font = f_title_font18, file = 0)
     draw.text((0, 60), 'IP:', font = f_title_font18, fill = 0)
     draw.text((0, 80), 'Svcs:', font = f_title_font18, fill = 0)
     draw.text((50, 80), 'BT', font = f_var_font18, fill = 0)
-    draw.text((150, 80), 'ser2net', font = f_var_font18, fill = 0)
+    draw.text((153, 80), 'ser2net', font = f_var_font18, fill = 0)
     draw.text((0, 100), 'TTY:', font = f_title_font18, fill = 0)
 
     epd.displayPartBaseImage(epd.getbuffer(image)) #This is the command to actually place the above to the e-ink display.
@@ -278,8 +274,8 @@ try:
             draw.text((137, 0), time.strftime('%D %H:%M'), font=f_top_line_font16, fill=0)
             draw.rectangle((89, 19, 140, 39), fill=255)
             draw.text((89, 20), str(psutil.cpu_percent())+'%', font=f_var_font18, fill=0)
-            draw.rectangle((195, 19, 250, 39), fill=255)
-            draw.text((195, 20), str(psutil.virtual_memory().percent)+'%', font=f_var_font18, fill=0)
+            draw.rectangle((200, 19, 250, 39), fill=255)
+            draw.text((200, 20), str(psutil.virtual_memory().percent)+'%', font=f_var_font18, fill=0)
 
             #Collect connected ssid, system ip address, bt and lan service status:
             ssid, ssid_change_flag = get_ssid()
@@ -291,8 +287,8 @@ try:
                 draw.rectangle((50, 59, 198, 79), fill=255)
                 draw.text((50, 60), ip_host, font=f_var_font18, fill=0)
                 if get_lan_service_change_flag is True:
-                    draw.rectangle((212, 79, 225, 99), fill=255)
-                    draw.text((212, 80), lan_service, font=f_var_spc_char_font18, fill=0)
+                    draw.rectangle((215, 79, 225, 99), fill=255)
+                    draw.text((215, 80), lan_service, font=f_var_spc_char_font18, fill=0)
 
             # display rfcomm, bluetooth, hci, status.
             bt_service, bt_service_change_flag = get_bt_service_status()
@@ -313,18 +309,22 @@ try:
                     old_full_tty_status = full_tty_status
                     draw.rectangle((50, 99, 245, 122), fill=255)
                     draw.text((50, 100), full_tty_status, font=f_var_font18, fill=0)
+                    old_total_serial_lines = 'XX'
+#                    old_bt_serial_port = 'XX'
             else: #Otherwise, display the inidividual state of the ttys.
                 full_tty_status = ""
                 old_full_tty_status = full_tty_status
-                draw.rectangle((50, 99, 149, 122), fill=255)
+#                if old_bt_serial_port != bt_serial_port:
+                draw.rectangle((50, 99, 152, 122), fill=255)
                 draw.text((50, 100), bt_ser_short_label + ' In:', font=f_var_font18, fill=0)
                 draw.text((bt_serial_status_pos, 100), bt_serial_status, font=f_var_font18, fill=0)
-                draw.rectangle((150, 99, 245, 122), fill=255)
-                draw.text((150, 100), 'Serial Out:', font=f_var_font18, fill=0)
-                draw.text((usb_serial_status_pos, 100),str(total_serial_lines), font=f_var_font18, fill=0)
-#                draw.rectangle((160, 99, 220, 122), fill=255)
-#                draw.text((160, 100), acm_serial_port, font=f_var_font18, fill=0)
-#                draw.text((acm_serial_status_pos, 100), acm_serial_status, font=f_var_font18, fill=0)
+#                old_bt_serial_port = bt_serial_port
+                if old_total_serial_lines != total_serial_lines:
+                    draw.rectangle((153, 99, 245, 122), fill=255)
+                    draw.text((153, 100), 'Serial Out:', font=f_var_font18, fill=0)
+                    draw.text((usb_serial_status_pos, 100),str(total_serial_lines), font=f_var_font18, fill=0)
+                    old_total_serial_lines = total_serial_lines
+
             #This block draws the rectangles, then places the refreshable text/variables into them.
 
             epd.displayPartial(epd.getbuffer(image)) #update the screeen to actually print the above to the e-ink display.
