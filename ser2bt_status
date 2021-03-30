@@ -272,7 +272,7 @@ try:
             draw.text((82, 0), bat_lvl(), font=f_top_line_font16, fill=0)
             draw.rectangle((137, 0, 250, 16), fill=255)
             draw.text((137, 0), time.strftime('%D %H:%M'), font=f_top_line_font16, fill=0)
-            draw.rectangle((89, 19, 140, 39), fill=255)
+            draw.rectangle((89, 19, 152, 39), fill=255)
             draw.text((89, 20), str(psutil.cpu_percent())+'%', font=f_var_font18, fill=0)
             draw.rectangle((200, 19, 250, 39), fill=255)
             draw.text((200, 20), str(psutil.virtual_memory().percent)+'%', font=f_var_font18, fill=0)
