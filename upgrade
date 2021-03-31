@@ -31,7 +31,7 @@ disable_svc=("keyboard-setup.service" "dphys-swapfile.service" "triggerhappy.ser
 "triggerhappy.socket" "apt-daily.service" "apt-daily.timer" \
 "apt-daily-upgrade.service" "apt-daily-upgrade.timer" "rpi-eeprom-update.service" \
 "ser2net.service")
-base_packadge_install_list=("screen" "git" "minicom" "tio" "rfkill" "xterm" "telnet" "telnetd" "ser2net")
+base_package_install_list=("screen" "git" "minicom" "tio" "rfkill" "xterm" "telnet" "telnetd" "ser2net")
 base_bin_files=(ser2bt_bridge screen_bat_mon)
 enhanc_bin_files=(ser2bt_status init_scr shutdown_scr)
 full_bin_files=( "${base_bin_files[@]}" "${enhanc_bin_files[@]}" )
@@ -63,8 +63,9 @@ enhanc_config_txt_addons=("dtparam=i2c_arm=" "dtparam=spi=")
 pisugar2_config_txt_addons=("dtoverlay=i2c-rtc,ds1307,addr=")
 bt_config_change=("Name = " "DiscoverableTimeout = " "PairableTimeout = ")
 bt_config_search=(".?[a-zA-Z0-9]+" "[01]" "[01]")
+bt_config_fix_value=(".HOSTNAME" 0 0)
 bt_config_value=('$HOSTNAME' 0 0)
-full_package_install_list=("${base_packadge_install_list[@]}" "${enhanc_package_install_list[@]}")
+full_package_install_list=("${base_package_install_list[@]}" "${enhanc_package_install_list[@]}")
 full_config_txt_addons=("${base_config_txt_addons[@]}" "${enhanc_config_txt_addons[@]}")
 base_config_txt_values=(2 1 0 "off" 1 32 60 "dwc2")
 base_boot_search=("[0-9]" "[0-9]" "[0-9]" "[0-9]" "on" "[0-9]" "[0-9]\*" "[0-9]\*" "dwc2")
@@ -122,7 +123,7 @@ if [ "${upgrade_path}" = "basic" ] ; then
 	config_txt_addons=("${base_config_txt_addons[@]}")
 	config_txt_values=("${base_config_txt_values[@]}")
 	boot_search=(${base_boot_search[@]})
-	packadge_install_list=("${base_packadge_install_list[@]}")
+	package_install_list=("${base_package_install_list[@]}")
 	ups_type="none"
 fi
 
@@ -134,7 +135,7 @@ if [ "${upgrade_path}" = "enhanced" ] ; then
 	config_txt_addons=(${enhanc_config_txt_addons[@]})
 	config_txt_values=("${enhanc_config_txt_values[@]}")
 	boot_search=(${enhanc_boot_search[@]})
-	packadge_install_list=("${enhanc_packadge_install_list[@]}")
+	package_install_list=("${enhanc_package_install_list[@]}")
 fi
 
 if [ "${upgrade_path}" = "full" ] ; then
@@ -146,7 +147,7 @@ if [ "${upgrade_path}" = "full" ] ; then
 	config_txt_addons=(${full_config_txt_addons[@]})
 	config_txt_values=("${full_config_txt_values[@]}")
 	boot_search=(${full_boot_search[@]})
-	packadge_install_list=("${full_packadge_install_list[@]}")
+	package_install_list=("${full_package_install_list[@]}")
 fi
 
 #If this is not a basic install, check to see which ups is installed.
@@ -209,9 +210,9 @@ printf "\n${nor}Check to make sure the the relavent seetings are made in the ${b
 change_flag=0
 num=0
 	for config in "${bt_config_change[@]}"; do
-		echo ${config}${bt_config_value[num]}
-		echo ${etc_folder}${bt_folder}${bt_config}
-		grep -q -s -x -E "^${config}${bt_config_value[num]}" ${etc_folder}${bt_folder}${bt_config}
+#		echo ${config}${bt_config_value[num]}
+#		echo ${etc_folder}${bt_folder}${bt_config}
+		grep -q -s -x -E "^${config}${bt_config_fix_value[num]}" ${etc_folder}${bt_folder}${bt_config}
 		if [ ${?} -eq 1 ]; then
 			rem_config=$(grep -s -x -E "^#?${config}${bt_config_search[num]}" ${etc_folder}${bt_folder}${bt_config})
 			if [ ${?} -eq 0 ]; then
@@ -252,6 +253,18 @@ num=0
 #else
 #	printf " ${grn}Upgrade completed...\n"
 #fi
+
+#Add required packadges:
+printf "\n${nor}Check for the status of rquired packadges:\n"
+for package in "${package_install_list[@]}"; do
+	dpkg -s ${package} > /dev/null 2>&1
+	if [ ${?} -eq 1 ]; then
+		printf " ${nor}Installing Package ${yel}${package}${nor}..."
+		apt install ${package} -y > /dev/null 2>&1 && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
+	else
+		printf " ${nor}Package ${yel}${package}${drk_grn} already installed${nor}\n"
+	fi
+done
 
 #make directorys:
 #Make directory for serial port fix, then verify the config file is correct, if not, make corrections:
