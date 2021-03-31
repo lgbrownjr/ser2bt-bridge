@@ -67,7 +67,7 @@ You will need:
 ```bash
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
-country=US
+country=<Country Code>
 
 network={
     ssid="<SSID>"
@@ -76,6 +76,7 @@ network={
 }
 ```
 - Be sure to replace *\<SSID\>* with the SSID you want your pi to connect to, and replace *\<passphrase/password\>*
+
 You are now done with this section, safely eject the SD card, and insert it into you *raspberry pi zero*.
 ###### First login:
 - Power on the bridge, and give it about a minute to boot.
@@ -100,7 +101,9 @@ Reboot your Pi when the upgrade is complete.
   * select *Expand Filesystem* to expand.
 * From the main menu, under *System Options*.
   * Select *Hostname*, then change to a name with **6 characters**.
-###### REBOOT!
+  * Select *Finish*
+  * Select *Yes* to reboot. (Don't forget the change in hostname when you login after reboot!)
+---
 * Setup using raspi-config `sudo raspi-config`:
   * From the main menu, under *System Options*.
     * Select *Boot / Autologin*, then select *Console Autologin*.
@@ -108,16 +111,20 @@ Reboot your Pi when the upgrade is complete.
     * Select *Network at boot*, then select *No* to Disable *Waiting for network on boot*.
 ###### Select *localization Options*, and verify, or set:
 * Setup locals.
+  * Select *Finish*
+  * Select *Yes* to reboot. (Don't forget the change in password when you login after reboot!)
+---
+* Setup using raspi-config `sudo raspi-config`:
   * Set timezone on the pi.
   * Keyboard.
   * wifi location.
-  * Select *Performance Options*:
-  * Select *GPU Memory* and set *GPU memory* to 32MB.
+###### Select *Performance Options*:
+  * Select *GPU Memory* and set *GPU memory* to 32.
 ###### Complete:
 Under the *Main Menu*, select *Finish*, and if you are asked to reboot, do so.
 ###### Install dependencies:
 ```bash
-sudo apt install screen git minicom tio rfkill xterm ser2net -y
+sudo apt install screen git minicom tio rfkill xterm telnet telnetd ser2net -y
 ```
 - Reboot your Pi when the dependacies have been installed
 ###### Pre-Requisites to software installation:
