@@ -80,7 +80,7 @@ network={
 You are now done with this section, safely eject the SD card, and insert it into you *raspberry pi zero*.
 ###### First login:
 - Power on the bridge, and give it about a minute to boot.
-  - Using your favorite SSH client, login into your pi: `pi@<[hostname|IP Address]>`, where *hostname*, or *IP Address* are = to your Pi's.
+  - Using your favorite SSH client, login into your pi: `pi@<[hostname|IP Address]>`, where *hostname*, or *IP Address* is = to your Pi's.
 
 ---
 **Note**
@@ -122,11 +122,7 @@ Reboot your Pi when the upgrade is complete.
   * Select *GPU Memory* and set *GPU memory* to 32.
 ###### Complete:
 Under the *Main Menu*, select *Finish*, and if you are asked to reboot, do so.
-###### Install dependencies:
-```bash
-sudo apt install screen git minicom tio rfkill xterm telnet telnetd ser2net -y
-```
-- Reboot your Pi when the dependacies have been installed
+
 ###### Pre-Requisites to software installation:
 ```bash
 mkdir -p /home/pi/Projects/
