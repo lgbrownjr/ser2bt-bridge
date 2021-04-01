@@ -24,6 +24,7 @@ lib_service_folder="${lib_folder}systemd/system/"
 serial_fix_folder="${etc_service_folder}getty@ttyGS0.service.d/"
 
 #File list:
+python_req_file="requirements.txt"
 bt_service="bluetooth.service"
 bt_config="main.conf"
 boot_config="config.txt"
@@ -48,6 +49,9 @@ full_service_files=( "${base_service_files[@]}" "${enhanc_service_files[@]}" )
 pisugar2_service_files=(ser2bt-button.service ser2bt-battery.service)
 ups_lite_service_files=(ser2bt-battery.service)
 enhanc_service_assoc=(ser2bt_status ser2bt-e-paper.service)
+declare -a enhanc_python_req_list
+enhanc_python_req_list=(`cat "${python_req_file}"`)
+echo $enhanc_python_req_list
 full_service_assoc=( "${enhanc_service_assoc[@]}" )
 pisugar2_service_assoc=(button_detect ser2bt-button.service bat_mon ser2bt-battery.service)
 ups_lite_service_assoc=(bat_mon ser2bt-battery.service)
@@ -74,6 +78,7 @@ enhanc_boot_search=("\(off\|on\)" "\(off\|on\)")
 full_boot_search=("${base_boot_search[@]}" "${enhanc_boot_search[@]}")
 pisugar2_config_txt_values=("0x32")
 pisugar2_boot_search=("0x[0-9]\*")
+full_python_req_list=("${enhanc_python_req_list[@]}")
 full_config_txt_values=("${base_config_txt_values[@]}" "${enhanc_config_txt_values[@]}")
 ups_type="N/A"
 
@@ -136,6 +141,7 @@ if [ "${upgrade_path}" = "enhanced" ] ; then
 	config_txt_values=("${enhanc_config_txt_values[@]}")
 	boot_search=(${enhanc_boot_search[@]})
 	package_install_list=("${enhanc_package_install_list[@]}")
+	python_req_list=("${enhanc_python_req_list[@]}")
 fi
 
 if [ "${upgrade_path}" = "full" ] ; then
@@ -148,6 +154,7 @@ if [ "${upgrade_path}" = "full" ] ; then
 	config_txt_values=("${full_config_txt_values[@]}")
 	boot_search=(${full_boot_search[@]})
 	package_install_list=("${full_package_install_list[@]}")
+	python_req_list=("${full_python_req_list[@]}")
 fi
 
 #If this is not a basic install, check to see which ups is installed.
@@ -255,16 +262,30 @@ num=0
 #fi
 
 #Add required packadges:
-printf "\n${nor}Check for the status of rquired packadges:\n"
+printf "\n${nor}Check for the status of rquired packages:\n"
 for package in "${package_install_list[@]}"; do
 	dpkg -s ${package} > /dev/null 2>&1
 	if [ ${?} -eq 1 ]; then
 		printf " ${nor}Installing Package ${yel}${package}${nor}..."
 		apt install ${package} -y > /dev/null 2>&1 && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
 	else
-		printf " ${nor}Package ${yel}${package}${drk_grn} already installed${nor}\n"
+		printf " ${nor}Package ${yel}${package}is${drk_grn} already installed${nor}\n"
 	fi
 done
+
+#Add Python dependencies from requirements.txt This is for non-basic installs/upgrades:
+if [ ${upgrade_path} != "basic" ] ; then
+	printf "\n${nor}Check for the status of rquired Python 3 modules:\n"
+	for module in "${python_req_list[@]}"; do
+		pip3 list | grep  ${module} > /dev/null 2>&1
+		if [ ${?} -eq 1 ]; then
+			printf " ${nor}Installing Module ${yel}${module}${nor}..."
+			pip3 install ${module} > /dev/null 2>&1
+		else
+			printf " ${nor}Module ${yel}${module}is${drk_grn} already installed${nor}\n"
+		fi
+	done
+fi
 
 #make directorys:
 #Make directory for serial port fix, then verify the config file is correct, if not, make corrections:
