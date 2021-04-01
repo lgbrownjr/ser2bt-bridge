@@ -11,6 +11,7 @@ fi
 home="/home/${SUDO_USER}/"
 etc_folder="/etc/"
 lib_folder="/lib/"
+dev_folder="/dev/"
 boot="/boot/"
 bt_folder="bluetooth/"
 project_folder="${home}Projects/ser2bt-bridge/"
@@ -24,6 +25,7 @@ lib_service_folder="${lib_folder}systemd/system/"
 serial_fix_folder="${etc_service_folder}getty@ttyGS0.service.d/"
 
 #File list:
+e_ink_dev="spidev0.0"
 python_req_file="requirements.txt"
 bt_service="bluetooth.service"
 bt_config="main.conf"
@@ -34,8 +36,9 @@ disable_svc=("keyboard-setup.service" "dphys-swapfile.service" "triggerhappy.ser
 "ser2net.service")
 base_package_install_list=("screen" "git" "minicom" "tio" "rfkill" "xterm" "telnet" "telnetd" "ser2net")
 base_bin_files=(ser2bt_bridge screen_bat_mon)
-enhanc_bin_files=(ser2bt_status init_scr shutdown_scr)
-full_bin_files=( "${base_bin_files[@]}" "${enhanc_bin_files[@]}" )
+#enhanc_bin_files=(ser2bt_status init_scr shutdown_scr)
+wavesh_bin_files=(ser2bt_status init_scr shutdown_scr)
+full_bin_files=( "${base_bin_files[@]}")
 pisugar2_bin_files=(button_detect bat_mon)
 ups_lite_bin_files=(bat_mon)
 base_lib_files=(format.sh)
@@ -44,15 +47,14 @@ full_lib_files=( "${base_lib_files[@]}" "${enhanc_lib_files[@]}" )
 etc_files=(ser2bt_bridge.screenrc)
 base_service_files=(rfcomm.service)
 enhanc_package_install_list=("wiringpi" "python3-pip" "python3-pil" "python3-numpy" "i2c-tools" "python3-smbus" "fonts-roboto-fontface" "fonts-freefont-ttf")
-enhanc_service_files=(ser2bt-e-paper.service ser2bt-e-paper-init.service)
-full_service_files=( "${base_service_files[@]}" "${enhanc_service_files[@]}" )
+wavesh_service_files=(ser2bt-e-paper.service ser2bt-e-paper-init.service)
+full_service_files=( "${base_service_files[@]}")
 pisugar2_service_files=(ser2bt-button.service ser2bt-battery.service)
 ups_lite_service_files=(ser2bt-battery.service)
-enhanc_service_assoc=(ser2bt_status ser2bt-e-paper.service)
+wavesh_service_assoc=(ser2bt_status ser2bt-e-paper.service)
 declare -a enhanc_python_req_list
 enhanc_python_req_list=(`cat "${python_req_file}"`)
 echo $enhanc_python_req_list
-full_service_assoc=( "${enhanc_service_assoc[@]}" )
 pisugar2_service_assoc=(button_detect ser2bt-button.service bat_mon ser2bt-battery.service)
 ups_lite_service_assoc=(bat_mon ser2bt-battery.service)
 removed_service_files=("ser2bt-e-paper-shut.service" "ser2bt_button.service" "ser2bt-bat.service")
@@ -63,7 +65,8 @@ serial_fix_file_content="[Service]\nTTYReset=no\nTTYVHangup=no\nTTYVTDisallocate
 bt_service_pre_search="ExecStart=/usr/lib/bluetooth/bluetoothd"
 bt_service_content="ExecStart=/usr/lib/bluetooth/bluetoothd -C --noplugin=sap\nExecStartPost=/usr/bin/sdptool add SP\nExecStartPost=/bin/hciconfig hci0 piscan"
 base_config_txt_addons=("hdmi_blanking=" "disable_splash=" "boot_delay=" "dtparam=audio=" "enable_uart=" "gpu_mem=" "initial_turbo=" "dtoverlay=")
-enhanc_config_txt_addons=("dtparam=i2c_arm=" "dtparam=spi=")
+enhanc_config_txt_addons=("dtparam=i2c_arm=")
+wavesh_config_txt_addons=("dtparam=spi=")
 pisugar2_config_txt_addons=("dtoverlay=i2c-rtc,ds1307,addr=")
 bt_config_change=("Name = " "DiscoverableTimeout = " "PairableTimeout = ")
 bt_config_search=(".?[a-zA-Z0-9]+" "[01]" "[01]")
@@ -73,8 +76,10 @@ full_package_install_list=("${base_package_install_list[@]}" "${enhanc_package_i
 full_config_txt_addons=("${base_config_txt_addons[@]}" "${enhanc_config_txt_addons[@]}")
 base_config_txt_values=(2 1 0 "off" 1 32 60 "dwc2")
 base_boot_search=("[0-9]" "[0-9]" "[0-9]" "[0-9]" "on" "[0-9]" "[0-9]\*" "[0-9]\*" "dwc2")
-enhanc_config_txt_values=("on" "on")
-enhanc_boot_search=("\(off\|on\)" "\(off\|on\)")
+enhanc_config_txt_values=("on")
+wavesh_config_txt_values=("on")
+enhanc_boot_search=("\(off\|on\)")
+wavesh_boot_search=("\(off\|on\)")
 full_boot_search=("${base_boot_search[@]}" "${enhanc_boot_search[@]}")
 pisugar2_config_txt_values=("0x32")
 pisugar2_boot_search=("0x[0-9]\*")
@@ -133,7 +138,7 @@ if [ "${upgrade_path}" = "basic" ] ; then
 fi
 
 if [ "${upgrade_path}" = "enhanced" ] ; then
-	bin_files=(${enhanc_bin_files[@]})
+	bin_files=(${base_bin_files[@]})
 	lib_files=(${enhanc_lib_files[@]})
 	service_files=(${enhanc_service_files[@]})
 	service_assoc=(${enhanc_service_assoc[@]})
@@ -157,6 +162,15 @@ if [ "${upgrade_path}" = "full" ] ; then
 	python_req_list=("${full_python_req_list[@]}")
 fi
 
+#If this is not a basic install, check to see if e-ink display is installed:
+if [ ${upgrade_path} != "basic" ] ; then
+	result=$(spi-config -q -d ${dev_folder}${e_ink_dev} | grep "speed=4000000")
+	if [ ${?} -eq 0 ]; then
+		e_ink="True"
+	else
+		e_ink="False"
+	fi
+fi
 #If this is not a basic install, check to see which ups is installed.
 if [ ${upgrade_path} != "basic" ] ; then
 	result=$(i2cdetect -y 1 0x75 0x75 | grep -Eo "UU|75")
@@ -171,17 +185,25 @@ if [ ${upgrade_path} != "basic" ] ; then
 		fi
 	fi
 fi
+if [ "${e_ink}" = "True" ] && [ "${upgrade_path}" = "full" ] ; then
+	config_txt_addons=("${config_txt_addons[@]}" "${wavesh_config_txt_addons[@]}")
+	config_txt_values=("${config_txt_values[@]}" "${wavesh_config_txt_values[@]}")
+	boot_search=("${boot_search[@]}" "${wavesh_boot_search[@]}")
+	bin_files=("${bin_files[@]}" "${wavesh_bin_files[@]}")
+	service_files=("${service_files[@]}" "${wavesh_service_files[@]}")
+	service_assoc=("${service_assoc[@]}" "${wavesh_service_assoc[@]}")
+fi
 if [ "${ups_type}" = "pisugar2" ] && [ "${upgrade_path}" = "full" ] ; then
-	config_txt_addons=("${full_config_txt_addons[@]}" "${pisugar2_config_txt_addons[@]}")
-	config_txt_values=("${full_config_txt_values[@]}" "${pisugar2_config_txt_values[@]}")
-	boot_search=("${enhanc_boot_search[@]}" "${pishugar2_boot_search[@]}")
-	bin_files=("${full_bin_files[@]}" "${pisugar2_bin_files[@]}")
-	service_files=("${full_service_files[@]}" "${pisugar2_service_files[@]}")
-	service_assoc=("${full_service_assoc[@]}" "${pisugar2_service_assoc[@]}")
+	config_txt_addons=("${config_txt_addons[@]}" "${pisugar2_config_txt_addons[@]}")
+	config_txt_values=("${config_txt_values[@]}" "${pisugar2_config_txt_values[@]}")
+	boot_search=("${boot_search[@]}" "${pishugar2_boot_search[@]}")
+	bin_files=("${bin_files[@]}" "${pisugar2_bin_files[@]}")
+	service_files=("${service_files[@]}" "${pisugar2_service_files[@]}")
+	service_assoc=("${service_assoc[@]}" "${pisugar2_service_assoc[@]}")
 elif [ "${ups_type}" = "ups_lite" ] && [ "${upgrade_path}" = "full" ] ; then
-	bin_files=("${full_bin_files[@]}" "${ups_lite_bin_files[@]}")
-	service_files=("${full_service_files[@]}" "${ups_lite_service_files[@]}")
-	service_assoc=("${full_service_assoc[@]}" "${ups_lite_service_assoc[@]}")
+	bin_files=("${bin_files[@]}" "${ups_lite_bin_files[@]}")
+	service_files=("${service_files[@]}" "${ups_lite_service_files[@]}")
+	service_assoc=("${service_assoc[@]}" "${ups_lite_service_assoc[@]}")
 fi
 #checking and adding modules as needed into /etc/modules:
 printf "${nor}Check to make sure the the relavent modules are loaded:\n"
