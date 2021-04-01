@@ -152,7 +152,6 @@ fi
 if [ "${upgrade_path}" = "full" ] ; then
 	bin_files=(${full_bin_files[@]})
 	lib_files=(${base_lib_files[@]})
-	ser2bt_lib_files=(${enhanc_lib_files[@]})
 	service_files=(${full_service_files[@]})
 	service_assoc=(${full_service_assoc[@]})
 	config_txt_addons=(${full_config_txt_addons[@]})
@@ -433,6 +432,7 @@ done
 		fi
 	done
 
+if [ "${e_ink}" = "True" ] && [ "${upgrade_path}" = "full" ] ; then
 	printf "\nCopying files to the ${cyn}${ser2bt_lib_folder} ${nor}directory:\n"
 	for file in "${ser2bt_lib_files[@]}" ; do
 		if cmp --silent "${ser2bt_lib_folder}${file}" "${project_folder}${file}" ; then
@@ -441,6 +441,7 @@ done
 			cp ${project_folder}${file} ${ser2bt_lib_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
 		fi
 	done
+fi
 
 	printf "\nCopying files to the ${cyn}${etc_folder} ${nor}directory:\n"
 	for file in "${etc_files[@]}" ; do
