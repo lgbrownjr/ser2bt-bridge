@@ -276,13 +276,16 @@ done
 #Add Python dependencies from requirements.txt This is for non-basic installs/upgrades:
 if [ ${upgrade_path} != "basic" ] ; then
 	printf "\n${nor}Check for the status of rquired Python 3 modules:\n"
+	printf " ${nor}Reading in list of already-installed modules...${nor}"
+	installed_modules=($(pip3 list)) && printf " ${drk_grn}Done${nor}.\n"
+	printf " ${nor}Checking required modules against list and installing anything missing...${nor}\n"
 	for module in "${python_req_list[@]}"; do
-		pip3 list | grep  ${module} > /dev/null 2>&1
+		echo ${installed_modules[@]} | grep  ${module} > /dev/null 2>&1
 		if [ ${?} -eq 1 ]; then
-			printf " ${nor}Installing Module ${yel}${module}${nor}..."
-			pip3 install ${module} > /dev/null 2>&1
+			printf "  ${nor}Installing Module ${yel}${module}${nor}..."
+			pip3 install ${module} > /dev/null 2>&1 && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
 		else
-			printf " ${nor}Module ${yel}${module}is${drk_grn} already installed${nor}\n"
+			printf "  ${nor}Module ${yel}${module}is${drk_grn} already installed${nor}\n"
 		fi
 	done
 fi
