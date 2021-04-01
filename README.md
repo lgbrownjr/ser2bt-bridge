@@ -80,7 +80,7 @@ network={
 You are now done with this section, safely eject the SD card, and insert it into you *raspberry pi zero*.
 ###### First login:
 - Power on the bridge, and give it about a minute to boot.
-  - Using your favorite SSH client, login into your pi: `pi@<[hostname|IP Address]>`, where *hostname*, or *IP Address* are = to your Pi's.
+  - Using your favorite SSH client, login into your pi: `pi@<[hostname|IP Address]>`, where *hostname*, or *IP Address* is = to your Pi's.
 
 ---
 **Note**
