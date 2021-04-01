@@ -122,11 +122,7 @@ Reboot your Pi when the upgrade is complete.
   * Select *GPU Memory* and set *GPU memory* to 32.
 ###### Complete:
 Under the *Main Menu*, select *Finish*, and if you are asked to reboot, do so.
-###### Install dependencies:
-```bash
-sudo apt install screen git minicom tio rfkill xterm telnet telnetd ser2net -y
-```
-- Reboot your Pi when the dependacies have been installed
+
 ###### Pre-Requisites to software installation:
 ```bash
 mkdir -p /home/pi/Projects/
