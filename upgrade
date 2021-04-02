@@ -162,27 +162,43 @@ if [ "${upgrade_path}" = "full" ] ; then
 	python_req_list=("${full_python_req_list[@]}")
 fi
 
-#If this is not a basic install, check to see if e-ink display is installed:
+printf "\n${nor}Check for the status of required packages:\n"
+for package in "${base_package_install_list[@]}"; do
+	dpkg -s ${package} > /dev/null 2>&1
+	if [ ${?} -eq 1 ]; then
+		printf " ${nor}Installing Package ${yel}${package}${nor}..."
+		apt install ${package} -y > /dev/null 2>&1 && printf "${drk_grn}Done${nor}\n" || printf "${drk_grn}Failed${nor}.\n"
+	else
+		printf " ${nor}Package ${yel}${package}${nor} is${drk_grn} already installed${nor}\n"
+	fi
+done
+
 if [ ${upgrade_path} != "basic" ] ; then
-	result=$(spi-config -q -d ${dev_folder}${e_ink_dev} | grep "speed=4000000")
+printf "${nor}Determining installed hardware:${nor}\n"
+#If this is not a basic install, check to see if e-ink display is installed:
+	result=$(spi-config -q -d ${dev_folder}${e_ink_dev} 2> /dev/null | grep "speed=4000000")
 	if [ ${?} -eq 0 ]; then
 		e_ink="True"
+		printf " ${nor}It looks as if you have a e-ink display\n"
 	else
 		e_ink="False"
 	fi
-fi
 #If this is not a basic install, check to see which ups is installed.
-if [ ${upgrade_path} != "basic" ] ; then
-	result=$(i2cdetect -y 1 0x75 0x75 | grep -Eo "UU|75")
-	if [ ${result} -eq 75 ] ;  then
+	result=$(i2cdetect -y 1 0x75 0x75 2> /dev/null | grep -Eo "UU|75")
+	if [ "${result}" == "75" ];  then
 		ups_type="pisugar2"
+		printf " ${nor}It looks as if you have a ${ups_type} ${nor}ups\n"
 	else
-		result=$(i2cdetect -y 1 0x36 0x36 | grep -Eo "UU|36")
-		if [ ${result} -eq 36 ] ;  then
+		result=$(i2cdetect -y 1 0x36 0x36 2> /dev/null | grep -Eo "UU|36")
+		if [ "${result}" == "36" ];  then
 			ups_type="ups_lite"
+			printf " ${nor}It looks as if you have a ${ups_type} ${nor}ups\n"
 		else
 			ups_type="none"
 		fi
+	fi
+	if [ "${e_ink}" == "False" ] && [ "${ups_type}" == "none" ]; then
+		printf " ${nor}No Hardware detected, continuing...\n"
 	fi
 fi
 if [ "${e_ink}" = "True" ] && [ "${upgrade_path}" = "full" ] ; then
@@ -207,6 +223,57 @@ elif [ "${ups_type}" = "ups_lite" ] && [ "${upgrade_path}" = "full" ] ; then
 	service_files=("${service_files[@]}" "${ups_lite_service_files[@]}")
 	service_assoc=("${service_assoc[@]}" "${ups_lite_service_assoc[@]}")
 fi
+
+#Upgrade system files
+#printf "\n${nor}Update package manager:\n"
+#apt update > /dev/null 2>&1
+#if [ ${?} -gt 0 ]; then
+#	printf " ${red}Update failed, exiting to shell\n"
+#	exit 1 #apt update or apt full-upgrade failed"
+#else
+#	printf " ${grn}Update completed...\n"
+#
+#fi
+#apt full-upgrade -y > /dev/null 2>&1
+#if [ ${?} -gt 0 ]; then
+#	printf " ${red}Upgrade failed, exiting to shell\n"
+#	exit 1 #apt update or apt full-upgrade failed"
+#else
+#	printf " ${grn}Upgrade completed...\n"
+#fi
+
+#Add required packadges:
+
+if [ ${upgrade_path} != "basic" ] ; then
+	printf "\n${nor}Check for the status of required packages:\n"
+	for package in "${package_install_list[@]}"; do
+		dpkg -s ${package} > /dev/null 2>&1
+		if [ ${?} -eq 1 ]; then
+			printf " ${nor}Installing Package ${yel}${package}${nor}..."
+			apt install ${package} -y > /dev/null 2>&1 && printf "${drk_grn}Done${nor}\n" || printf "${drk_grn}Failed${nor}.\n"
+		else
+			printf " ${nor}Package ${yel}${package}${nor} is${drk_grn} already installed${nor}\n"
+		fi
+	done
+fi
+
+#Add Python dependencies from requirements.txt This is for non-basic installs/upgrades:
+if [ ${upgrade_path} != "basic" ] ; then
+	printf "\n${nor}Check for the status of rquired Python 3 modules:\n"
+	printf " ${nor}Reading in list of already-installed modules...${nor}"
+	installed_modules=($(pip3 list)) && printf "${drk_grn}Done${nor}\n"
+	printf " ${nor}Checking required modules against list and installing anything missing...${nor}\n"
+	for module in "${python_req_list[@]}"; do
+		echo ${installed_modules[@]} | grep  ${module} > /dev/null 2>&1
+		if [ ${?} -eq 1 ]; then
+			printf "  ${nor}Installing Module ${yel}${module}${nor}..."
+			pip3 install ${module} > /dev/null 2>&1 && printf "${drk_grn}Done${nor}\n" || printf "${drk_grn}Failed${nor}.\n"
+		else
+			printf "  ${nor}Module ${yel}${module}${nor} is${drk_grn} already installed${nor}\n"
+		fi
+	done
+fi
+
 #checking and adding modules as needed into /etc/modules:
 printf "${nor}Check to make sure the the relavent modules are loaded:\n"
 grep -q -s -o -e "^g_serial" ${etc_folder}modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'g_serial' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully${nor} loaded\n")
@@ -267,53 +334,6 @@ num=0
 	else
 		let bt_fix_flag++
 	fi
-#Upgrade system files
-#printf "\n${nor}Update package manager:\n"
-#apt update > /dev/null 2>&1
-#if [ ${?} -gt 0 ]; then
-#	printf " ${red}Update failed, exiting to shell\n"
-#	exit 1 #apt update or apt full-upgrade failed"
-#else
-#	printf " ${grn}Update completed...\n"
-#
-#fi
-#apt full-upgrade -y > /dev/null 2>&1
-#if [ ${?} -gt 0 ]; then
-#	printf " ${red}Upgrade failed, exiting to shell\n"
-#	exit 1 #apt update or apt full-upgrade failed"
-#else
-#	printf " ${grn}Upgrade completed...\n"
-#fi
-
-#Add required packadges:
-printf "\n${nor}Check for the status of rquired packages:\n"
-for package in "${package_install_list[@]}"; do
-	dpkg -s ${package} > /dev/null 2>&1
-	if [ ${?} -eq 1 ]; then
-		printf " ${nor}Installing Package ${yel}${package}${nor}..."
-		apt install ${package} -y > /dev/null 2>&1 && printf "${drk_grn}Done${nor}\n" || printf "${drk_grn}Failed${nor}.\n"
-	else
-		printf " ${nor}Package ${yel}${package}${nor} is${drk_grn} already installed${nor}\n"
-	fi
-done
-
-#Add Python dependencies from requirements.txt This is for non-basic installs/upgrades:
-if [ ${upgrade_path} != "basic" ] ; then
-	printf "\n${nor}Check for the status of rquired Python 3 modules:\n"
-	printf " ${nor}Reading in list of already-installed modules...${nor}"
-	installed_modules=($(pip3 list)) && printf "${drk_grn}Done${nor}\n"
-	printf " ${nor}Checking required modules against list and installing anything missing...${nor}\n"
-	for module in "${python_req_list[@]}"; do
-		echo ${installed_modules[@]} | grep  ${module} > /dev/null 2>&1
-		if [ ${?} -eq 1 ]; then
-			printf "  ${nor}Installing Module ${yel}${module}${nor}..."
-			pip3 install ${module} > /dev/null 2>&1 && printf "${drk_grn}Done${nor}\n" || printf "${drk_grn}Failed${nor}.\n"
-		else
-			printf "  ${nor}Module ${yel}${module}${nor} is${drk_grn} already installed${nor}\n"
-		fi
-	done
-fi
-
 #make directorys:
 #Make directory for serial port fix, then verify the config file is correct, if not, make corrections:
 	official_s_ver=$(printf ${serial_fix_file_content})
