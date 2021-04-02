@@ -73,7 +73,7 @@ bt_config_change=("Name = " "DiscoverableTimeout = " "PairableTimeout = ")
 bt_config_search=(".?[a-zA-Z0-9]+" "[01]" "[01]")
 bt_config_fix_value=(".HOSTNAME" 0 0)
 bt_config_value=('$HOSTNAME' 0 0)
-full_package_install_list=("${base_package_install_list[@]}" "${enhanc_package_install_list[@]}")
+full_package_install_list=("${enhanc_package_install_list[@]}")
 full_config_txt_addons=("${base_config_txt_addons[@]}" "${enhanc_config_txt_addons[@]}")
 base_config_txt_values=(2 1 0 "off" 1 32 60 "dwc2")
 base_boot_search=("[0-9]" "[0-9]" "[0-9]" "[0-9]" "on" "[0-9]" "[0-9]\*" "[0-9]\*" "dwc2")
@@ -174,12 +174,12 @@ for package in "${base_package_install_list[@]}"; do
 done
 
 if [ ${upgrade_path} != "basic" ] ; then
-printf "${nor}Determining installed hardware:${nor}\n"
+printf "\n${nor}Determining installed hardware:${nor}\n"
 #If this is not a basic install, check to see if e-ink display is installed:
 	result=$(spi-config -q -d ${dev_folder}${e_ink_dev} 2> /dev/null | grep "speed=4000000")
 	if [ ${?} -eq 0 ]; then
 		e_ink="True"
-		printf " ${nor}It looks as if you have a e-ink display\n"
+		printf " ${nor}It looks as if you have a ${yel}e-ink${nor} display\n"
 	else
 		e_ink="False"
 	fi
@@ -187,12 +187,16 @@ printf "${nor}Determining installed hardware:${nor}\n"
 	result=$(i2cdetect -y 1 0x75 0x75 2> /dev/null | grep -Eo "UU|75")
 	if [ "${result}" == "75" ];  then
 		ups_type="pisugar2"
-		printf " ${nor}It looks as if you have a ${ups_type} ${nor}ups\n"
+		printf " ${nor}It looks as if you have a ${yel}${ups_type} ${nor}ups\n"
+		resultb=$(i2cdetect -y 1 0x32 0x32 2> /dev/null | grep -Eo "UU|32")
+		if [ "${resultb}" == "32" ] || [ "${resultb}" == "UU" ];  then
+			printf "  ${nor}It looks as if the ${yel}rtc${nor} on your ${yel}${ups_type} ${nor}ups is available\n"
+		fi
 	else
 		result=$(i2cdetect -y 1 0x36 0x36 2> /dev/null | grep -Eo "UU|36")
 		if [ "${result}" == "36" ];  then
 			ups_type="ups_lite"
-			printf " ${nor}It looks as if you have a ${ups_type} ${nor}ups\n"
+			printf " ${nor}It looks as if you have a ${yel}${ups_type} ${nor}ups\n"
 		else
 			ups_type="none"
 		fi
@@ -245,7 +249,7 @@ fi
 #Add required packadges:
 
 if [ ${upgrade_path} != "basic" ] ; then
-	printf "\n${nor}Check for the status of required packages:\n"
+	printf "\n${nor}Check for the status of additional required packages:\n"
 	for package in "${package_install_list[@]}"; do
 		dpkg -s ${package} > /dev/null 2>&1
 		if [ ${?} -eq 1 ]; then
@@ -255,10 +259,8 @@ if [ ${upgrade_path} != "basic" ] ; then
 			printf " ${nor}Package ${yel}${package}${nor} is${drk_grn} already installed${nor}\n"
 		fi
 	done
-fi
 
 #Add Python dependencies from requirements.txt This is for non-basic installs/upgrades:
-if [ ${upgrade_path} != "basic" ] ; then
 	printf "\n${nor}Check for the status of rquired Python 3 modules:\n"
 	printf " ${nor}Reading in list of already-installed modules...${nor}"
 	installed_modules=($(pip3 list)) && printf "${drk_grn}Done${nor}\n"
@@ -275,7 +277,7 @@ if [ ${upgrade_path} != "basic" ] ; then
 fi
 
 #checking and adding modules as needed into /etc/modules:
-printf "${nor}Check to make sure the the relavent modules are loaded:\n"
+printf "\n${nor}Check to make sure the the relavent modules are loaded:\n"
 grep -q -s -o -e "^g_serial" ${etc_folder}modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'g_serial' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully${nor} loaded\n")
 grep -q -s -o -e "^dwc2" ${etc_folder}/modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'dwc2' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully ${nor} loaded\n")
 
