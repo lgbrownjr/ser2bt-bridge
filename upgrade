@@ -305,7 +305,7 @@ num=0
 		let num++
 	done
 	if [ ${change_flag} -eq 0 ]; then
-		printf " ${drk_grn}No changes were needed, continueing${nor}...\n"
+		printf " ${drk_grn}No changes were needed, continuing${nor}...\n"
 	fi
 
 #Check and edit bluetooth configuration file(s) as needed.
@@ -335,7 +335,7 @@ num=0
 	done
 
 	if [ ${change_flag} -eq 0 ]; then
-		printf " ${drk_grn}No changes were needed, continueing${nor}...\n"
+		printf " ${drk_grn}No changes were needed, continuing${nor}...\n"
 	else
 		let bt_fix_flag++
 	fi
