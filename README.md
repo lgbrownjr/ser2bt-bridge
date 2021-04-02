@@ -95,6 +95,8 @@ sudo apt update && sudo apt full-upgrade -y
 ```
 Reboot your Pi when the upgrade is complete.
 ###### Additional OS Setup:
+###### Install git:
+`sudo apt install git -y`
 ###### Setup using raspi-config
 * Enter `sudo raspi-config`:
 * From the main menu, under *Advanced Options*.
@@ -118,8 +120,6 @@ Reboot your Pi when the upgrade is complete.
   * Set timezone on the pi.
   * Keyboard.
   * wifi location.
-###### Select *Performance Options*:
-  * Select *GPU Memory* and set *GPU memory* to 32.
 ###### Complete:
 Under the *Main Menu*, select *Finish*, and if you are asked to reboot, do so.
 
