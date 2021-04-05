@@ -30,6 +30,8 @@ python_req_file="requirements.txt"
 bt_service="bluetooth.service"
 bt_config="main.conf"
 boot_config="config.txt"
+serial_fix_file="override.conf"
+rc_local="rc.local"
 disable_svc=("keyboard-setup.service" "dphys-swapfile.service" "triggerhappy.service" \
 "triggerhappy.socket" "apt-daily.service" "apt-daily.timer" \
 "apt-daily-upgrade.service" "apt-daily-upgrade.timer" "rpi-eeprom-update.service" \
@@ -62,7 +64,9 @@ ups_lite_service_assoc=(bat_mon ser2bt-battery.service)
 removed_service_files=("ser2bt-e-paper-shut.service" "ser2bt_button.service" "ser2bt-bat.service")
 begin_bashrc_addon_mark="#BEGIN ser2b-bridge .bashrc add-in"
 end_bashrc_addon_mark="#END ser2b-bridge .bashrc add-in"
-serial_fix_file="override.conf"
+begin_rc_local_addon_mark="#BEGIN ser2b-bridge lc.local add-in"
+end_rc_local_addon_mark="#END ser2b-bridge lc.local add-in"
+rc_local_fix_content="${begin_rc_local_addon_mark}\n\n#Make sure bluetooth discoverable and pairable are turned on at boot:\nsudo bluetoothctl <<EOF\ndiscoverable on\npairable on\nEOF\n\n#Turn off HDMI:\n/usr/bin/tvservice -o\n\n${end_rc_local_addon_mark}"
 serial_fix_file_content="[Service]\nTTYReset=no\nTTYVHangup=no\nTTYVTDisallocate=no"
 bt_service_pre_search="ExecStart=/usr/lib/bluetooth/bluetoothd"
 bt_service_content="ExecStart=/usr/lib/bluetooth/bluetoothd -C --noplugin=sap\nExecStartPost=/usr/bin/sdptool add SP\nExecStartPost=/bin/hciconfig hci0 piscan"
@@ -368,6 +372,7 @@ num=0
 #Modify/Ammend the bluetooth/bluez service file:
 printf "\n${blu}Bluetooth${nor} service configurations:\n" | fmt --goal=91 --width=${last_col}
 if [ -f "${lib_service_folder}${bt_service}" ]; then
+
 	existing_bt_chg=$(awk '/^ExecStart/,/piscan/ { print }' ${lib_service_folder}${bt_service})
 	printf " ${blu}Bluetooth${nor} Service ${drk_grn}was${nor} found, checking content:\n"
 	if grep -q -e "^${bt_service_pre_search}$" "${lib_service_folder}${bt_service}"; then
@@ -375,7 +380,6 @@ if [ -f "${lib_service_folder}${bt_service}" ]; then
 		sed -i "s+${bt_service_pre_search}+${bt_service_content}+g" "${lib_service_folder}${bt_service}" && printf "${drk_grn}Done${nor}\n" || printf "\n"
 		let bt_fix_flag++
 	elif [[ $(printf "${existing_bt_chg}") == $(printf "${bt_service_content}") ]]; then
-#grep -e "^${bt_service_content}$" "${lib_service_folder}${bt_service}"; then
 		printf "  ${blu}Bluetooth${nor} Service does ${drk_grn}not need${nor} to be edited.\n" | fmt --goal=91 --width=${last_col}
 		let bt_fix_flag--
 	else
@@ -388,6 +392,7 @@ else
 	bt_fix_flag=0
 	exit 3
 fi
+
 #Disable Un-needed services:
 printf "\nChecking for and disabling un-needed services:\n"
 for file in "${disable_svc[@]}" ; do
@@ -543,6 +548,22 @@ fi
 			systemctl restart "${service_assoc[5]}" && printf " ${nor}${service_assoc[5]} ${drk_grn}Successfully ${nor}Restarted.\n" || printf "${drk_red}Failed ${yellow}${svc_file}${nor}!\n"
 			let svc_count++
 		fi
+	fi
+
+#updating rc.local:
+	printf "\nUpdating the ${yel}${rc_local}${nor} addon (if it's already on, it will be removed and replaced):\n" | fmt --goal=91 --width=${last_col}
+#First compare whats in bashrc matches the addendum:
+	existing_rc_ver=$(awk '/^#BEGIN/,/^#END/ { print }' ${etc_folder}${rc_local})
+	official_rc_ver="${rc_local_fix_content}"
+	diff --suppress-common-lines -W 160  -y <(printf "${existing_rc_ver}") <(printf "${official_rc_ver}")
+	if [ ${?} -eq 1 ]; then
+		printf " ${nor}There is a difference between what is supposed to be in ${yel}${rc_local}${nor}, will clean and re-apply ${yel}ser2bt-bridge${nor} related configurations:\n"  | fmt --goal=91 --width=${last_col}
+		sed -i '/^#BEGIN ser2b-bridge lc.local add-in/, /^#END ser2b-bridge lc.local add-in/d' ${etc_folder}${rc_local}
+		sed -i '/^exit 0/d' ${etc_folder}${rc_local}
+		printf "${official_rc_ver}" >> ${etc_folder}${rc_local} && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
+		printf "exit 0" >> ${etc_folder}${rc_local} && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
+	else
+		printf " ${nor}Both versions are the same, skipping...\n"
 	fi
 
 #refreshing .bashrc:
