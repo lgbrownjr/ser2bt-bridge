@@ -64,8 +64,8 @@ ups_lite_service_assoc=(bat_mon ser2bt-battery.service)
 removed_service_files=("ser2bt-e-paper-shut.service" "ser2bt_button.service" "ser2bt-bat.service")
 begin_bashrc_addon_mark="#BEGIN ser2b-bridge .bashrc add-in"
 end_bashrc_addon_mark="#END ser2b-bridge .bashrc add-in"
-begin_rc_local_addon_mark="#BEGIN ser2b-bridge lc.local add-in"
-end_rc_local_addon_mark="#END ser2b-bridge lc.local add-in"
+begin_rc_local_addon_mark="#BEGIN ser2b-bridge rc.local add-in"
+end_rc_local_addon_mark="#END ser2b-bridge rc.local add-in"
 rc_local_fix_content="${begin_rc_local_addon_mark}\n\n#Make sure bluetooth discoverable and pairable are turned on at boot:\nsudo bluetoothctl <<EOF\ndiscoverable on\npairable on\nEOF\n\n#Turn off HDMI:\n/usr/bin/tvservice -o\n\n${end_rc_local_addon_mark}"
 serial_fix_file_content="[Service]\nTTYReset=no\nTTYVHangup=no\nTTYVTDisallocate=no"
 bt_service_pre_search="ExecStart=/usr/lib/bluetooth/bluetoothd"
@@ -558,10 +558,10 @@ fi
 	diff --suppress-common-lines -W 160  -y <(printf "${existing_rc_ver}") <(printf "${official_rc_ver}") &>/dev/null
 	if [ ${?} -eq 1 ]; then
 		printf " ${nor}There is a difference between what is supposed to be in ${yel}${rc_local}${nor}, will clean and re-apply ${yel}ser2bt-bridge${nor} related configurations:\n"  | fmt --goal=91 --width=${last_col}
-		sed -i '/^#BEGIN ser2b-bridge lc.local add-in/, /^#END ser2b-bridge lc.local add-in/d' ${etc_folder}${rc_local}
+		sed -i '/^#BEGIN ser2b-bridge rc.local add-in/, /^#END ser2b-bridge rc.local add-in/d' ${etc_folder}${rc_local}
 		sed -i '/^exit 0/d' ${etc_folder}${rc_local}
 		printf "${official_rc_ver}" >> ${etc_folder}${rc_local} && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
-		printf "exit 0" >> ${etc_folder}${rc_local} && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
+		printf "\nexit 0" >> ${etc_folder}${rc_local} && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
 	else
 		printf " ${nor}Both versions are the same, skipping...\n"
 	fi
