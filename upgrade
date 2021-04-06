@@ -58,7 +58,6 @@ ups_lite_service_files=(ser2bt-battery.service)
 wavesh_service_assoc=(ser2bt_status ser2bt-e-paper.service)
 declare -a enhanc_python_req_list
 enhanc_python_req_list=(`cat "${python_req_file}"`)
-echo $enhanc_python_req_list
 pisugar2_service_assoc=(button_detect ser2bt-button.service bat_mon ser2bt-battery.service)
 ups_lite_service_assoc=(bat_mon ser2bt-battery.service)
 removed_service_files=("ser2bt-e-paper-shut.service" "ser2bt_button.service" "ser2bt-bat.service")
