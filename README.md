@@ -154,11 +154,11 @@ network={
   - **Be sure to test each network.**
 ###### We're Done!
 If everything went as planned, your *raspberry pi zero w* should be acting like a bluetooth to serial bridge, allowing you to connect to a switches console port via bluetooth from your computer.
-- Now, reboot your *raspberry pi zero w*.
+- Now, reboot your *bridge*.
 - After the raspberry pi has rebooted, use your PC/laptop to pair with it.
 - Look for a device advertising your pi's *hostname*
-- The Pi should advertise that it supports serial communications, so you'll be able to associate it with your PC's com/ttyUSBx/ttyACMx ports.
-  - Keep in mind, that no pin will be requested.  Your PC should just pair with the pi
+- The Pi should advertise that it supports serial communications, so you'll be able to pair it with your PC's serial ports.
+  - Keep in mind, that no pin will be requested.  Your PC should just pair with the pi.
   - Under Widows 10, after pairing, select *More Bluetooth Settings*, under *Related settings*, on the right side of the settings window.
 - Once that's done, go ahead and open your favorite terminal program, and point it to the com/ttyUSBx/tty/ACMx port, and set it up to connect at 115200 bps, n/8/1, xterm.
 ### Full setup:
