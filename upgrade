@@ -354,7 +354,7 @@ num=0
 	else
 		printf " ${nor}Directory ${drk_grn}already ${nor}exists, checking for ${cyn}${serial_fix_folder}${yel}${serial_fix_file}${nor}:\n"
 		if [ ! -f ${serial_fix_folder}${serial_fix_file} ]; then
-			printf " ${yel}${serial_fix_file}${nor}does ${drk_red}not${nor}exist, creating..."
+			printf " ${yel}${serial_fix_file} ${nor}does ${drk_red}not ${nor}exist, creating..."
 			printf "${official_s_ver}" > "${serial_fix_folder}${serial_fix_file}" && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
 		else
 			printf " ${yel}${serial_fix_file} ${drk_grn}does${nor} exist, checking if updates are needed:\n"
