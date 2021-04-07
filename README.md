@@ -102,26 +102,40 @@ Reboot your Pi when the upgrade is complete.
 * From the main menu, under *Advanced Options*.
   * select *Expand Filesystem* to expand.
 * From the main menu, under *System Options*.
-  * Select *Hostname*, then change to a name with **6 characters**.
-  * Select *Finish*
-  * Select *Yes* to reboot. (Don't forget the change in hostname when you login after reboot!)
----
-* Setup using raspi-config `sudo raspi-config`:
-  * From the main menu, under *System Options*.
-    * Select *Boot / Autologin*, then select *Console Autologin*.
-    * Select *Password* and change.
-    * Select *Network at boot*, then select *No* to Disable *Waiting for network on boot*.
-###### Select *localization Options*, and verify, or set:
-* Setup locals.
-  * Select *Finish*
-  * Select *Yes* to reboot. (Don't forget the change in password when you login after reboot!)
----
-* Setup using raspi-config `sudo raspi-config`:
+  * Select *Hostname*, then change to a name with **6 characters**.  Sorry for the restriction, it is in my roadmap to deal with bridges with hostnames of differnt sizes.
+* From the main menu, under *System Options*.
+  * Select *Boot / Autologin*, then select *Console Autologin*.
+  * Select *Password* and change.
+  * Select *Network at boot*, then select *No* to Disable *Waiting for network on boot*.
+* From the main menu, under *localization Options* verify, or set:
+  * Setup locals.
+    * De-select the default selection of *en_GB.UTF-8 UTF-8* (if you are'nt from Great Briton), and select your contrie's local.
+    * Select *Ok*, then tab to and select *Ok".
+    * Select the local you selected in the previous screen, then tab to and select *Ok".
   * Set timezone on the pi.
-  * Keyboard.
+  * Keyboard.  **Note**, there may be errors thrown here, that's fine for now, as we'll fix them later.
   * wifi location.
-###### Complete:
-Under the *Main Menu*, select *Finish*, and if you are asked to reboot, do so.
+* From the *Main Menu*, select *Finish*, and even if you are not asked to reboot, do so.
+---
+**NOTE**
+
+Do Not forget the fact that you changed the password and hostname of your *bridge*!
+
+---
+
+###### Additional Network Setup:
+In order for your *bridge* to keep the correct time, perform updates, or allow an alternate way to access the it, it is advisable you add more wireless networks into your *wpa_supplicant.conf*.  Examples include: allowable work networks, your home network, your hotspot, and even hotspots of your peer's phones (as allowed).
+- Open `/etc/wpa_supplicant/wpa_supplicant.conf`, and add the following:
+```bash
+network={
+    ssid="<SSID>"
+    psk="<passphrase/password>"
+    key_mgmt=WPA-PSK
+}
+```
+* One block for each network you want to add.
+  * Make sure to set the ssid and psk as needed.
+  * **Be sure to test each network.**
 
 ###### Pre-Requisites to software installation:
 ```bash
@@ -139,19 +153,6 @@ git clone https://github.com/lgbrownjr/ser2bt-bridge.git
 cd ser2bt-bridge/
 sudo ./upgrade basic
 ```
-###### Additional Network Setup:
-In order for your pi to keep the correct time, perform updates, or allow an alternate way to access the pi, it is advisable you add more networks into your *wpa_supplicant.conf*.  Examples include: allowable work networks, your home network, your hotspot, and even hotspots of your peer's phones (as allowed).
-- Open `/etc/wpa_supplicant/wpa_supplicant.conf`, and add the following:
-```bash
-network={
-    ssid="<SSID>"
-    psk="<passphrase/password>"
-    key_mgmt=WPA-PSK
-}
-```
-- One block for each network you want to add.
-  - Make sure to set the ssid and psk as needed.
-  - **Be sure to test each network.**
 ###### We're Done!
 If everything went as planned, your *raspberry pi zero w* should be acting like a bluetooth to serial bridge, allowing you to connect to a switches console port via bluetooth from your computer.
 - Now, reboot your *bridge*.
