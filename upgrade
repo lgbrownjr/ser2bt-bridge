@@ -2,7 +2,7 @@
 
 #color and other formatting defenitions:
 if [ -f /usr/local/lib/format.sh ]; then
-	source /usr/local/lib/format.sh > /dev/null 2>&1
+	source /home/pi/Projects/ser2bt-bridge/format.sh > /dev/null 2>&1
 	format_ena=flag=1 #True
 else
 	printf "\nFormat library is not installed, continuing without!\n"
@@ -462,11 +462,6 @@ done
 			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
 		else
 			cp ${project_folder}${file} ${main_lib_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
-			if ${file} == "format.sh" && ${format_ena_flag} -eq 0 ; then
-				sleep 2
-				source ${main_lib_folder}${file} > /dev/null 2>&1
-				format_ena=flag=1 #True
-			fi
 		fi
 	done
 
