@@ -3,8 +3,10 @@
 #color and other formatting defenitions:
 if [ -f /usr/local/lib/format.sh ]; then
 	source /usr/local/lib/format.sh > /dev/null 2>&1
+	format_ena=flag=1 #True
 else
 	printf "\nFormat library is not installed, continuing without!\n"
+	format_ena=flag=0 #False
 fi
 
 #Location settings:
@@ -344,9 +346,8 @@ num=0
 	fi
 #make directorys:
 #Make directory for serial port fix, then verify the config file is correct, if not, make corrections:
-	official_s_ver=$(printf ${serial_fix_file_content})
-	existing_s_ver=$(cat ${serial_fix_folder}${serial_fix_file})
 	printf "\n${nor}Check if the ${cyn}${serial_fix_folder} ${nor}directory exists:\n"
+	official_s_ver=$(printf ${serial_fix_file_content})
 	if [ ! -d ${serial_fix_folder} ]; then
 		printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
 		mkdir -p ${serial_fix_folder}
@@ -357,6 +358,7 @@ num=0
 			printf "${official_s_ver}" > "${serial_fix_folder}${serial_fix_file}" && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
 		else
 			printf " ${yel}${serial_fix_file} ${drk_grn}does${nor} exist, checking if updates are needed:\n"
+			existing_s_ver=$(cat ${serial_fix_folder}${serial_fix_file})
 			if [ "${existing_s_ver}" != "${official_s_ver}" ]; then
 				printf "  ${nor}There is a difference between what is supposed to be in the ${yel}fix${nor}, will clean and re-apply ${yel}fix${nor} related configurations:\n"
 				printf "${official_s_ver}" > "${serial_fix_folder}${serial_fix_file}" && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
@@ -460,6 +462,11 @@ done
 			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
 		else
 			cp ${project_folder}${file} ${main_lib_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
+			if ${file} == "format.sh" && ${format_ena_flag} -eq 0 ; then
+				sleep 2
+				source ${main_lib_folder}${file} > /dev/null 2>&1
+				format_ena=flag=1 #True
+			fi
 		fi
 	done
 
