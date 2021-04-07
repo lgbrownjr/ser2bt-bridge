@@ -255,7 +255,6 @@ fi
 #fi
 
 #Add required packadges:
-
 if [ ${upgrade_path} != "basic" ] ; then
 	printf "\n${nor}Check for the status of additional required packages:\n"
 	for package in "${package_install_list[@]}"; do
@@ -272,7 +271,7 @@ if [ ${upgrade_path} != "basic" ] ; then
 	printf "\n${nor}Check for the status of rquired Python 3 modules:\n"
 	printf " ${nor}Reading in list of already-installed modules...${nor}"
 	installed_modules=($(pip3 list)) && printf "${drk_grn}Done${nor}\n"
-	printf " ${nor}Checking required modules against list and installing anything missing...${nor}\n"
+	printf " ${nor}Checking required modules against list and installing anything missing:${nor}\n"
 	for module in "${python_req_list[@]}"; do
 		echo ${installed_modules[@]} | grep  ${module} > /dev/null 2>&1
 		if [ ${?} -eq 1 ]; then
@@ -283,6 +282,23 @@ if [ ${upgrade_path} != "basic" ] ; then
 		fi
 	done
 fi
+
+#Check for and correct locale while managing a headless pi:
+printf "\n${nor}Checking and correcting ${yel}locale ${nor}issues\n"
+set_local=$(grep LANG= /etc/default/locale | cut -f 2 -d "=")
+existing_local_ver=$(awk '/^LANGUAGE=/,/^LC_ALL=.*&/ { print }' "${etc_folder}default/locale")
+official_local_ver="LANGUAGE=${set_local}\nLC_ALL=${set_local}"
+diff --suppress-common-lines -W 160  -y <(printf "${existing_local_ver}") <(printf "${official_local_ver}") &>/dev/null
+if [ ${?} -eq 1 ]; then
+	printf " ${nor}Will clean and re-apply corected configurations..."  | fmt --goal=91 --width=${last_col}
+#	sed -i '/^LANGUAGE=,*/, /^LC_ALL=.*/d' "${etc_folder}default/locale"
+	update-locale LANG=${set_local} LANGUAGE=${set_local} LC_ALL=${set_local} > /dev/null 2>&1 && printf "${drk_grn}Done${nor}.\n" || printf "${drk_grn}Failed${nor}.\n"
+	printf " ${nor}Applying updates..."
+	printf "${official_local_ver}" >> "${etc_folder}$default/locale" && printf "${drk_grn}Done${nor}.\n" || printf "${drk_grn}Failed${nor}.\n"
+else
+	printf " ${nor}Both versions are the same, skipping...\n"
+fi
+
 
 #checking and adding modules as needed into /etc/modules:
 printf "\n${nor}Check to make sure the the relavent modules are loaded:\n"
