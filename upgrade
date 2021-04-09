@@ -106,7 +106,7 @@ last_col=$(tput cols)
 
 #Checks before begining:
 # Make sure the script is run with superuser privelages
-	##Check to make sure this is a rpi zero:
+##Check to make sure this is a rpi zero:
 if  grep -q "Zero" /proc/device-tree/model; then
 	#Starting script here:
 	printf "\n\n${nor}Beginning ${upgrade_path} upgrade of ${yel}ser2bt-bridge${nor}:\n\n"
@@ -129,6 +129,21 @@ if [[ "${#}" -lt 1 ]]; then
 	printf "\tfull -  Basic istallation of the serial to Bluetooth scripts, plus e-ink screen and battery support.\n\n"
 	exit 2
 fi
+
+spinner()
+{
+	local pid=$1
+	local delay=0.75
+	local spinstr='|/-\'
+	while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+		local temp=${spinstr#?}
+		printf " ${nor}[${cyn}%c${nor}]  " "$spinstr"
+		local spinstr=$temp${spinstr%"$temp"}
+		sleep $delay
+		printf "\b\b\b\b\b\b"
+	done
+	printf "    \b\b\b\b"
+}
 
 #assign the upgrade path to the first argument
 upgrade_path="${1}"
@@ -270,7 +285,11 @@ if [ ${upgrade_path} != "basic" ] ; then
 #Add Python dependencies from requirements.txt This is for non-basic installs/upgrades:
 	printf "\n${nor}Check for the status of rquired Python 3 modules:\n"
 	printf " ${nor}Reading in list of already-installed modules...${nor}"
-	installed_modules=($(pip3 list)) && printf "${drk_grn}Done${nor}\n"
+	pip3 list > pipo &
+	spinner $!
+	installed_modules=($(cat pipo))
+	rm pipo
+	printf "${drk_grn}Done${nor}\n"
 	printf " ${nor}Checking required modules against list and installing anything missing:${nor}\n"
 	for module in "${python_req_list[@]}"; do
 		echo ${installed_modules[@]} | grep  ${module} > /dev/null 2>&1
@@ -414,15 +433,17 @@ fi
 printf "\nChecking for and disabling un-needed services:\n"
 for file in "${disable_svc[@]}" ; do
 	status=$(systemctl is-enabled "${file}" 2>/dev/null)
-	if [ "${ups_type}" == "none" ] && [ "${file}" == "ser2net.service" ] && [ "${status}" == "disabled" ]; then
+#	status=$(systemctl status "${file}" 2>/dev/null | grep Loaded: | grep -o "disabled")
+	if [ "${ups_type}" == "none" ] && [ "${file}" == "ser2net.service" ] && [ "${status}" != "enabled" ]; then
 		printf " Status of ${yel}${file}${nor} is currently ${drk_red}${status}${nor}..."
 		systemctl enable "${file}"  2>/dev/null && printf " ${drk_grn}Enabled${nor}.\n" || printf " ${drk_red}Failed to enable${nor}.\n"
-	elif [ "${status}" != "disabled" ] && [ "${status}" != "static" ]; then
-		printf " Status of ${yel}${file}${nor} is currently ${drk_red}${status}${nor}..."
-		systemctl disable "${file}"  2>/dev/null && printf " ${drk_grn}Disabeled${nor}.\n" || printf " ${drk_red}Failed to disable${nor}.\n"
 	else
-		printf " Status of ${yel}${file}${nor} is currently ${drk_grn}${status}${nor}.\n"
-	fi
+		if [ "${status}" != "disabled" ] && [ "${status}" != "static" ]; then
+			printf " Status of ${yel}${file}${nor} is currently ${drk_red}${status}${nor}..."
+			systemctl disable "${file}"  2>/dev/null && printf " ${drk_grn}Disabeled${nor}.\n" || printf " ${drk_red}Failed to disable${nor}.\n"
+		else
+			printf " Status of ${yel}${file}${nor} is currently ${drk_grn}${status}${nor}.\n"
+	fi	fi
 done
 
 #Build support folde(s) and copy files to them:
