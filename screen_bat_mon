@@ -2,9 +2,8 @@
 #    I saved this as 'screen_backtick_battery'
 # 2018-12-29: generate a number for a backtick command in screen, just
 # the current battery percentage.
-source /usr/local/lib/format.sh
 if [ -e /tmp/bat ]; then
 	grep -Eo [0-9]+ /tmp/bat
 else
-	printf "${yel}Null"
+	printf "Null"
 fi
