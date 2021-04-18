@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# -*- coding:utf-8 -*-
+#-*- coding:utf-8 -*-
 
 #import modules
 import os #hostname
@@ -111,9 +111,10 @@ def read_bat_capacity(ups_type, address, bus):
                 level_base = ((voltage - range[0]) / (range[1] - range[0])) * (range[3] - range[2])
                 battery_level = level_base + range[2]
     else:
-        battery_level = "Err"
+        battery_level = 999
         charge = False
-        voltage = "Err"
+        error=True
+        voltage = 999
     return [int(battery_level), voltage, charge]
 #End of Function defenition:
 ######################################################################################################
@@ -132,6 +133,14 @@ try:
         bat_file = open(bat_log_dir+bat_log_file,'w')
         bat_file.write(str(bat_lvl))
         bat_file.close()
+        if int(bat_cap) >=30 and int(bat_cap) <=100:
+            sleep_time = 60
+        elif int(bat_cap) >=15 and int(bat_cap) <=29:
+            sleep_time = 30
+        elif int(bat_cap) >=0 and int(bat_cap) <=14:
+            sleep_time = 10
+        print(int(sleep_time))
+        print(str(bat_cap))
         time.sleep(sleep_time)
 
     #if the bat_cap is less that min_bat_cap, then bail out of the loop, and follow the remaining code to shutdown.

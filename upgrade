@@ -130,21 +130,6 @@ if [[ "${#}" -lt 1 ]]; then
 	exit 2
 fi
 
-spinner()
-{
-	local pid=$1
-	local delay=0.75
-	local spinstr='|/-\'
-	while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-		local temp=${spinstr#?}
-		printf " ${nor}[${cyn}%c${nor}]  " "$spinstr"
-		local spinstr=$temp${spinstr%"$temp"}
-		sleep $delay
-		printf "\b\b\b\b\b\b"
-	done
-	printf "    \b\b\b\b"
-}
-
 #assign the upgrade path to the first argument
 upgrade_path="${1}"
 shift
@@ -436,11 +421,11 @@ for file in "${disable_svc[@]}" ; do
 #	status=$(systemctl status "${file}" 2>/dev/null | grep Loaded: | grep -o "disabled")
 	if [ "${ups_type}" == "none" ] && [ "${file}" == "ser2net.service" ] && [ "${status}" != "enabled" ]; then
 		printf " Status of ${yel}${file}${nor} is currently ${drk_red}${status}${nor}..."
-		systemctl enable "${file}"  2>/dev/null && printf " ${drk_grn}Enabled${nor}.\n" || printf " ${drk_red}Failed to enable${nor}.\n"
+		systemctl enable "${file}"  2>/dev/null && printf "${drk_grn}Enabled${nor}.\n" || printf "${drk_red}Failed to enable${nor}.\n"
 	else
-		if [ "${status}" != "disabled" ] && [ "${status}" != "static" ]; then
+		if [ "${ups_type}" != "none" ] && [ "${status}" != "disabled" ] && [ "${status}" != "static" ]; then
 			printf " Status of ${yel}${file}${nor} is currently ${drk_red}${status}${nor}..."
-			systemctl disable "${file}"  2>/dev/null && printf " ${drk_grn}Disabeled${nor}.\n" || printf " ${drk_red}Failed to disable${nor}.\n"
+			systemctl disable "${file}"  2>/dev/null && printf "${drk_grn}Disabeled${nor}.\n" || printf "${drk_red}Failed to disable${nor}.\n"
 		else
 			printf " Status of ${yel}${file}${nor} is currently ${drk_grn}${status}${nor}.\n"
 	fi	fi
@@ -518,7 +503,7 @@ fi
 		if cmp --silent "${etc_folder}${file}" "${project_folder}${file}" ; then
 			printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
 		else
-			cp ${project_folder}${file} ${etc_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
+			cp ${project_folder}${file} ${etc_folder} && printf "${yel}${file} ${nor}copied.\n" || break
 		fi
 	done
 
