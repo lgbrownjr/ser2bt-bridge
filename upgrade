@@ -130,21 +130,6 @@ if [[ "${#}" -lt 1 ]]; then
 	exit 2
 fi
 
-spinner()
-{
-	local pid=$1
-	local delay=0.75
-	local spinstr='|/-\'
-	while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-		local temp=${spinstr#?}
-		printf " ${nor}[${cyn}%c${nor}]  " "$spinstr"
-		local spinstr=$temp${spinstr%"$temp"}
-		sleep $delay
-		printf "\b\b\b\b\b\b"
-	done
-	printf "    \b\b\b\b"
-}
-
 #assign the upgrade path to the first argument
 upgrade_path="${1}"
 shift
@@ -438,7 +423,7 @@ for file in "${disable_svc[@]}" ; do
 		printf " Status of ${yel}${file}${nor} is currently ${drk_red}${status}${nor}..."
 		systemctl enable "${file}"  2>/dev/null && printf "${drk_grn}Enabled${nor}.\n" || printf "${drk_red}Failed to enable${nor}.\n"
 	else
-		if [ "${status}" != "disabled" ] && [ "${status}" != "static" ]; then
+		if [ "${ups_type}" != "none" ] && [ "${status}" != "disabled" ] && [ "${status}" != "static" ]; then
 			printf " Status of ${yel}${file}${nor} is currently ${drk_red}${status}${nor}..."
 			systemctl disable "${file}"  2>/dev/null && printf "${drk_grn}Disabeled${nor}.\n" || printf "${drk_red}Failed to disable${nor}.\n"
 		else

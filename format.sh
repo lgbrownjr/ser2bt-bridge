@@ -18,6 +18,8 @@ nor=$'\e[01;37m'
 
 #Other attributes:
 space=" "
+no_curs=$'\e[?25l'
+curs=$'\e[?25h'
 
 #############################################################################################
 #Formatting Functions:
@@ -26,17 +28,29 @@ space=" "
 #And the second is the string itself:
 #Usage:
 #center (4, "${grn}Marry ${nor}Had a ${cyn}Little ${nor}Lamb")  Where the 4 is equal to the mumber of color changes withing the string.
-function center (){
+function center () {
   local ctrl_count="${1}"
   local str="${2}"
   local color_cost=8 #Cost of the extra characters to drscribe what color to use for a particular word
   local last_col=$(tput -T xterm cols) #Describes width of the terminal at the point where this command was executed.
-#  local last_col=100 #Describes width of the terminal at the point where this command was executed.
-#  echo $last_col
- # tput cols
   let ctrl_cost=(${ctrl_count}*${color_cost}) #Computes the total cost of all of the formatting within  the string.
   let real_str_len=(${#str}+${ctrl_cost})
   str=$(printf "%*s\n" $(((${real_str_len}+${last_col})/2)) "${str}")
-
   echo "$str"
 }
+
+function spinner(){
+	local pid=$1
+	local delay=0.25
+	local spinstr='|/-\'
+	printf "${no_curs}"
+	while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+		local temp=${spinstr#?}
+		printf "${nor}(${cyn}%c${nor})" "$spinstr"
+		local spinstr=$temp${spinstr%"$temp"}
+		sleep $delay
+		printf "\b\b\b"
+	done
+	printf "    \b\b\b${curs}"
+}
+
