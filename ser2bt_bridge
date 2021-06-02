@@ -61,31 +61,33 @@ printf "\n${nor}Checking to make sure we are connected to at least one serial de
 
 #Check for USB ports:
 z=${max_ports}
-printf " ${nor}Checking to see what ${cyn}${usb_port}${nor}'s are available:\n"
+printf " ${nor}Checking to see what ${cyn}${usb_port}${nor}'s are available:"
 for (( a=0; a<=${max_ports}-1; a++ )); do
 	port="${usb_port}${a}"
 	if [[ ! -e ${port} ]]; then
 		let z--
 	else
-		printf "  ${cyn}${port}${nor} is ${drk_grn}available${nor}...\n"
+		printf "   \n${cyn}${port}${nor} is ${drk_grn}available${nor}...\n"
 		wire_port+=(${port})
 	fi
 done
+printf " ${drk_grn}Done\n"
 
 #Check for ACM ports:
 z=${max_ports}
-printf " ${nor}Checking to see what ${cyn}${acm_port}${nor}'s are available:\n"
+printf " ${nor}Checking to see what ${cyn}${acm_port}${nor}'s are available:"
 for (( a=0; a<=${max_ports}-1; a++ )); do
 	port="${acm_port}${a}"
 	if [[ ! -e ${port} ]]; then
 		let z--
 	else
-		printf "  ${cyn}${port}${nor} is ${drk_grn}available${nor}...\n"
+		printf "   \n${cyn}${port}${nor} is ${drk_grn}available${nor}...\n"
 		wire_port+=(${port})
 	fi
 done
-resize > /dev/null 2>&1
-printf "\n"
+printf " ${drk_grn}Done\n"
+
+#Create screen sessions based on the USB and ACM Ports found from above:
 count=0
 wire_count=1
 for serial_port in ${wire_port[@]}; do
@@ -94,8 +96,12 @@ for serial_port in ${wire_port[@]}; do
 	let count++
 	let wire_count++
 done
-
 session_count=$(screen -r | grep Detached | cut -d "." -f 2 | cut -f 1 | wc -w)
+
+#resize the terminal for better vewing
+resize > /dev/null 2>&1
+
+#Determine what to do on exit - if we are connected to more than one serial device, connected to 1 serial device, or none at all:
 if [[ ${session_count} > 1 ]]; then
 	screen -r | grep Detached | cut -d "." -f 2 | cut -f 1
 	printf "\nUse ${yel}screen -r${mag} switch_name${nor} (listed above).\n"

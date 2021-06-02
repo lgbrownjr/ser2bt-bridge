@@ -52,7 +52,10 @@ bind I login on
 bind O login off
 bind } history
 
+#Extra functionality -obtain information for the status bars:
 backtick 1 30 90 screen_bat_mon
+backtick 2 120 300 screen_get_baud
+
 # An example of a "screen scraper" which will launch urlview on the current
 # screen window
 #
@@ -85,7 +88,7 @@ hardstatus on
 #
 #hardstatus lastline "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<"
 
-hardstatus	alwaysfirstline
+#hardstatus	alwaysfirstline
 
 # set these terminals up to be 'optimal' instead of vt100
 termcapinfo xterm*|linux*|rxvt*|Eterm* OP
@@ -127,5 +130,5 @@ bindkey "^[[6~" eval 'copy' 'stuff ^F' # PgDown | Enter copy/scrollback mode and
 # SCREEN LAYOUT
 # ------------------------------------------------------------------------------
 hardstatus alwaysfirstline "%{= kb}[%{= kr}$USER%{+ kw}@%{+ ky}%H%{+ kb}][%=%{= kK}(%{+ km}%n %{+ kg}%t%{+ kK})%=%{+ kb}][%{+ ky}%m%{+ kw}/%{-}%d%{+ kw}/%{-}%Y %{+ kc}%c%{+ kb}]"
-caption always "%{+ Bk}[%{+ Wk}Press: %{+ Yk}<CTRL>%{-} +%{+ Yk} a%{-}, then%{+ Yk} \%{-} to exit, or%{+ Yk} d%{-} to suspend session.%{+ Bk}][%=][%{+ Wk}Battery: %{+ Gk}%1`%:%{+ Wk}%%%{+ Bk}]"
+caption always "%{+ Bk}[%{+ Wk}Baud Rate: %{+ Gk}%2`%:%{+ Bk}][%=][%{+ Wk}Press: %{+ Yk}<CTRL>%{-} +%{+ Yk} a%{-}, then%{+ Yk} \%{-} to %{+ Mk}exit%{-}, or%{+ Yk} d%{-} to %{+ Mk}suspend%{-} session.%{+ Bk}][%=][%{+ Wk}Battery: %{+ Gk}%1`%:%{+ Wk}%%%{+ Bk}]"
 #idle 300 exec termsaver starwars
