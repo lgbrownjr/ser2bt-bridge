@@ -1,0 +1,5 @@
+#! /bin/bash
+#    I saved this as 'screen_backtick_battery'
+# 2021-06-02: get the rfcomm0 serial interface baud rate for a backtick command in the ser2bt_bridge screen config.
+stty < /dev/rfcomm0 | grep speed | cut -d ";" -f 1 | grep -o "[0-9]\+"
+exit 0
