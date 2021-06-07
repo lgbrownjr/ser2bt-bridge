@@ -109,7 +109,7 @@ Reboot your Pi when the upgrade is complete.
   * Select *Network at boot*, then select *No* to Disable *Waiting for network on boot*.
 * From the main menu, under *localization Options* verify, or set:
   * Setup locals.
-    * De-select the default selection of *en_GB.UTF-8 UTF-8* (if you are'nt from Great Briton), and select your contrie's local.
+    * De-select the default selection of *en_GB.UTF-8 UTF-8* (if you are'nt from Great Britain), and select your contrie's local.
     * Select *Ok*, then tab to and select *Ok".
     * Select the local you selected in the previous screen, then tab to and select *Ok".
   * Set timezone on the pi.
@@ -151,7 +151,7 @@ git clone https://github.com/lgbrownjr/ser2bt-bridge.git
 - Run the upgrade tool:
 ```bash
 cd ser2bt-bridge/
-git checkout v1.0.0
+git checkout development
 sudo ./upgrade basic
 ```
 ###### We're Done!
