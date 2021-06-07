@@ -7,3 +7,4 @@ if [ -e /tmp/bat ]; then
 else
 	printf "Null"
 fi
+exit 0

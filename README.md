@@ -109,7 +109,7 @@ Reboot your Pi when the upgrade is complete.
   * Select *Network at boot*, then select *No* to Disable *Waiting for network on boot*.
 * From the main menu, under *localization Options* verify, or set:
   * Setup locals.
-    * De-select the default selection of *en_GB.UTF-8 UTF-8* (if you are'nt from Great Briton), and select your contrie's local.
+    * De-select the default selection of *en_GB.UTF-8 UTF-8* (if you are'nt from Great Britain), and select your contrie's local.
     * Select *Ok*, then tab to and select *Ok".
     * Select the local you selected in the previous screen, then tab to and select *Ok".
   * Set timezone on the pi.
@@ -260,4 +260,4 @@ Features I want to add to this project:
 ---
 
 ## Known issues:
-- [ ] For some reason, while connected via bluetooth, one cannot update the OS, or githib repositories.  A workaround, is to open a `screen` session in the bridge, then perform any update taskes.  Another workaround would be to ssh into it instead of using bluetoothe.
+- [ ] For some reason, while connected via bluetooth, one cannot update the OS, or githib repositories.  A workaround, is to open a `screen` session in the bridge, then perform any update taskes.  Another workaround would be to ssh into it instead of using bluetooth.

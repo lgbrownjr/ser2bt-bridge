@@ -39,7 +39,7 @@ disable_svc=("keyboard-setup.service" "dphys-swapfile.service" "triggerhappy.ser
 "apt-daily-upgrade.service" "apt-daily-upgrade.timer" "rpi-eeprom-update.service" \
 "ser2net.service")
 base_package_install_list=("screen" "git" "minicom" "tio" "rfkill" "dnsutils" "xterm" "telnet" "telnetd" "ser2net" "spi-tools")
-base_bin_files=(ser2bt_bridge screen_bat_mon)
+base_bin_files=(ser2bt_bridge screen_bat_mon screen_get_baud)
 #enhanc_bin_files=(ser2bt_status init_scr shutdown_scr)
 wavesh_bin_files=(ser2bt_status init_scr shutdown_scr)
 full_bin_files=( "${base_bin_files[@]}")
