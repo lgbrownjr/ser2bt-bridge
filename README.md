@@ -151,7 +151,6 @@ git clone https://github.com/lgbrownjr/ser2bt-bridge.git
 - Run the upgrade tool:
 ```bash
 cd ser2bt-bridge/
-git checkout v1.1.0
 sudo ./upgrade basic
 ```
 ###### We're Done!
