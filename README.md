@@ -108,10 +108,10 @@ Reboot your Pi when the upgrade is complete.
   * Select *Password* and change.
   * Select *Network at boot*, then select *No* to Disable *Waiting for network on boot*.
 * From the main menu, under *localization Options* verify, or set:
-  * Setup locals.
-    * De-select the default selection of *en_GB.UTF-8 UTF-8* (if you are'nt from Great Britain), and select your contrie's local.
-    * Select *Ok*, then tab to and select *Ok".
-    * Select the local you selected in the previous screen, then tab to and select *Ok".
+  * Setup locales.
+    * De-select the default selection of *en_GB.UTF-8 UTF-8* (if you are'nt from Great Britain), and select your country's locale.
+    * Select *Ok*, then tab to and select *Ok* again.
+    * Select the locale you selected in the previous screen, then tab to and select *Ok*.
   * Set timezone on the pi.
   * Keyboard.  **Note**, there may be errors thrown here, that's fine for now, as we'll fix them later.
   * wifi location.
