@@ -57,7 +57,7 @@ You will need:
 - insert the SD card into a different computer to perform the first few steps:
   - Download link is [here](https://www.raspberrypi.org/downloads/raspberry-pi-os/).
   - Follow Raspbian’s directions [here](https://www.raspberrypi.org/documentation/installation/installing-images/README.md).
-- Eject and re-insert the SD card, and use your PC's file explorer to open the SD card - should be called *boot*.
+- Eject and re-insert the SD card, and use your PC's file explorer to open the SD card which should be called *boot*.
   - Add the following to the end of the first line in the `/boot/cmdline.txt` file:
     - modules-load=dwc2,g_serial
   - Save and close *cmdline.txt*
@@ -119,7 +119,7 @@ Reboot your Pi when the upgrade is complete.
 ---
 **NOTE**
 
-Do Not forget the fact that you changed the password and hostname of your *bridge*!
+Do Not forget that you just changed the password and hostname of your *bridge*!
 
 ---
 
@@ -154,7 +154,7 @@ cd ser2bt-bridge/
 sudo ./upgrade basic
 ```
 ###### We're Done!
-If everything went as planned, your *raspberry pi zero w* should be acting like a bluetooth to serial bridge, allowing you to connect to a switches console port via bluetooth from your computer.
+If everything went as planned, your *raspberry pi zero w* should be acting like a bluetooth to serial bridge, allowing you to connect to a switche's console port via bluetooth from your computer.
 - Now, reboot your *bridge* and skip down to How to use:
 
 ### Full setup:
