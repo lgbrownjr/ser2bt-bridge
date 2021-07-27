@@ -17,6 +17,7 @@ dev_folder="/dev/"
 boot="/boot/"
 bt_folder="bluetooth/"
 project_folder="${home}Projects/ser2bt-bridge/"
+project_service_folder="${project_folder}services/"
 support_folder="${home}Projects/support/"
 logging_folder="${home}console_logs/"
 bin_folder="/usr/local/bin/"
@@ -514,7 +515,7 @@ fi
 			printf " ${nor}Both versions of ${yel}${svc_file} ${nor}are the same, Skipping...\n"
 			let svc_count++
 		else
-			cp ${project_folder}${svc_file} ${etc_service_folder} && printf " ${yel}${svc_file} ${nor}copied.\n" || break
+			cp ${project_service_folder}${svc_file} ${etc_service_folder} && printf " ${yel}${svc_file} ${nor}copied.\n" || break
 			systemctl disable ${svc_file} >  /dev/null 2>&1 && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}disabeled.\n" || break
 			systemctl enable ${svc_file} > /dev/null 2>&1 && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}enabeled.\n" || break
 		fi
