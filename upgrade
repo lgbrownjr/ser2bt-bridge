@@ -17,6 +17,7 @@ dev_folder="/dev/"
 boot="/boot/"
 bt_folder="bluetooth/"
 project_folder="${home}Projects/ser2bt-bridge/"
+project_service_folder="${project_folder}services/"
 support_folder="${home}Projects/support/"
 logging_folder="${home}console_logs/"
 bin_folder="/usr/local/bin/"
@@ -507,14 +508,14 @@ fi
 		fi
 	done
 
-	printf "\nCopy service files to the ${cyn}${etc_service_folder} ${nor}directory, then disable and enable copied services:\n" | fmt --goal=91 --width=${last_col}
+	printf "\nCoping service files to the ${cyn}${etc_service_folder} ${nor}directory, then disable and enable copied services:\n" | fmt --goal=91 --width=${last_col}
 	svc_count=0
 	for svc_file in ${service_files[@]} ; do
-		if cmp --silent "${etc_service_folder}${svc_file}" "${project_folder}${svc_file}" ; then
+		if cmp --silent "${etc_service_folder}${svc_file}" "${project_service_folder}${svc_file}" ; then
 			printf " ${nor}Both versions of ${yel}${svc_file} ${nor}are the same, Skipping...\n"
 			let svc_count++
 		else
-			cp ${project_folder}${svc_file} ${etc_service_folder} && printf " ${yel}${svc_file} ${nor}copied.\n" || break
+			cp ${project_service_folder}${svc_file} ${etc_service_folder} && printf " ${yel}${svc_file} ${nor}copied.\n" || break
 			systemctl disable ${svc_file} >  /dev/null 2>&1 && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}disabeled.\n" || break
 			systemctl enable ${svc_file} > /dev/null 2>&1 && printf " ${nor}${svc_file} ${drk_grn}successfully ${nor}enabeled.\n" || break
 		fi

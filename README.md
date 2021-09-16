@@ -57,7 +57,7 @@ You will need:
 - insert the SD card into a different computer to perform the first few steps:
   - Download link is [here](https://www.raspberrypi.org/downloads/raspberry-pi-os/).
   - Follow Raspbian’s directions [here](https://www.raspberrypi.org/documentation/installation/installing-images/README.md).
-- Eject and re-insert the SD card, and use your PC's file explorer to open the SD card - should be called *boot*.
+- Eject and re-insert the SD card, and use your PC's file explorer to open the SD card which should be called *boot*.
   - Add the following to the end of the first line in the `/boot/cmdline.txt` file:
     - modules-load=dwc2,g_serial
   - Save and close *cmdline.txt*
@@ -119,7 +119,7 @@ Reboot your Pi when the upgrade is complete.
 ---
 **NOTE**
 
-Do Not forget the fact that you changed the password and hostname of your *bridge*!
+Do Not forget that you just changed the password and hostname of your *bridge*!
 
 ---
 
@@ -154,14 +154,9 @@ cd ser2bt-bridge/
 sudo ./upgrade basic
 ```
 ###### We're Done!
-If everything went as planned, your *raspberry pi zero w* should be acting like a bluetooth to serial bridge, allowing you to connect to a switches console port via bluetooth from your computer.
-- Now, reboot your *bridge*.
-- After the raspberry pi has rebooted, use your PC/laptop to pair with it.
-- Look for a device advertising your pi's *hostname*
-- The Pi should advertise that it supports serial communications, so you'll be able to pair it with your PC's serial ports.
-  - Keep in mind, that no pin will be requested.  Your PC should just pair with the pi.
-  - Under Widows 10, after pairing, select *More Bluetooth Settings*, under *Related settings*, on the right side of the settings window.
-- Once that's done, go ahead and open your favorite terminal program, and point it to the com/ttyUSBx/tty/ACMx port, and set it up to connect at 115200 bps, n/8/1, xterm.
+If everything went as planned, your *raspberry pi zero w* should be acting like a bluetooth to serial bridge, allowing you to connect to a switche's console port via bluetooth from your computer.
+- Now, reboot your *bridge* and skip down to How to use:
+
 ### Full setup:
 #### Installation of the *UPS* & *e-ink screen*:
 The addition of am e-paper screen and ups backup will allow you to continue providing power to the Pi while not being plugged into a power source, and to easily tell the status of the bridge (Pi) without having to login to check.
@@ -178,7 +173,7 @@ Coming soon!
 ![Raspberry Pi Zero usb port location and definition:](/readme_md_images/rpi0_diagram_port.png)
 ### Power on the *bridge*:
 1. Different ways, depending on your setup:
-  1. For the basic *bridge* option, Plug the power into the *bridges* power port.  See 
+  1. For the basic *bridge* option, Plug the power into it's power port.  See the diagram here:
   2. If your version of the *bridge* has a UPS, then slide the switch to the on position.
   3. To charge the UPS, insert the power cord into the UPS's power input plug, do not power the pi using the pi's power port.
   4. It will take up to 30 seconds to boot to a point where a *master* can connect to it via bluetooth.

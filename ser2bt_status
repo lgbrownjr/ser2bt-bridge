@@ -246,6 +246,7 @@ try:
     draw = ImageDraw.Draw(image)
 
     epd.init(epd.FULL_UPDATE)
+
     #Draw the non variablers to the to the screen
     draw.text((0, 0), host_name, font = f_top_line_font16, fill = 0)
     draw.text((50, 0), 'Bat:', font = f_top_line_font16, fill = 0)
@@ -259,14 +260,10 @@ try:
     draw.text((50, 80), 'BT', font = f_var_font18, fill = 0)
     draw.text((153, 80), 'ser2net', font = f_var_font18, fill = 0)
     draw.text((0, 100), 'TTY:', font = f_title_font18, fill = 0)
-
     epd.displayPartBaseImage(epd.getbuffer(image)) #This is the command to actually place the above to the e-ink display.
+    epd.init(epd.PART_UPDATE) #Initialize the partial screen
 
-    #This following coommandis just enough to get to the first iteration of the loop without dumping out and powering down.
     while True:
-        # Grab initial information
-        #This part grabs the active network interface.
-        epd.init(epd.PART_UPDATE) #Initialize the partial screen
         try:
             draw.rectangle((82, 0, 120, 16), fill=255)
             draw.text((82, 0), bat_lvl(), font=f_top_line_font16, fill=0)
@@ -302,7 +299,7 @@ try:
             bt_serial_port, bt_serial_status_pos, bt_serial_connect, bt_serial_status = cap_bt_serial_port()
             total_serial_lines = int(usb_serial_status) + int(acm_serial_status)
             # first, if nothing is connected, then just say that:
-            #IF there are no tty connections, then display full_tty_status variable (saying nothing is attached).
+            #If there are no tty connections, then display full_tty_status variable (saying nothing is attached).
             if bt_serial_connect is False and usb_serial_connect is False and acm_serial_connect is False:
                 full_tty_status = "No tty Connections"
                 if old_full_tty_status != full_tty_status:
@@ -310,25 +307,20 @@ try:
                     draw.rectangle((50, 99, 245, 122), fill=255)
                     draw.text((50, 100), full_tty_status, font=f_var_font18, fill=0)
                     old_total_serial_lines = 'XX'
-#                    old_bt_serial_port = 'XX'
             else: #Otherwise, display the inidividual state of the ttys.
                 full_tty_status = ""
                 old_full_tty_status = full_tty_status
-#                if old_bt_serial_port != bt_serial_port:
                 draw.rectangle((50, 99, 152, 122), fill=255)
                 draw.text((50, 100), bt_ser_short_label + ' In:', font=f_var_font18, fill=0)
                 draw.text((bt_serial_status_pos, 100), bt_serial_status, font=f_var_font18, fill=0)
-#                old_bt_serial_port = bt_serial_port
                 if old_total_serial_lines != total_serial_lines:
                     draw.rectangle((153, 99, 245, 122), fill=255)
                     draw.text((153, 100), 'Serial Out:', font=f_var_font18, fill=0)
                     draw.text((usb_serial_status_pos, 100),str(total_serial_lines), font=f_var_font18, fill=0)
                     old_total_serial_lines = total_serial_lines
 
-            #This block draws the rectangles, then places the refreshable text/variables into them.
-
             epd.displayPartial(epd.getbuffer(image)) #update the screeen to actually print the above to the e-ink display.
-            epd.sleep()
+#            epd.sleep()
 
         except IOError as e:
             syslog.syslog(syslog.LOG_INFO, 'traceback.format_exc():\n%s',traceback.format_exc())
