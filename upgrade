@@ -508,10 +508,10 @@ fi
 		fi
 	done
 
-	printf "\nCopy service files to the ${cyn}${etc_service_folder} ${nor}directory, then disable and enable copied services:\n" | fmt --goal=91 --width=${last_col}
+	printf "\nCoping service files to the ${cyn}${etc_service_folder} ${nor}directory, then disable and enable copied services:\n" | fmt --goal=91 --width=${last_col}
 	svc_count=0
 	for svc_file in ${service_files[@]} ; do
-		if cmp --silent "${etc_service_folder}${svc_file}" "${project_folder}${svc_file}" ; then
+		if cmp --silent "${etc_service_folder}${svc_file}" "${project_service_folder}${svc_file}" ; then
 			printf " ${nor}Both versions of ${yel}${svc_file} ${nor}are the same, Skipping...\n"
 			let svc_count++
 		else
