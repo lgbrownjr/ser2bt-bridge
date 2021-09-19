@@ -188,7 +188,13 @@ printf "\n${nor}Determining installed hardware:${nor}\n"
 		e_ink="True"
 		printf " ${nor}It looks as if you have a ${yel}e-ink${nor} display\n"
 	else
-		e_ink="False"
+		result=$(spi-config -q -d ${dev_folder}${e_ink_dev} 2> /dev/null | grep "speed=125000000")
+		if [ ${?} -eq 0 ]; then
+			e_ink="True"
+			printf " ${nor}It looks as if you have a ${yel}e-ink${nor} display\n"
+		else
+			e_ink="False"
+		fi
 	fi
 #If this is not a basic install, check to see which ups is installed.
 	result=$(i2cdetect -y 1 0x75 0x75 2> /dev/null | grep -Eo "UU|75")
@@ -269,8 +275,8 @@ if [ ${upgrade_path} != "basic" ] ; then
 	done
 
 #Add Python dependencies from requirements.txt This is for non-basic installs/upgrades:
-	printf "\n${nor}Check for the status of rquired Python 3 modules:\n"
-	printf " ${nor}Reading in list of already-installed modules...${nor}"
+	printf "\n${nor}Check for the status of required Python 3 modules:\n"
+	printf " ${nor}Reading in the list of already-installed modules...${nor}"
 	pip3 list > pipo &
 	spinner $!
 	installed_modules=($(cat pipo))
@@ -296,7 +302,6 @@ official_local_ver="LANGUAGE=${set_local}\nLC_ALL=${set_local}"
 diff --suppress-common-lines -W 160  -y <(printf "${existing_local_ver}") <(printf "${official_local_ver}") &>/dev/null
 if [ ${?} -eq 1 ]; then
 	printf " ${nor}Will clean and re-apply corected configurations..."  | fmt --goal=91 --width=${last_col}
-#	sed -i '/^LANGUAGE=,*/, /^LC_ALL=.*/d' "${etc_folder}default/locale"
 	update-locale LANG=${set_local} LANGUAGE=${set_local} LC_ALL=${set_local} > /dev/null 2>&1 && printf "${drk_grn}Done${nor}.\n" || printf "${drk_grn}Failed${nor}.\n"
 	printf " ${nor}Applying updates..."
 	printf "${official_local_ver}" >> "${etc_folder}$default/locale" && printf "${drk_grn}Done${nor}.\n" || printf "${drk_grn}Failed${nor}.\n"
@@ -432,7 +437,7 @@ for file in "${disable_svc[@]}" ; do
 	fi	fi
 done
 
-#Build support folde(s) and copy files to them:
+#Build support folder(s) and copy files to them:
 	printf "\n${nor}Check to make sure the ${cyn}${support_folder} ${nor}directories exist:\n"
 	if [ ! -d ${support_folder} ]; then
 		printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
@@ -475,7 +480,7 @@ done
 				svc_5_bin_flag=1
 				bin_flag=1
 			fi
-			cp ${project_folder}${file} ${bin_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
+			cp ${project_folder}${file} ${bin_folder} && printf " ${yel}${file} ${nor}copied.\n" || printf " ${yel}${file} ${nor}not copied.\n"
 		fi
 	done
 
