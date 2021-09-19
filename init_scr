@@ -6,6 +6,7 @@ from waveshare_epd import epd2in13_V2
 
 # Variable decleration
 epd = epd2in13_V2.EPD()
+screen_rotate=180
 roboto_font_dir='/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/'
 f_title_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 18)
 f_title_font24 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 24)
@@ -17,11 +18,12 @@ epd.Clear(0xFF)
 #Draw out the boot screen
 boot_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
 boot_draw = ImageDraw.Draw(boot_image)
+
 boot_draw.text((77, 20), 'Loading ', font=f_title_font24, fill=0)
 boot_draw.text((22, 50), 'Serial to bluetooth bridge  ', font=f_title_font18, fill=0)
 #Display the screen
-epd.display(epd.getbuffer(boot_image))
+epd.display(epd.getbuffer(boot_image.rotate(screen_rotate)))
 
 #Exit:
-#epd2in13_V2.epdconfig.module_exit()
+epd2in13_V2.epdconfig.module_exit()
 exit()

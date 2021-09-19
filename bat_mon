@@ -137,7 +137,9 @@ try:
             sleep_time = 60
         elif int(bat_cap) >=15 and int(bat_cap) <=29:
             sleep_time = 30
-        elif int(bat_cap) >=0 and int(bat_cap) <=14:
+        elif int(bat_cap) >=8 and int(bat_cap) <=14:
+            sleep_time = 15
+        elif int(bat_cap) >=0 and int(bat_cap) <=7:
             sleep_time = 10
         print(int(sleep_time))
         print(str(bat_cap))

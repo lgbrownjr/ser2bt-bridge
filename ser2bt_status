@@ -26,6 +26,7 @@ except:
 sys.path.append(r'lib')
 epd = epd2in13_V2.EPD()
 host_name=os.uname()[1]  # define host_name
+screen_rotate=180
 dev_dir='/dev/'
 bt_ser_short_label='BT'
 bt_ser_label='rfcomm0'
@@ -59,6 +60,10 @@ f_top_line_font16 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 16)
 #Setup logging:  Work in progress
 syslog.openlog(ident="ser2bt-bridge",logoption=syslog.LOG_PID, facility=syslog.LOG_LOCAL7)
 syslog.syslog(syslog.LOG_INFO, 'ser2bt_status was started')
+
+#Put the display into sleep
+epd.init(epd.FULL_UPDATE)
+epd.sleep()
 
 #Define the functions:
 ###################################################################################################################
@@ -246,6 +251,8 @@ try:
     draw = ImageDraw.Draw(image)
 
     epd.init(epd.FULL_UPDATE)
+    epd.Clear(0xFF)
+#    image = image.transpose(Image.ROTATE_180)
 
     #Draw the non variablers to the to the screen
     draw.text((0, 0), host_name, font = f_top_line_font16, fill = 0)
@@ -260,9 +267,9 @@ try:
     draw.text((50, 80), 'BT', font = f_var_font18, fill = 0)
     draw.text((153, 80), 'ser2net', font = f_var_font18, fill = 0)
     draw.text((0, 100), 'TTY:', font = f_title_font18, fill = 0)
-    epd.displayPartBaseImage(epd.getbuffer(image)) #This is the command to actually place the above to the e-ink display.
-    epd.init(epd.PART_UPDATE) #Initialize the partial screen
-
+#    epd.displayPartBaseImage(epd.getbuffer(image)) #This is the command to actually place the above to the e-ink display.
+    epd.sleep()
+    
     while True:
         try:
             draw.rectangle((82, 0, 120, 16), fill=255)
@@ -319,8 +326,9 @@ try:
                     draw.text((usb_serial_status_pos, 100),str(total_serial_lines), font=f_var_font18, fill=0)
                     old_total_serial_lines = total_serial_lines
 
-            epd.displayPartial(epd.getbuffer(image)) #update the screeen to actually print the above to the e-ink display.
-#            epd.sleep()
+            epd.init(epd.PART_UPDATE)
+#            image = image.transpose(Image.ROTATE_180)
+            epd.displayPartial(epd.getbuffer(image.rotate(screen_rotate))) #update the screeen to actually print the above to the e-ink display.
 
         except IOError as e:
             syslog.syslog(syslog.LOG_INFO, 'traceback.format_exc():\n%s',traceback.format_exc())
@@ -329,7 +337,9 @@ try:
             exit()
 
         #sleep, then resume.
+        epd.sleep()
         time.sleep(end_of_loop_pause)
+        epd.init(epd.FULL_UPDATE) #Initialize the partial screen
 
 # End of while true loop...
     epaper_exit()
@@ -343,9 +353,10 @@ except KeyboardInterrupt:
     term_draw.text((25, 20), 'Serial to bluetooth', font=f_title_font24, fill=0)
     term_draw.text((90, 50), 'bridge', font=f_title_font24, fill=0)
     term_draw.text((15, 80), 'Has Stopped due to SIGINT', font=f_title_font18, fill=0)
-    epd.display(epd.getbuffer(term_image))
+    epd.display(epd.getbuffer(term_image.rotate(screen_rotate)))
     syslog.syslog(syslog.LOG_INFO, 'Shutting Down ser2bt_status - interupted by Control C')
     epaper_exit()
+#    epd2in13_V2.epdconfig.module_exit()
     exit()
 
 except SystemExit:
@@ -356,7 +367,7 @@ except SystemExit:
     term_draw.text((25, 20), 'Serial to bluetooth', font=f_title_font24, fill=0)
     term_draw.text((90, 50), 'bridge', font=f_title_font24, fill=0)
     term_draw.text((15, 80), 'Is exiting Due to SIGTERM', font=f_title_font18, fill=0)
-    epd.display(epd.getbuffer(term_image))
+    epd.display(epd.getbuffer(term_image.rotate(screen_rotate)))
     syslog.syslog(syslog.LOG_INFO, 'Shutting Down/Restarting service - interupted by service stop, from command, shutdown, or reboot')
     epaper_exit()
     exit()
