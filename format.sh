@@ -48,9 +48,9 @@ function spinner(){
 		local temp=${spinstr#?}
 		printf "${nor}(${cyn}%c${nor})" "$spinstr"
 		local spinstr=$temp${spinstr%"$temp"}
-		sleep $delay
 		printf "\b\b\b"
+		sleep $delay
 	done
-	printf "    \b\b\b${curs}"
+	printf "   \b\b\b${curs}"
 }
 
