@@ -12,6 +12,7 @@ fi
 #Location settings:
 home="/home/${SUDO_USER}/"
 etc_folder="/etc/"
+etc_default_folder="${etc_folder}/default/"
 lib_folder="/lib/"
 dev_folder="/dev/"
 boot="/boot/"
@@ -94,6 +95,14 @@ pisugar2_boot_search=("0x[0-9]\*")
 full_python_req_list=("${enhanc_python_req_list[@]}")
 full_config_txt_values=("${base_config_txt_values[@]}" "${enhanc_config_txt_values[@]}")
 ups_type="N/A"
+locale_keys=("LANG=" "LANGUAGE=" "LC_ALL=")
+#Messeges:
+failed_to_disable="${drk_red}Failed to disable${nor}."
+failed_to_enable="${drk_red}Failed to enable${nor}."
+bad_failed="${drk_red}Failed${nor}."
+completed="${drk_grn}Done${nor}."
+stop="stop"
+start="start"
 
 #Flags
 bin_flag=0
@@ -105,8 +114,25 @@ svc_5_bin_flag=0
 
 last_col=$(tput cols)
 
+## End declarations
+###########################################################################################
+## Begin Function defenition:
+function e-paper_service_toggle() {
+	local toggle=$1
+	local result=$(systemctl is-active ser2bt-e-paper.service)
+	if [ "${result}" = "active" ] || [ "${result}" = "inactive" ]; then
+		printf "\n${toggle}ping the e-paper service..."
+		systemctl $toggle ser2bt-e-paper.service > pipo && printf "${completed}\n" || printf "Failed to ${toggle} the service, but will attempt to continue.\n" &
+		spinner $!
+		rm pipo
+	fi
+}
+
+## End function declaration
+###########################################################################################
+## Begin Main Program:
+
 #Checks before begining:
-# Make sure the script is run with superuser privelages
 ##Check to make sure this is a rpi zero:
 if  grep -q "Zero" /proc/device-tree/model; then
 	#Starting script here:
@@ -115,6 +141,8 @@ else
 	printf "\n${nor}This is ${drk_red}not${nor} a ${yel}Raspberry Zero${nor}, ${drk_red}Aborting ${nor}installation/upgrade.\n" | fmt --goal=91 --width=${last_col}
 	exit 1
 fi
+
+# Make sure the script is run with superuser privelages
 if [[ "${UID}" -ne 0 ]]; then
 	printf "\n${nor}You do ${drk_red}not ${nor}have the permissions to successfully run this script.\n"
 	exit 1
@@ -122,12 +150,12 @@ fi
 
 #check for minimum arguements:
 if [[ "${#}" -lt 1 ]]; then
-	printf "${nor}Usage: sudo ${0} UPGRADE_OPTION [basic|battery|sceen|fukk].\n\n"
-	printf "Upgrade ${yel}ser2bt-bridge${nor}, with the following options:\n"
-	printf "\tbasic - Basic istallation of the serial to Bluetooth scripts.\n"
-	printf "\tbattery -  Basic istallation of the serial to Bluetooth scripts, plus battery support.\n"
-	printf "\tscreen -  Basic istallation of the serial to Bluetooth scripts, plus e-ink screen support.\n"
-	printf "\tfull -  Basic istallation of the serial to Bluetooth scripts, plus e-ink screen and battery support.\n\n"
+	printf "${nor}Usage: sudo ${0} UPGRADE_OPTION [basic|battery|sceen|full].\n\n"
+	printf "Upgrade or install ${yel}ser2bt-bridge${nor}, with the following options:\n"
+	printf "\tbasic -\t\t${gre}Basic istallation of the ${yel}ser2bt-bridge ${gre}scripts.${nor}\n"
+	printf "\tbattery -\t${gre}Basic istallation of the ${yel}ser2bt-bridge ${gre}scripts, plus ${yel}battery ${gre}support.${nor}\n"
+	printf "\tscreen -\t${gre}Basic istallation of the ${yel}ser2bt-bridge ${gre}scripts, plus ${yel}e-ink ${gre}support.${nor}\n"
+	printf "\tfull -\t\t${gre}Full istallation of the ${yel}ser2bt-bridge ${gre}scripts, to include ${yel}e-ink ${gre}and ${yel}battery ${gre}support.${nor}\n\n"
 	exit 2
 fi
 
@@ -169,12 +197,13 @@ if [ "${upgrade_path}" = "full" ] ; then
 	python_req_list=("${full_python_req_list[@]}")
 fi
 
+#Begin main program:
 printf "\n${nor}Check for the status of required packages:\n"
 for package in "${base_package_install_list[@]}"; do
 	dpkg -s ${package} > /dev/null 2>&1
 	if [ ${?} -eq 1 ]; then
 		printf " ${nor}Installing Package ${yel}${package}${nor}..."
-		apt install ${package} -y > /dev/null 2>&1 && printf "${drk_grn}Done${nor}\n" || printf "${drk_grn}Failed${nor}.\n"
+		apt install ${package} -y > /dev/null 2>&1 && printf "${completed}\n" || printf "${drk_grn}Failed${nor}.\n"
 	else
 		printf " ${nor}Package ${yel}${package}${nor} is${drk_grn} already installed${nor}\n"
 	fi
@@ -242,7 +271,10 @@ elif [ "${ups_type}" = "ups_lite" ] && [ "${upgrade_path}" = "full" ] ; then
 	service_assoc=("${service_assoc[@]}" "${ups_lite_service_assoc[@]}")
 	package_install_list=("${package_install_list[@]}" "${ups_package_install_list[@]}")
 fi
-
+#check for and shutdown the e-paper service if it is currently running:
+if [ "${e_ink}" = "True" ]; then
+	e-paper_service_toggle ${stop}
+fi
 #Upgrade system files
 #printf "\n${nor}Update package manager:\n"
 #apt update > /dev/null 2>&1
@@ -268,7 +300,7 @@ if [ ${upgrade_path} != "basic" ] ; then
 		dpkg -s ${package} > /dev/null 2>&1
 		if [ ${?} -eq 1 ]; then
 			printf " ${nor}Installing Package ${yel}${package}${nor}..."
-			apt install ${package} -y > /dev/null 2>&1 && printf "${drk_grn}Done${nor}\n" || printf "${drk_grn}Failed${nor}.\n"
+			apt install ${package} -y > /dev/null 2>&1 && printf "${completed}\n" || printf "${drk_grn}Failed${nor}.\n"
 		else
 			printf " ${nor}Package ${yel}${package}${nor} is${drk_grn} already installed${nor}\n"
 		fi
@@ -281,13 +313,13 @@ if [ ${upgrade_path} != "basic" ] ; then
 	spinner $!
 	installed_modules=($(cat pipo))
 	rm pipo
-	printf "${drk_grn}Done${nor}\n"
+	printf "${completed}\n"
 	printf " ${nor}Checking required modules against list and installing anything missing:${nor}\n"
 	for module in "${python_req_list[@]}"; do
 		echo ${installed_modules[@]} | grep  ${module} > /dev/null 2>&1
 		if [ ${?} -eq 1 ]; then
 			printf "  ${nor}Installing Module ${yel}${module}${nor}..."
-			pip3 install ${module} > /dev/null 2>&1 && printf "${drk_grn}Done${nor}\n" || printf "${drk_grn}Failed${nor}.\n"
+			pip3 install ${module} > /dev/null 2>&1 && printf "${completed}\n" || printf "${drk_grn}Failed${nor}.\n"
 		else
 			printf "  ${nor}Module ${yel}${module}${nor} is${drk_grn} already installed${nor}\n"
 		fi
@@ -295,19 +327,33 @@ if [ ${upgrade_path} != "basic" ] ; then
 fi
 
 #Check for and correct locale while managing a headless pi:
-printf "\n${nor}Checking and correcting ${yel}locale ${nor}issues\n"
-set_local=$(grep LANG= /etc/default/locale | cut -f 2 -d "=")
-existing_local_ver=$(awk '/^LANGUAGE=/,/^LC_ALL=.*&/ { print }' "${etc_folder}default/locale")
-official_local_ver="LANGUAGE=${set_local}\nLC_ALL=${set_local}"
-diff --suppress-common-lines -W 160  -y <(printf "${existing_local_ver}") <(printf "${official_local_ver}") &>/dev/null
-if [ ${?} -eq 1 ]; then
-	printf " ${nor}Will clean and re-apply corected configurations..."  | fmt --goal=91 --width=${last_col}
-	update-locale LANG=${set_local} LANGUAGE=${set_local} LC_ALL=${set_local} > /dev/null 2>&1 && printf "${drk_grn}Done${nor}.\n" || printf "${drk_grn}Failed${nor}.\n"
-	printf " ${nor}Applying updates..."
-	printf "${official_local_ver}" >> "${etc_folder}$default/locale" && printf "${drk_grn}Done${nor}.\n" || printf "${drk_grn}Failed${nor}.\n"
-else
-	printf " ${nor}Both versions are the same, skipping...\n"
-fi
+printf "\n${nor}Checking and correcting ${yel}locale ${nor}issues..."
+set_locale=$(grep LANG= "${etc_default_folder}locale" | cut -f 2 -d "=")
+for key in "${locale_keys[@]}"; do
+	grep -q -s -x -E ^${key} "${etc_default_folder}locale"
+	if [ ${?} -eq 0 ]; then #replace the line.
+		printf "${drk_red}.${nor}"
+		update-locale ${key}${set_locale} > /dev/null 2>&1 && printf "${drk_grn}.${nor}" || printf "${drk_red}.${nor}"
+	else
+		printf "${drk_grn}.${nor}"
+		grep -q -s -x -E ^${key}${set_locale} "${etc_default_folder}locale"
+		if [ ${?} -eq 1 ]; then #Add the line.
+			printf " ${drk_red}.${nor}"
+			line=$(grep -s -x -E ^${key}${set_locale} "${etc_default_folder}locale")
+			update-locale ${key}${set_locale} > /dev/null 2>&1 && printf "${drk_grn}.${nor}" || printf "${drk_red}.${nor}"
+		else
+			printf "${drk_grn}.${nor}"
+		fi
+	fi
+done > pipo &
+spinner $!
+rm pipo
+printf "${completed}\n"
+#if [ ${?} -eq 1 ]; then
+#	printf " ${nor}Will clean and re-apply corected configurations..."  | fmt --goal=91 --width=${last_col}
+#	printf "${desired_local_ver}" >> "${etc_default_folder}locale" && printf "${completed}.\n" || printf "${bad_failed}\n"
+#else
+#fi
 
 
 #checking and adding modules as needed into /etc/modules:
@@ -381,13 +427,13 @@ num=0
 		printf " ${nor}Directory ${drk_grn}already ${nor}exists, checking for ${cyn}${serial_fix_folder}${yel}${serial_fix_file}${nor}:\n"
 		if [ ! -f ${serial_fix_folder}${serial_fix_file} ]; then
 			printf " ${yel}${serial_fix_file} ${nor}does ${drk_red}not ${nor}exist, creating..."
-			printf "${official_s_ver}" > "${serial_fix_folder}${serial_fix_file}" && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
+			printf "${official_s_ver}" > "${serial_fix_folder}${serial_fix_file}" && printf " ${completed}.\n" || printf " ${drk_grn}Failed${nor}.\n"
 		else
 			printf " ${yel}${serial_fix_file} ${drk_grn}does${nor} exist, checking if updates are needed:\n"
 			existing_s_ver=$(cat ${serial_fix_folder}${serial_fix_file})
 			if [ "${existing_s_ver}" != "${official_s_ver}" ]; then
 				printf "  ${nor}There is a difference between what is supposed to be in the ${yel}fix${nor}, will clean and re-apply ${yel}fix${nor} related configurations:\n"
-				printf "${official_s_ver}" > "${serial_fix_folder}${serial_fix_file}" && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
+				printf "${official_s_ver}" > "${serial_fix_folder}${serial_fix_file}" && printf " ${completed}.\n" || printf " ${drk_grn}Failed${nor}.\n"
 				serial_fix_flag=1
 			else
 				printf "  ${nor}Both versions are the same, skipping...\n" | fmt --goal=91 --width=${last_col}
@@ -404,7 +450,7 @@ if [ -f "${lib_service_folder}${bt_service}" ]; then
 	printf " ${blu}Bluetooth${nor} Service ${drk_grn}was${nor} found, checking content:\n"
 	if grep -q -e "^${bt_service_pre_search}$" "${lib_service_folder}${bt_service}"; then
 		printf "  ${blu}Bluetooth${nor} Service ${drk_yel}needs${nor} to be edited..."
-		sed -i "s+${bt_service_pre_search}+${bt_service_content}+g" "${lib_service_folder}${bt_service}" && printf "${drk_grn}Done${nor}\n" || printf "\n"
+		sed -i "s+${bt_service_pre_search}+${bt_service_content}+g" "${lib_service_folder}${bt_service}" && printf "${completed}\n" || printf "\n"
 		let bt_fix_flag++
 	elif [[ $(printf "${existing_bt_chg}") == $(printf "${bt_service_content}") ]]; then
 		printf "  ${blu}Bluetooth${nor} Service does ${drk_grn}not need${nor} to be edited.\n" | fmt --goal=91 --width=${last_col}
@@ -427,11 +473,11 @@ for file in "${disable_svc[@]}" ; do
 #	status=$(systemctl status "${file}" 2>/dev/null | grep Loaded: | grep -o "disabled")
 	if [ "${ups_type}" == "none" ] && [ "${file}" == "ser2net.service" ] && [ "${status}" != "enabled" ]; then
 		printf " Status of ${yel}${file}${nor} is currently ${drk_red}${status}${nor}..."
-		systemctl enable "${file}"  2>/dev/null && printf "${drk_grn}Enabled${nor}.\n" || printf "${drk_red}Failed to enable${nor}.\n"
+		systemctl enable "${file}"  2>/dev/null && printf "${drk_grn}Enabled${nor}.\n" || printf "${failed_to_enable}\n"
 	else
 		if [ "${ups_type}" != "none" ] && [ "${status}" != "disabled" ] && [ "${status}" != "static" ]; then
 			printf " Status of ${yel}${file}${nor} is currently ${drk_red}${status}${nor}..."
-			systemctl disable "${file}"  2>/dev/null && printf "${drk_grn}Disabeled${nor}.\n" || printf "${drk_red}Failed to disable${nor}.\n"
+			systemctl disable "${file}"  2>/dev/null && printf "${drk_grn}Disabeled${nor}.\n" || printf "${failed_to_disable}\n"
 		else
 			printf " Status of ${yel}${file}${nor} is currently ${drk_grn}${status}${nor}.\n"
 	fi	fi
@@ -589,8 +635,8 @@ fi
 		printf " ${nor}There is a difference between what is supposed to be in ${yel}${rc_local}${nor}, will clean and re-apply ${yel}ser2bt-bridge${nor} related configurations:\n"  | fmt --goal=91 --width=${last_col}
 		sed -i '/^#BEGIN ser2b-bridge rc.local add-in/, /^#END ser2b-bridge rc.local add-in/d' ${etc_folder}${rc_local}
 		sed -i '/^exit 0/d' ${etc_folder}${rc_local}
-		printf "${official_rc_ver}" >> ${etc_folder}${rc_local} && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
-		printf "\nexit 0" >> ${etc_folder}${rc_local} && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
+		printf "${official_rc_ver}" >> ${etc_folder}${rc_local} && printf " ${completed}.\n" || printf " ${drk_grn}Failed${nor}.\n"
+		printf "\nexit 0" >> ${etc_folder}${rc_local} && printf " ${completed}.\n" || printf " ${drk_grn}Failed${nor}.\n"
 	else
 		printf " ${nor}Both versions are the same, skipping...\n"
 	fi
@@ -603,8 +649,13 @@ fi
 	if [ "${existing_ver}" != "${official_ver}" ] ; then
 		printf " ${nor}There is a difference between what is supposed to be in ${yel}.bashrc${nor}, will clean and re-apply ${yel}ser2bt-bridge${nor} related configurations:\n"  | fmt --goal=91 --width=${last_col}
 		sed -i '/^#BEGIN ser2b-bridge .bashrc add-in/, /^#END ser2b-bridge .bashrc add-in/d' ${home}.bashrc
-		cat bashrc_addendum.sh >> ${home}.bashrc && printf " ${drk_grn}Done${nor}.\n" || printf " ${drk_grn}Failed${nor}.\n"
+		cat bashrc_addendum.sh >> ${home}.bashrc && printf " ${completed}.\n" || printf " ${drk_grn}Failed${nor}.\n"
 	else
 		printf " ${nor}Both versions are the same, skipping...\n"
 	fi
+#check for and shutdown the e-paper service if it is currently running:
+if [ "${e_ink}" = "True" ]; then
+	e-paper_service_toggle ${start}
+	sleep 2
+fi
 exit 0
