@@ -43,7 +43,7 @@ disable_svc=("keyboard-setup.service" "dphys-swapfile.service" "triggerhappy.ser
 base_package_install_list=("screen" "git" "minicom" "tio" "rfkill" "dnsutils" "xterm" "telnet" "telnetd" "ser2net" "spi-tools")
 base_bin_files=(ser2bt_bridge screen_bat_mon screen_get_baud)
 #enhanc_bin_files=(ser2bt_status init_scr shutdown_scr)
-wavesh_bin_files=(ser2bt_status init_scr shutdown_scr)
+wavesh_bin_files=(ser2bt_status init_scr shutdown_scr upgrade_scr)
 full_bin_files=( "${base_bin_files[@]}")
 pisugar2_bin_files=(button_detect bat_mon)
 ups_lite_bin_files=(bat_mon)
@@ -122,9 +122,12 @@ function e-paper_service_toggle() {
 	local result=$(systemctl is-active ser2bt-e-paper.service)
 	if [ "${result}" = "active" ] || [ "${result}" = "inactive" ]; then
 		printf "\n${toggle}ping the e-paper service..."
-		systemctl $toggle ser2bt-e-paper.service > pipo && printf "${completed}\n" || printf "Failed to ${toggle} the service, but will attempt to continue.\n" &
+		systemctl $toggle ser2bt-e-paper.service && printf "${completed}\n" || printf "Failed to ${toggle} the service, but will attempt to continue.\n" &
 		spinner $!
-		rm pipo
+		if [ "${result}" = "active" ]; then
+			python3 upgrade_scr &
+			spinner $!
+		fi
 	fi
 }
 
@@ -198,17 +201,6 @@ if [ "${upgrade_path}" = "full" ] ; then
 fi
 
 #Begin main program:
-printf "\n${nor}Check for the status of required packages:\n"
-for package in "${base_package_install_list[@]}"; do
-	dpkg -s ${package} > /dev/null 2>&1
-	if [ ${?} -eq 1 ]; then
-		printf " ${nor}Installing Package ${yel}${package}${nor}..."
-		apt install ${package} -y > /dev/null 2>&1 && printf "${completed}\n" || printf "${drk_grn}Failed${nor}.\n"
-	else
-		printf " ${nor}Package ${yel}${package}${nor} is${drk_grn} already installed${nor}\n"
-	fi
-done
-
 if [ ${upgrade_path} != "basic" ] ; then
 printf "\n${nor}Determining installed hardware:${nor}\n"
 #If this is not a basic install, check to see if e-ink display is installed:
@@ -275,6 +267,17 @@ fi
 if [ "${e_ink}" = "True" ]; then
 	e-paper_service_toggle ${stop}
 fi
+printf "\n${nor}Check for the status of required packages:\n"
+for package in "${base_package_install_list[@]}"; do
+	dpkg -s ${package} > /dev/null 2>&1
+	if [ ${?} -eq 1 ]; then
+		printf " ${nor}Installing Package ${yel}${package}${nor}..."
+		apt install ${package} -y > /dev/null 2>&1 && printf "${completed}\n" || printf "${drk_grn}Failed${nor}.\n"
+	else
+		printf " ${nor}Package ${yel}${package}${nor} is${drk_grn} already installed${nor}\n"
+	fi
+done
+
 #Upgrade system files
 #printf "\n${nor}Update package manager:\n"
 #apt update > /dev/null 2>&1
