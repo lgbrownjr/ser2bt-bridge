@@ -5,11 +5,17 @@ from PIL import Image, ImageDraw, ImageFont  # Font handeling
 from waveshare_epd import epd2in13_V2
 import os
 import time
+from os.path import exists
+
+#User-changable settings:
+screen_rotate=180 #0 for right side up; 180 for upside-down.
+foreground=0XFF #0xff for light int(foreground); 0x0 for black int(foreground).
+background=0X0 #0xff for light background; 0x0 for black background.
+
 
 # Variable decleration
 host_name=os.uname()[1]  # define host_name
 epd = epd2in13_V2.EPD()
-screen_rotate=180
 picdir='/usr/local/lib/ser2bt-bridge/'
 roboto_font_dir='/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/'
 f_top_line_font16 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 16)
@@ -17,32 +23,49 @@ f_title_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 18)
 f_title_font24 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 24)
 
 bmp = Image.open(os.path.join(picdir, 'logo.bmp'))
-exit_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
+exit_image = Image.new('1', (epd.height, epd.width), int(background))  #clear the frame
 exit_draw = ImageDraw.Draw(exit_image)
+
+def shutdown_check():
+    if os.path.exists("/tmp/shut"):
+        f = open("/tmp/shut",'r')
+        shut = f.read()
+        f.close()
+        if shut == "":
+            msg = "No Shutdown"
+        elif shut == "p":
+            msg = "Shutdown"
+    else:
+        msg = "No Shutdown"
+    return (msg)
 
 #Clear the Screen:
 epd.init(epd.FULL_UPDATE)
-epd.Clear(0xFF)
+#epd.Clear(0xFF)
 
 #Draw out the boot screen
-exit_draw.text((6, 20), 'ser2bt_status service', font=f_title_font24, fill=0)
-exit_draw.text((48, 50), 'Has been stopped', font=f_title_font18, fill=0)
+exit_draw.text((6, 30), 'ser2bt_status service', font=f_title_font24, fill = int(foreground))
+exit_draw.text((48, 60), 'Has been stopped', font=f_title_font18, fill = int(foreground))
 epd.display(epd.getbuffer(exit_image.rotate(screen_rotate)))
 time.sleep(2)
 epd.sleep()
 
-epd.init(epd.FULL_UPDATE)
-icon_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
-icon_draw = ImageDraw.Draw(icon_image)
+if shutdown_check() == "Shutdown":
+    epd.init(epd.FULL_UPDATE)
+    foreground=0X0 #0xff for light int(foreground); 0x0 for black int(foreground).
+    background=0XFF #0xff for light background; 0x0 for black background.
 
-icon_image.paste(bmp, (0,0))
-icon_draw.text((19,5), 'Serial to Bluetooth Bridge  ', font=f_title_font18,fill=0)
-icon_draw.text((4,47), 'master', font=f_top_line_font16,fill=0)
-icon_draw.text((122,47), host_name, font=f_top_line_font16,fill=0)
-icon_draw.text((204,47), 'slave', font=f_top_line_font16,fill=0)
-epd.display(epd.getbuffer(icon_image.rotate(screen_rotate)))
+    icon_image = Image.new('1', (epd.height, epd.width), int(background))  #clear the frame
+    icon_draw = ImageDraw.Draw(icon_image)
 
-#Exit:
-epd2in13_V2.epdconfig.module_init()
-epd2in13_V2.epdconfig.module_exit()
+    icon_image.paste(bmp, (0,0))
+    icon_draw.text((19,5), 'Serial to Bluetooth Bridge  ', font=f_title_font18,fill = int(foreground))
+    icon_draw.text((4,47), 'master', font=f_top_line_font16,fill = int(foreground))
+    icon_draw.text((122,47), host_name, font=f_top_line_font16,fill = int(foreground))
+    icon_draw.text((204,47), 'slave', font=f_top_line_font16,fill = int(foreground))
+    epd.display(epd.getbuffer(icon_image.rotate(screen_rotate)))
+else:
+    #Exit:
+    epd2in13_V2.epdconfig.module_init()
+    epd2in13_V2.epdconfig.module_exit()
 exit()

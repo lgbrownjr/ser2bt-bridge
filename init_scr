@@ -4,23 +4,29 @@
 from PIL import Image, ImageDraw, ImageFont  # Font handeling
 from waveshare_epd import epd2in13_V2
 
+#User-changable settings:
+screen_rotate=180 #0 for right side up; 180 for upside-down.
+foreground=0XFF #255 for light foreground; 0 for black foreground.
+background=0X0 #255 for light background; 0 for black background.
+
 # Variable decleration
 epd = epd2in13_V2.EPD()
-screen_rotate=180
 roboto_font_dir='/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/'
 f_title_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 18)
 f_title_font24 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 24)
 
 #Clear the Screen:
 epd.init(epd.FULL_UPDATE)
-epd.Clear(0xFF)
+epd.Clear(int(background))
 
 #Draw out the boot screen
-boot_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
+boot_image = Image.new('1', (epd.height, epd.width), int(background))  #clear the frame
 boot_draw = ImageDraw.Draw(boot_image)
 
-boot_draw.text((77, 20), 'Loading ', font=f_title_font24, fill=0)
-boot_draw.text((22, 50), 'Serial to bluetooth bridge  ', font=f_title_font18, fill=0)
+#Plot the text:
+boot_draw.text((77, 20), 'Loading ', font=f_title_font24, fill = int(foreground))
+boot_draw.text((22, 50), 'Serial to bluetooth bridge  ', font=f_title_font18, fill = int(foreground))
+
 #Display the screen
 epd.display(epd.getbuffer(boot_image.rotate(screen_rotate)))
 
