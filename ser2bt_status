@@ -5,6 +5,7 @@
 import os #hostname
 import sys #check python version.
 import time #timers for sleep
+import configparser #to handle the config file.
 try:
     from waveshare_epd import epd2in13_V2
     from PIL import Image, ImageDraw, ImageFont  # Font handeling
@@ -22,16 +23,25 @@ except:
     print ("No supporing system/network libraries were detected.  Please investigate, and try again\n")
     exit()
 
-#User-changable settings:
-screen_rotate=180 #0 for right side up; 180 for upside-down.
-foreground=0XFF #0xff for light foreground; 0x0 for black foreground.
-background=0X0 #0xff for light background; 0x0 for black background.
+#import configuration file:
+#Read ser2bt_config.ini file
+config_obj = configparser.ConfigParser()
+config_obj.read("/etc/ser2bt_config.ini")
+screen = config_obj["screen"]
+
+# parameters to use the keys from the ser2bt_config.ini
+screen_rotate = int(screen["screen_rotate"])
+foreground = int(screen["foreground"])
+background = int(screen["background"])
 
 # Variable decleration:
 sys.path.append(r'lib')
 epd = epd2in13_V2.EPD()
 host_name=os.uname()[1]  # define host_name
 dev_dir='/dev/'
+tmp_dir='/tmp/'
+bat_file='bat'
+shut_file = 'shut'
 bt_ser_short_label='BT'
 bt_ser_label='rfcomm0'
 bt_ser_port=bt_ser_label
@@ -71,8 +81,20 @@ epd.sleep()
 
 #Define the functions:
 ###################################################################################################################
+def set_shutdown_flag(intent):
+    power_off = 'p'
+    exit_out = 'e'
+    file = open(tmp_dir+shut_file,'w')
+    file.write(intent)
+    file.close()
+    if intent == power_off:
+        msg = 'Shutdown'
+    else:
+        msg = 'No Shutdown'
+    return (msg)
+
 def bat_lvl():
-    f = open("/tmp/bat",'r')
+    f = open(tmp_dir+bat_file,'r')
     bat = f.read()
     f.close()
     if bat == "":
@@ -348,10 +370,12 @@ try:
         epd.init(epd.FULL_UPDATE) #Initialize the partial screen
 
 # End of while true loop...
-    epaper_exit()
+    epd.sleep()
+#    epaper_exit()
     exit()
 
 except KeyboardInterrupt:
+    set_shutdown_flag ('e')
     syslog.syslog(syslog.LOG_INFO, 'Quit (SIGINT) Due to Keyboard interrupt when not being run as a service')
     epd.init(epd.FULL_UPDATE)
     term_image = Image.new('1', (epd.height, epd.width), int(background))  # clear the frame
@@ -361,7 +385,8 @@ except KeyboardInterrupt:
     term_draw.text((15, 80), 'Has Stopped due to SIGINT', font=f_title_font18, fill = int(foreground))
     epd.display(epd.getbuffer(term_image.rotate(screen_rotate)))
     syslog.syslog(syslog.LOG_INFO, 'Shutting Down ser2bt_status - interupted by Control C')
-    epaper_exit()
+    epd.sleep()
+#    epaper_exit()
 #    epd2in13_V2.epdconfig.module_exit()
     exit()
 
