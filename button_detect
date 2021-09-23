@@ -9,6 +9,8 @@ import os
 #Var decloration:
 bus=1
 battery_loop_sleep = 1
+tmp_dir = "/tmp/"
+shut_file = "shut"
 address = 0x75 # pisugar2 i2c address is 0x75 for battery management.
 TAP_ARRAY = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
@@ -82,6 +84,9 @@ syslog.syslog(syslog.LOG_INFO, 'Found the PiSugar2 button.')
 while True:
     button_press = i2c_bus.read_byte_data(address, 0x55) #Wait for the button press
     if button_press > 0: #Once the button is pressed...
+        file = open(tmp_dir+shut_file,'w')
+        file.write(str("p"))
+        file.close()
         syslog.syslog(syslog.LOG_INFO, 'Button was pressed, shutting down...')
         os.system('wall -n "shutdown by way of the power button being pressed!"')
         os.system("poweroff -p") #shut the pi down.

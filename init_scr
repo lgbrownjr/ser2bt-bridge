@@ -3,29 +3,41 @@
 # -*- coding:utf-8 -*-
 from PIL import Image, ImageDraw, ImageFont  # Font handeling
 from waveshare_epd import epd2in13_V2
+import os
+#import configparser #to handle the config file.
 
-#User-changable settings:
-screen_rotate=180 #0 for right side up; 180 for upside-down.
-foreground=0XFF #255 for light foreground; 0 for black foreground.
-background=0X0 #255 for light background; 0 for black background.
+#import configuration file:
+#Read ser2bt_config.ini file
+screen_rotate = 180
+foreground = 255
+background = 0
 
 # Variable decleration
 epd = epd2in13_V2.EPD()
+tmp_dir = "/tmp/"
+shut_file = "shut"
 roboto_font_dir='/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/'
 f_title_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 18)
 f_title_font24 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 24)
 
+#Check if battery file exists, create if it does not:
+if not os.path.exists(tmp_dir+shut_file):
+    os.mknod(tmp_dir+shut_file)
+
+#Then, change the rights on the file.
+os.chmod(tmp_dir+shut_file, 0o664)
+
 #Clear the Screen:
 epd.init(epd.FULL_UPDATE)
-epd.Clear(int(background))
+epd.Clear(background)
 
 #Draw out the boot screen
-boot_image = Image.new('1', (epd.height, epd.width), int(background))  #clear the frame
+boot_image = Image.new('1', (epd.height, epd.width), background)  #clear the frame
 boot_draw = ImageDraw.Draw(boot_image)
 
 #Plot the text:
-boot_draw.text((77, 20), 'Loading ', font=f_title_font24, fill = int(foreground))
-boot_draw.text((22, 50), 'Serial to bluetooth bridge  ', font=f_title_font18, fill = int(foreground))
+boot_draw.text((77, 20), 'Loading ', font=f_title_font24, fill = foreground)
+boot_draw.text((22, 50), 'Serial to bluetooth bridge  ', font=f_title_font18, fill = foreground)
 
 #Display the screen
 epd.display(epd.getbuffer(boot_image.rotate(screen_rotate)))
