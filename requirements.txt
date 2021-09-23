@@ -3,3 +3,4 @@ spidev
 smbus
 psutil
 netifaces
+configparser
