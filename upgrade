@@ -12,6 +12,7 @@ fi
 #Location settings:
 home="/home/${SUDO_USER}/"
 etc_folder="/etc/"
+tmp_folder="/tmp/"
 etc_default_folder="${etc_folder}/default/"
 lib_folder="/lib/"
 dev_folder="/dev/"
@@ -29,6 +30,7 @@ lib_service_folder="${lib_folder}systemd/system/"
 serial_fix_folder="${etc_service_folder}getty@ttyGS0.service.d/"
 
 #File list:
+shut_file="shut" #This is the file that hold the shutdown/exit flag to save time by not loading the graphics on the e-paper.  Flags are p for power, and e for exit.
 e_ink_dev="spidev0.0"
 python_req_file="requirements.txt"
 bt_service="bluetooth.service"
@@ -51,6 +53,7 @@ base_lib_files=(format.sh)
 ser2bt_lib_files=(logo.bmp)
 full_lib_files=( "${base_lib_files[@]}")
 etc_files=(ser2bt_bridge.screenrc)
+wavesh_etc_files=(ser2bt_config.ini)
 base_service_files=(rfcomm.service)
 enhanc_package_install_list=("wiringpi" "python3-pip" "python3-pil" "python3-numpy" "python3-smbus")
 ups_package_install_list=("i2c-tools")
@@ -96,6 +99,7 @@ full_python_req_list=("${enhanc_python_req_list[@]}")
 full_config_txt_values=("${base_config_txt_values[@]}" "${enhanc_config_txt_values[@]}")
 ups_type="N/A"
 locale_keys=("LANG=" "LANGUAGE=" "LC_ALL=")
+
 #Messeges:
 failed_to_disable="${drk_red}Failed to disable${nor}."
 failed_to_enable="${drk_red}Failed to enable${nor}."
@@ -103,6 +107,8 @@ bad_failed="${drk_red}Failed${nor}."
 completed="${drk_grn}Done${nor}."
 stop="stop"
 start="start"
+good_dot="${drk_grn}.${norm}"
+bad_dot="${drk_red}.${norm}"
 
 #Flags
 bin_flag=0
@@ -113,6 +119,7 @@ svc_3_bin_flag=0
 svc_5_bin_flag=0
 
 last_col=$(tput cols)
+upgrade_path="${1}"
 
 ## End declarations
 ###########################################################################################
@@ -120,14 +127,25 @@ last_col=$(tput cols)
 function e-paper_service_toggle() {
 	local toggle=$1
 	local result=$(systemctl is-active ser2bt-e-paper.service)
-	if [ "${result}" = "active" ] || [ "${result}" = "inactive" ]; then
-		printf "\n${toggle}ping the e-paper service..."
-		systemctl $toggle ser2bt-e-paper.service && printf "${completed}\n" || printf "Failed to ${toggle} the service, but will attempt to continue.\n" &
-		spinner $!
-		if [ "${result}" = "active" ]; then
-			python3 upgrade_scr &
-			spinner $!
+	if [ "${result}" = "active" ] && [ "${toggle}" = "stop" ]; then
+		printf "\n${toggle^}ping the e-paper service..."
+		if [ -f ${tmp_folder}${shut_file} ]; then
+			echo "e" > ${tmp_folder}${shut_file} && printf ${good_dot} || printf ${bad_dot}
 		fi
+		systemctl $toggle ser2bt-e-paper.service && printf "${good_dot}" || printf "${bad_dot}" &
+		spinner $!
+		python3 upgrade_scr &
+		spinner $!
+		printf "${completed}\n"
+	elif [ "${result}" = "inactive" ] && [ ${toggle} = "start" ]; then
+		printf "\n${toggle^}ing the e-paper service..."
+		if [ -f ${tmp_folder}${shut_file} ]; then
+			echo "p" > ${tmp_folder}${shut_file} && printf "${good_dot}${completed}\n" || printf "${bad_dot}${bad_failed}\n"
+		else
+			printf "\n status change failed.\n"
+		fi
+		systemctl $toggle ser2bt-e-paper.service && printf "${good_dot}" || printf "${bad_dot}" &
+		spinner $!
 	fi
 }
 
@@ -163,7 +181,6 @@ if [[ "${#}" -lt 1 ]]; then
 fi
 
 #assign the upgrade path to the first argument
-upgrade_path="${1}"
 shift
 if [ "${upgrade_path}" = "basic" ] ; then
 	bin_files=( "${base_bin_files[@]}" )
@@ -245,6 +262,7 @@ if [ "${e_ink}" = "True" ] && [ "${upgrade_path}" = "full" ] ; then
 	boot_search=("${boot_search[@]}" "${wavesh_boot_search[@]}")
 	bin_files=("${bin_files[@]}" "${wavesh_bin_files[@]}")
 	lib_files=("${lib_files[@]}" "${ser21bt_lib_files[@]}")
+	etc_files=("${etc_files[@]}" "${wavesh_etc_files[@]}")
 	service_files=("${service_files[@]}" "${wavesh_service_files[@]}")
 	service_assoc=("${service_assoc[@]}" "${wavesh_service_assoc[@]}")
 	package_install_list=("${package_install_list[@]}" "${wavesh_package_install_list[@]}")
@@ -393,8 +411,6 @@ printf "\n${nor}Check to make sure the the relavent seetings are made in the ${b
 change_flag=0
 num=0
 	for config in "${bt_config_change[@]}"; do
-#		echo ${config}${bt_config_value[num]}
-#		echo ${etc_folder}${bt_folder}${bt_config}
 		grep -q -s -x -E "^${config}${bt_config_fix_value[num]}" ${etc_folder}${bt_folder}${bt_config}
 		if [ ${?} -eq 1 ]; then
 			rem_config=$(grep -s -x -E "^#?${config}${bt_config_search[num]}" ${etc_folder}${bt_folder}${bt_config})
@@ -473,7 +489,6 @@ fi
 printf "\nChecking for and disabling un-needed services:\n"
 for file in "${disable_svc[@]}" ; do
 	status=$(systemctl is-enabled "${file}" 2>/dev/null)
-#	status=$(systemctl status "${file}" 2>/dev/null | grep Loaded: | grep -o "disabled")
 	if [ "${ups_type}" == "none" ] && [ "${file}" == "ser2net.service" ] && [ "${status}" != "enabled" ]; then
 		printf " Status of ${yel}${file}${nor} is currently ${drk_red}${status}${nor}..."
 		systemctl enable "${file}"  2>/dev/null && printf "${drk_grn}Enabled${nor}.\n" || printf "${failed_to_enable}\n"
