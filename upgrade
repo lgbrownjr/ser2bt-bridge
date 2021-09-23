@@ -234,6 +234,12 @@ printf "\n${nor}Determining installed hardware:${nor}\n"
 			e_ink="False"
 		fi
 	fi
+
+#check for and shutdown the e-paper service if it is currently running:
+if [ "${e_ink}" = "True" ]; then
+	e-paper_service_toggle ${stop}
+fi
+
 #If this is not a basic install, check to see which ups is installed.
 	result=$(i2cdetect -y 1 0x75 0x75 2> /dev/null | grep -Eo "UU|75")
 	if [ "${result}" == "75" ];  then
@@ -280,10 +286,6 @@ elif [ "${ups_type}" = "ups_lite" ] && [ "${upgrade_path}" = "full" ] ; then
 	service_files=("${service_files[@]}" "${ups_lite_service_files[@]}")
 	service_assoc=("${service_assoc[@]}" "${ups_lite_service_assoc[@]}")
 	package_install_list=("${package_install_list[@]}" "${ups_package_install_list[@]}")
-fi
-#check for and shutdown the e-paper service if it is currently running:
-if [ "${e_ink}" = "True" ]; then
-	e-paper_service_toggle ${stop}
 fi
 printf "\n${nor}Check for the status of required packages:\n"
 for package in "${base_package_install_list[@]}"; do
