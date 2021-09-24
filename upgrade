@@ -109,6 +109,7 @@ stop="stop"
 start="start"
 good_dot="${drk_grn}.${norm}"
 bad_dot="${drk_red}.${norm}"
+continuing="${nor}, continuing."
 
 #Flags
 bin_flag=0
@@ -132,7 +133,7 @@ function e-paper_service_toggle() {
 		if [ -f ${tmp_folder}${shut_file} ]; then
 			echo "e" > ${tmp_folder}${shut_file} && printf ${good_dot} || printf ${bad_dot}
 		fi
-		systemctl $toggle ser2bt-e-paper.service && printf "${good_dot}" || printf "${bad_dot}" &
+		systemctl ${toggle} ser2bt-e-paper.service && printf "${good_dot}" || printf "${bad_dot}" &
 		spinner $!
 		python3 upgrade_scr &
 		spinner $!
@@ -140,15 +141,53 @@ function e-paper_service_toggle() {
 	elif [ "${result}" = "inactive" ] && [ ${toggle} = "start" ]; then
 		printf "\n${toggle^}ing the e-paper service..."
 		if [ -f ${tmp_folder}${shut_file} ]; then
-			echo "p" > ${tmp_folder}${shut_file} && printf "${good_dot}${completed}\n" || printf "${bad_dot}${bad_failed}\n"
+			echo "p" > ${tmp_folder}${shut_file} && printf "${good_dot}" || printf "${bad_dot}${bad_failed}"
 		else
 			printf "\n status change failed.\n"
 		fi
-		systemctl $toggle ser2bt-e-paper.service && printf "${good_dot}" || printf "${bad_dot}" &
+		systemctl ${toggle} ser2bt-e-paper.service && printf "${good_dot}" || printf "${bad_dot}" &
 		spinner $!
+		printf "${completed}\n"
 	fi
 }
 
+#Upgrade system files
+function system_update() {
+	printf "\n${nor}Update package manager:\n"
+	apt_update_result=$(apt update 2> /dev/null)
+	if [ ${?} -gt 0 ]; then
+		apt_update_flag=0 #False
+		printf " ${nor}Update ${red}failed${nor}, exiting to shell\n"
+		exit 1 #apt update or apt full-upgrade failed"
+	else
+		echo ${apt_update_result} | grep -q -s -o -e  "[0-9] packages can be upgraded" | grep -o "[0-9]*"
+		if [ ${?} -eq 0 ]; then
+			packadge_count=$(echo ${apt_update_result} | grep -o "[0-9] packages can be upgraded" 2> /dev/null | grep -o "[0-9]*")
+			printf " ${grn}Update completed${nor}, ${yel}${packadge_count} ${nor} packadges will be upgraded.\n"
+			apt_update_flag=1 #True
+			up_to_date_flag=0 #False
+		elif [ ${?} -eq 1 ]; then
+			up_to_date=$(echo ${apt_update_result} | grep -ox "All packages are up to data")
+			printf " ${nor}We are already ${grn}up-to-date${continuing}\n"
+			apt_update_flag=1 #True
+			up_to_date_flag=1 #True
+		else
+			printf " ${drk_red}Update failed${nor}, exiting to shell\n"
+			exit 1 #system update failed"
+			apt_update_flag=0 #False
+			up_to_date_flag=0 #False
+		fi
+	fi
+	if [[ "${up_to_date_flag}" -eq 0  ||  "${apt_update_flag}" -eq 0 ]]; then
+		apt full-upgrade -y > /dev/null 2>&1
+		if [ ${?} -eq 1 ]; then
+			printf " ${drk_red}Upgrade failed${nor}, exiting to shell\n"
+			exit 1 #apt update or apt full-upgrade failed"
+		else
+			printf " ${nor}Upgrade ${drk_grn}Completed${nor}...\n"
+		fi
+	fi
+}
 ## End function declaration
 ###########################################################################################
 ## Begin Main Program:
@@ -218,6 +257,7 @@ if [ "${upgrade_path}" = "full" ] ; then
 fi
 
 #Begin main program:
+#Examine installed hardware to help determine what files to install and configuration changes that need to be made:
 if [ ${upgrade_path} != "basic" ] ; then
 printf "\n${nor}Determining installed hardware:${nor}\n"
 #If this is not a basic install, check to see if e-ink display is installed:
@@ -234,11 +274,6 @@ printf "\n${nor}Determining installed hardware:${nor}\n"
 			e_ink="False"
 		fi
 	fi
-
-#check for and shutdown the e-paper service if it is currently running:
-if [ "${e_ink}" = "True" ]; then
-	e-paper_service_toggle ${stop}
-fi
 
 #If this is not a basic install, check to see which ups is installed.
 	result=$(i2cdetect -y 1 0x75 0x75 2> /dev/null | grep -Eo "UU|75")
@@ -259,9 +294,19 @@ fi
 		fi
 	fi
 	if [ "${e_ink}" == "False" ] && [ "${ups_type}" == "none" ]; then
-		printf " ${nor}No Hardware detected, continuing...\n"
+		printf " ${nor}No Hardware detected${continuing}\n"
 	fi
 fi
+
+#check for and shutdown the e-paper service if it is currently running:
+if [ "${e_ink}" = "True" ]; then
+	e-paper_service_toggle ${stop}
+fi
+
+#Run a full apt update, and upgrade:
+system_update
+
+#Based on what was discovered from any installed hardware, start putting the file lists and settings together for installation:
 if [ "${e_ink}" = "True" ] && [ "${upgrade_path}" = "full" ] ; then
 	config_txt_addons=("${config_txt_addons[@]}" "${wavesh_config_txt_addons[@]}")
 	config_txt_values=("${config_txt_values[@]}" "${wavesh_config_txt_values[@]}")
@@ -287,6 +332,9 @@ elif [ "${ups_type}" = "ups_lite" ] && [ "${upgrade_path}" = "full" ] ; then
 	service_assoc=("${service_assoc[@]}" "${ups_lite_service_assoc[@]}")
 	package_install_list=("${package_install_list[@]}" "${ups_package_install_list[@]}")
 fi
+
+#Now that we have the lists together from above, we can prepare tp install any required packages:
+#Verify what is already installed:
 printf "\n${nor}Check for the status of required packages:\n"
 for package in "${base_package_install_list[@]}"; do
 	dpkg -s ${package} > /dev/null 2>&1
@@ -297,24 +345,6 @@ for package in "${base_package_install_list[@]}"; do
 		printf " ${nor}Package ${yel}${package}${nor} is${drk_grn} already installed${nor}\n"
 	fi
 done
-
-#Upgrade system files
-#printf "\n${nor}Update package manager:\n"
-#apt update > /dev/null 2>&1
-#if [ ${?} -gt 0 ]; then
-#	printf " ${red}Update failed, exiting to shell\n"
-#	exit 1 #apt update or apt full-upgrade failed"
-#else
-#	printf " ${grn}Update completed...\n"
-#
-#fi
-#apt full-upgrade -y > /dev/null 2>&1
-#if [ ${?} -gt 0 ]; then
-#	printf " ${red}Upgrade failed, exiting to shell\n"
-#	exit 1 #apt update or apt full-upgrade failed"
-#else
-#	printf " ${grn}Upgrade completed...\n"
-#fi
 
 #Add required packadges:
 if [ ${upgrade_path} != "basic" ] ; then
@@ -329,7 +359,7 @@ if [ ${upgrade_path} != "basic" ] ; then
 		fi
 	done
 
-#Add Python dependencies from requirements.txt This is for non-basic installs/upgrades:
+#Add Python dependencies from the requirements.txt This is for non-basic installs/upgrades:
 	printf "\n${nor}Check for the status of required Python 3 modules:\n"
 	printf " ${nor}Reading in the list of already-installed modules...${nor}"
 	pip3 list > pipo &
@@ -349,7 +379,7 @@ if [ ${upgrade_path} != "basic" ] ; then
 	done
 fi
 
-#Check for and correct locale while managing a headless pi:
+#Check for and correct missing or incorrect locale settings that can happen while managing a headless pi:
 printf "\n${nor}Checking and correcting ${yel}locale ${nor}issues..."
 set_locale=$(grep LANG= "${etc_default_folder}locale" | cut -f 2 -d "=")
 for key in "${locale_keys[@]}"; do
@@ -372,20 +402,14 @@ done > pipo &
 spinner $!
 rm pipo
 printf "${completed}\n"
-#if [ ${?} -eq 1 ]; then
-#	printf " ${nor}Will clean and re-apply corected configurations..."  | fmt --goal=91 --width=${last_col}
-#	printf "${desired_local_ver}" >> "${etc_default_folder}locale" && printf "${completed}.\n" || printf "${bad_failed}\n"
-#else
-#fi
-
 
 #checking and adding modules as needed into /etc/modules:
 printf "\n${nor}Check to make sure the the relavent modules are loaded:\n"
-grep -q -s -o -e "^g_serial" ${etc_folder}modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'g_serial' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully${nor} loaded\n")
-grep -q -s -o -e "^dwc2" ${etc_folder}/modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (sudo bash -c "echo 'dwc2' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully ${nor} loaded\n")
+grep -q -s -o -e "^g_serial" ${etc_folder}modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (echo 'g_serial' >> "${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully${nor} loaded\n")
+grep -q -s -o -e "^dwc2" ${etc_folder}/modules && (printf " ${nor}module ${drk_grn}already${nor} loaded\n") || (bash -c "echo 'dwc2' >> ${etc_folder}modules"; printf " ${nor}module ${drk_grn}successfully ${nor} loaded\n")
 
 #checking and adding modules as needed into /boot/config.txt and /boot/cmdline.txt:
-printf "\n${nor}Check to make sure the the relavent seetings are made in the boot files:${nor}\n" | fmt --goal=91 --width=${last_col}
+printf "\n${nor}Check to make sure the the relavent seetings are made in the ${yel}boot files:${nor}\n" | fmt --goal=91 --width=${last_col}
 change_flag=0
 num=0
 	for config in "${config_txt_addons[@]}"; do
@@ -405,7 +429,7 @@ num=0
 		let num++
 	done
 	if [ ${change_flag} -eq 0 ]; then
-		printf " ${drk_grn}No changes were needed, continuing${nor}...\n"
+		printf " ${drk_grn}No changes were needed${continuing}\n"
 	fi
 
 #Check and edit bluetooth configuration file(s) as needed.
@@ -433,7 +457,7 @@ num=0
 	done
 
 	if [ ${change_flag} -eq 0 ]; then
-		printf " ${drk_grn}No changes were needed, continuing${nor}...\n"
+		printf " ${drk_grn}No changes were needed${continuing}\n"
 	else
 		let bt_fix_flag++
 	fi
@@ -592,7 +616,7 @@ fi
 		fi
 	done
 
-	#Disable and Remove un-needed services"
+	#Disable, then remove un-needed services"
 	printf "${nor}\nDisable, and remove any services that are no longer required${nor}\n"
 	num=0
 	for svc_file in ${removed_service_files[@]}; do
@@ -604,7 +628,7 @@ fi
 		fi
 	done
 	if [[ ${#removed_service_files[@]} -eq ${num} ]]; then
-		printf " ${drk_grn}No changes were needed, continuing${nor}...\n"
+		printf " ${drk_grn}No changes were needed${continuing}\n"
 	fi
 
 	#After all of the changes have been made, reload the systemd daemon:
@@ -676,6 +700,5 @@ fi
 #check for and shutdown the e-paper service if it is currently running:
 if [ "${e_ink}" = "True" ]; then
 	e-paper_service_toggle ${start}
-	sleep 2
 fi
 exit 0
