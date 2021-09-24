@@ -4,10 +4,7 @@
 from PIL import Image, ImageDraw, ImageFont  # Font handeling
 from waveshare_epd import epd2in13_V2
 import os
-#import configparser #to handle the config file.
-
-#import configuration file:
-#Read ser2bt_config.ini file
+#user-changable settings.
 screen_rotate = 180
 foreground = 255
 background = 0
