@@ -153,27 +153,27 @@ function e-paper_service_toggle() {
 
 #Upgrade system files
 function system_update() {
-	printf "\n${nor}Update package manager:\n"
+	printf "\n${nor}Update package manager:"
 	apt_update_result=$(apt update 2> /dev/null)
 	if [ ${?} -gt 0 ]; then
 		apt_update_flag=0 #False
 		up_to_date_flag=0 #False
-		printf " ${nor}Update ${red}failed${nor}, exiting to shell\n"
+		printf " \n${nor}Update ${red}failed${nor}, exiting to shell\n"
 		exit 1 #apt update or apt full-upgrade failed"
 	else
 		echo ${apt_update_result} | grep -q -s -o -e  "[0-9] packages can be upgraded" | grep -o "[0-9]*"
 		if [ ${?} -eq 0 ]; then
 			packadge_count=$(echo ${apt_update_result} | grep -o "[0-9] packages can be upgraded" 2> /dev/null | grep -o "[0-9]*")
-			printf " ${grn}Update completed${nor}, ${yel}${packadge_count} ${nor} packadges will be upgraded.\n"
+			printf " \n${grn}Update completed${nor}, ${yel}${packadge_count} ${nor} packadges will be upgraded.\n"
 			apt_update_flag=1 #True
 			up_to_date_flag=0 #False
 		elif [ ${?} -eq 1 ]; then
 			up_to_date=$(echo ${apt_update_result} | grep -ox "All packages are up to data")
-			printf " ${nor}We are already ${grn}up-to-date${continuing}\n"
+			printf " \n${nor}We are already ${grn}up-to-date${continuing}\n"
 			apt_update_flag=1 #True
 			up_to_date_flag=1 #True
 		else
-			printf " ${drk_red}Update failed${nor}, exiting to shell\n"
+			printf " \n${drk_red}Update failed${nor}, exiting to shell\n"
 			exit 1 #system update failed"
 			apt_update_flag=0 #False
 			up_to_date_flag=0 #False
@@ -182,10 +182,10 @@ function system_update() {
 	if [[ "${up_to_date_flag}" -eq 0  ||  "${apt_update_flag}" -eq 0 ]]; then
 		apt full-upgrade -y > /dev/null 2>&1
 		if [ ${?} -eq 1 ]; then
-			printf " ${drk_red}Upgrade failed${nor}, exiting to shell\n"
+			printf " \n${drk_red}Upgrade failed${nor}, exiting to shell\n"
 			exit 1 #apt update or apt full-upgrade failed"
 		else
-			printf " ${nor}Upgrade ${drk_grn}Completed${nor}...\n"
+			printf " \n${nor}Upgrade ${drk_grn}Completed${nor}...\n"
 		fi
 	fi
 }
