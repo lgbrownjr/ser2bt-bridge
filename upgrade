@@ -157,6 +157,7 @@ function system_update() {
 	apt_update_result=$(apt update 2> /dev/null)
 	if [ ${?} -gt 0 ]; then
 		apt_update_flag=0 #False
+		up_to_date_flag=0 #False
 		printf " ${nor}Update ${red}failed${nor}, exiting to shell\n"
 		exit 1 #apt update or apt full-upgrade failed"
 	else
@@ -196,7 +197,7 @@ function system_update() {
 ##Check to make sure this is a rpi zero:
 if  grep -q "Zero" /proc/device-tree/model; then
 	#Starting script here:
-	printf "\n\n${nor}Beginning ${upgrade_path} upgrade of ${yel}ser2bt-bridge${nor}:\n\n"
+	printf "\n\n${nor}Beginning ${cyn}${upgrade_path}${nor} upgrade of ${yel}ser2bt-bridge${nor}:\n\n"
 else
 	printf "\n${nor}This is ${drk_red}not${nor} a ${yel}Raspberry Zero${nor}, ${drk_red}Aborting ${nor}installation/upgrade.\n" | fmt --goal=91 --width=${last_col}
 	exit 1
@@ -271,6 +272,7 @@ printf "\n${nor}Determining installed hardware:${nor}\n"
 			e_ink="True"
 			printf " ${nor}It looks as if you have a ${yel}e-ink${nor} display\n"
 		else
+			printf " ${nor}It looks as if there is no ${yel}e-ink${nor} display installed.\n"
 			e_ink="False"
 		fi
 	fi
@@ -301,10 +303,13 @@ fi
 #check for and shutdown the e-paper service if it is currently running:
 if [ "${e_ink}" = "True" ]; then
 	e-paper_service_toggle ${stop}
+
 fi
 
 #Run a full apt update, and upgrade:
-system_update
+system_update &
+spinner $!
+
 
 #Based on what was discovered from any installed hardware, start putting the file lists and settings together for installation:
 if [ "${e_ink}" = "True" ] && [ "${upgrade_path}" = "full" ] ; then
