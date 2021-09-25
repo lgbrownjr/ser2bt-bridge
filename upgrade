@@ -107,9 +107,12 @@ bad_failed="${drk_red}Failed${nor}."
 completed="${drk_grn}Done${nor}."
 stop="stop"
 start="start"
-good_dot="${drk_grn}.${norm}"
-bad_dot="${drk_red}.${norm}"
+good_dot="${drk_grn}.${nor}"
+bad_dot="${drk_red}.${nor}"
 continuing="${nor}, continuing."
+rtc="${gre}rtc${nor}"
+ups="${gre}ups${nor}"
+display="${gre}display${nor}"
 
 #Flags
 bin_flag=0
@@ -135,6 +138,11 @@ function e-paper_service_toggle() {
 		fi
 		systemctl ${toggle} ser2bt-e-paper.service && printf "${good_dot}" || printf "${bad_dot}" &
 		spinner $!
+		python3 upgrade_scr &
+		spinner $!
+		printf "${completed}\n"
+	elif [ "${result}" = "inactive" ] && [ ${toggle} = "stop" ]; then
+		printf "\n${toggle^}ping the e-paper service..."
 		python3 upgrade_scr &
 		spinner $!
 		printf "${completed}\n"
@@ -164,16 +172,16 @@ function system_update() {
 		echo ${apt_update_result} | grep -q -s -o -e  "[0-9] packages can be upgraded" | grep -o "[0-9]*"
 		if [ ${?} -eq 0 ]; then
 			packadge_count=$(echo ${apt_update_result} | grep -o "[0-9] packages can be upgraded" 2> /dev/null | grep -o "[0-9]*")
-			printf " \n${grn}Update completed${nor}, ${yel}${packadge_count} ${nor} packadges will be upgraded.\n"
+			printf "   \n ${grn}Update completed${nor}, ${yel}${packadge_count} ${nor} packadges will be upgraded.\n"
 			apt_update_flag=1 #True
 			up_to_date_flag=0 #False
 		elif [ ${?} -eq 1 ]; then
 			up_to_date=$(echo ${apt_update_result} | grep -ox "All packages are up to data")
-			printf " \n${nor}We are already ${grn}up-to-date${continuing}\n"
+			printf "   \n ${nor}We are already ${grn}up-to-date${continuing}\n"
 			apt_update_flag=1 #True
 			up_to_date_flag=1 #True
 		else
-			printf " \n${drk_red}Update failed${nor}, exiting to shell\n"
+			printf "   \n ${drk_red}Update failed${nor}, exiting to shell\n"
 			exit 1 #system update failed"
 			apt_update_flag=0 #False
 			up_to_date_flag=0 #False
@@ -265,14 +273,14 @@ printf "\n${nor}Determining installed hardware:${nor}\n"
 	result=$(spi-config -q -d ${dev_folder}${e_ink_dev} 2> /dev/null | grep "speed=4000000")
 	if [ ${?} -eq 0 ]; then
 		e_ink="True"
-		printf " ${nor}It looks as if you have a ${yel}e-ink${nor} display\n"
+		printf " ${nor}It appears that you have an ${yel}e-ink ${display}.\n"
 	else
 		result=$(spi-config -q -d ${dev_folder}${e_ink_dev} 2> /dev/null | grep "speed=125000000")
 		if [ ${?} -eq 0 ]; then
 			e_ink="True"
-			printf " ${nor}It looks as if you have a ${yel}e-ink${nor} display\n"
+			printf " ${nor}It appears that you have a ${yel}e-ink  ${display}.\n"
 		else
-			printf " ${nor}It looks as if there is no ${yel}e-ink${nor} display installed.\n"
+			printf " ${nor}It appears that there is no ${yel}e-ink ${display} installed.\n"
 			e_ink="False"
 		fi
 	fi
@@ -281,16 +289,16 @@ printf "\n${nor}Determining installed hardware:${nor}\n"
 	result=$(i2cdetect -y 1 0x75 0x75 2> /dev/null | grep -Eo "UU|75")
 	if [ "${result}" == "75" ];  then
 		ups_type="pisugar2"
-		printf " ${nor}It looks as if you have a ${yel}${ups_type} ${nor}ups\n"
+		printf " ${nor}It looks as if you have a ${yel}${ups_type} ${ups}\n"
 		resultb=$(i2cdetect -y 1 0x32 0x32 2> /dev/null | grep -Eo "UU|32")
 		if [ "${resultb}" == "32" ] || [ "${resultb}" == "UU" ];  then
-			printf "  ${nor}It looks as if the ${yel}rtc${nor} on your ${yel}${ups_type} ${nor}ups is available\n"
+			printf "  ${nor}It looks as if the ${rtc} on your ${yel}${ups_type} ${ups} is available.\n"
 		fi
 	else
 		result=$(i2cdetect -y 1 0x36 0x36 2> /dev/null | grep -Eo "UU|36")
 		if [ "${result}" == "36" ];  then
 			ups_type="ups_lite"
-			printf " ${nor}It looks as if you have a ${yel}${ups_type} ${nor}ups\n"
+			printf " ${nor}It looks as if you have a ${yel}${ups_type} ${ups}.\n"
 		else
 			ups_type="none"
 		fi
