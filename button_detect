@@ -57,19 +57,6 @@ def gpio_tap_detect(tap):
         TAP_ARRAY = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     return (current_tap_type)
 
-#Future Use
-def button_detect(adddress, bus):
-#   bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
-    button_value = bus.read_byte_data(address, 0x55)
-    try:
-        button_value = bus.read_byte_data(address, 0x55)
-    except:
-        button_press = False
-    if hex(button_value) is 0:
-        button_press = False
-    else:
-        button_press = True
-    return button_press
 #End Function defenition:
 ######################################################################################################
 
@@ -96,7 +83,7 @@ while True:
             os.system("poweroff -p") #shut the pi down.
         if tap_type == "long": #minimum of 3 second press
             file = open(tmp_dir+shut_file,'w')
-            file.write(str("e"))
+            file.write(str("r"))
             file.close()
             syslog.syslog(syslog.LOG_INFO, 'Button-press detected, rebooting...')
             os.system('wall -n "reboot by way of the power button being long pressed!"')

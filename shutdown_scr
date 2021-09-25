@@ -38,6 +38,7 @@ exit_draw = ImageDraw.Draw(exit_image)
 def shutdown_check():
     power_off = 'p' #flag to indicate that the bridge is being powered off.
     exit_out = 'e' #flag to indicate that the bridge will exit out of its service(s).
+    reboot = 'r' #flag to indicate that the bridge will reboot.
     flag = ' ' #capture contents of shut_file
     msg = " " #message to send back to calling statement.
     if os.path.exists(tmp_dir+shut_file):
@@ -45,15 +46,17 @@ def shutdown_check():
         flag = file.read()
         file.close()
         if exit_out in flag:
-            msg = 'No Shutdown'
+            msg = 'Exit'
         elif power_off in flag:
             msg = 'Shutdown'
+        elif reboot in flag:
+            msg = 'Reboot'
         else:
             msg = 'Shutdown'
     else:
         msg = 'Shutdown'
-    print (msg)
-    print (flag)
+#    print (msg)
+#    print (flag)
     return (msg)
 
 #def reset_shutdown_check()
@@ -62,19 +65,21 @@ def shutdown_check():
 epd.init(epd.FULL_UPDATE)
 
 #Draw out the boot screen
-exit_draw.text((6, 30), 'ser2bt_status service', font=f_title_font24, fill = int(foreground))
-exit_draw.text((48, 60), 'Has been stopped', font=f_title_font18, fill = int(foreground))
+if shutdown_check() == "Exit":
+    exit_draw.text((6, 27), 'ser2bt_status service', font=f_title_font24, fill = int(foreground))
+else:
+    exit_draw.text((53, 27), 'ser2bt_status', font=f_title_font24, fill = int(foreground))
+
+exit_draw.text((77, 60), 'Will ' + shutdown_check(), font=f_title_font18, fill = int(foreground))
 epd.display(epd.getbuffer(exit_image.rotate(screen_rotate)))
 
 if shutdown_check() == "Shutdown":
-    print ("We made it!")
-#    epd.sleep()
+    epd.sleep()
     time.sleep(2)
     # parameters to use the keys from the ser2bt_config.ini
     screen_rotate = int(shutdown_screen["screen_rotate"])
     foreground = int(shutdown_screen["foreground"])
     background = int(shutdown_screen["background"])
-    epd.init(epd.FULL_UPDATE)
 
     icon_image = Image.new('1', (epd.height, epd.width), int(background))  #clear the frame
     icon_draw = ImageDraw.Draw(icon_image)
@@ -84,7 +89,7 @@ if shutdown_check() == "Shutdown":
     icon_draw.text((4,47), 'master', font=f_top_line_font16,fill = int(foreground))
     icon_draw.text((122,47), host_name, font=f_top_line_font16,fill = int(foreground))
     icon_draw.text((204,47), 'slave', font=f_top_line_font16,fill = int(foreground))
-#    epd.init(epd.FULL_UPDATE)
+    epd.init(epd.FULL_UPDATE)
     epd.display(epd.getbuffer(icon_image.rotate(screen_rotate)))
 
 epd2in13_V2.epdconfig.module_init()
