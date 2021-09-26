@@ -39,6 +39,7 @@ def shutdown_check():
     power_off = 'p' #flag to indicate that the bridge is being powered off.
     exit_out = 'e' #flag to indicate that the bridge will exit out of its service(s).
     reboot = 'r' #flag to indicate that the bridge will reboot.
+    upgrade = 'u' #flag to indicate that the bridge is upgrading.
     flag = ' ' #capture contents of shut_file
     msg = " " #message to send back to calling statement.
     if os.path.exists(tmp_dir+shut_file):
@@ -51,6 +52,8 @@ def shutdown_check():
             msg = 'Shutdown'
         elif reboot in flag:
             msg = 'Reboot'
+        elif upgrade in flag:
+            msg = 'Upgrade'
         else:
             msg = 'Shutdown'
     else:
@@ -65,12 +68,25 @@ def shutdown_check():
 epd.init(epd.FULL_UPDATE)
 
 #Draw out the boot screen
+exit_draw.text((80, 20), 'Standby:', font=f_title_font24, fill = int(foreground))
+exit_draw.text((26, 55), 'Serial 2 Bluetooth Bridge', font=f_title_font18, fill = int(foreground))
 if shutdown_check() == "Exit":
-    exit_draw.text((6, 27), 'ser2bt_status service', font=f_title_font24, fill = int(foreground))
+    horizontal=90
+    reason = "Exiting"
+elif shutdown_check() == "Upgrade":
+    horizontal=52
+    reason = "being Upgraded"
+elif shutdown_check() == "Reboot":
+    horizontal=73
+    reason = "Rebooting"
+elif shutdown_check() == "Shutdown":
+    horizontal=55
+    reason = "being Shutdown"
 else:
-    exit_draw.text((53, 27), 'ser2bt_status', font=f_title_font24, fill = int(foreground))
+    horizontal=63
+    reason = "Exiting"
 
-exit_draw.text((77, 60), 'Will ' + shutdown_check(), font=f_title_font18, fill = int(foreground))
+exit_draw.text((horizontal, 75), 'Is ' + reason, font=f_title_font18, fill = int(foreground))
 epd.display(epd.getbuffer(exit_image.rotate(screen_rotate)))
 
 if shutdown_check() == "Shutdown":
