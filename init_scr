@@ -34,7 +34,7 @@ boot_draw = ImageDraw.Draw(boot_image)
 
 #Plot the text:
 boot_draw.text((77, 20), 'Loading ', font=f_title_font24, fill = foreground)
-boot_draw.text((22, 50), 'Serial to bluetooth bridge  ', font=f_title_font18, fill = foreground)
+boot_draw.text((22, 55), 'Serial to bluetooth bridge  ', font=f_title_font18, fill = foreground)
 
 #Display the screen
 epd.display(epd.getbuffer(boot_image.rotate(screen_rotate)))
