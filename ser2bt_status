@@ -397,7 +397,7 @@ except SystemExit:
     term_draw = ImageDraw.Draw(term_image)
     term_draw.text((80, 20), 'Standby:', font=f_title_font24, fill = int(foreground))
     term_draw.text((26, 55), 'Serial 2 Bluetooth Bridge', font=f_title_font18, fill = int(foreground))
-    term_draw.text((23, 75), 'Is exiting Due to SIGTERM', font=f_title_font18, fill = int(foreground))
+    term_draw.text((23, 75), 'Is exiting due to SIGTERM', font=f_title_font18, fill = int(foreground))
     epd.display(epd.getbuffer(term_image.rotate(screen_rotate)))
     syslog.syslog(syslog.LOG_INFO, 'Shutting Down/Restarting service - interupted by service stop, from command, shutdown, or reboot')
     epd.sleep()
