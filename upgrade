@@ -140,6 +140,10 @@ function e-paper_service_toggle() {
 		printf "${completed}\n"
 	elif [ "${result}" = "inactive" ] && [ ${toggle} = "stop" ]; then
 		printf "\n${toggle^}ping the e-paper service..."
+		if [ -f ${tmp_folder}${shut_file} ]; then
+			echo "u" > ${tmp_folder}${shut_file} && printf ${good_dot} || printf ${bad_dot}
+		fi
+		shutdown_scr &
 		spinner $!
 		printf "${completed}\n"
 	elif [ "${result}" = "inactive" ] && [ ${toggle} = "start" ]; then
