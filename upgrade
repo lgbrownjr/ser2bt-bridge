@@ -137,12 +137,9 @@ function e-paper_service_toggle() {
 		fi
 		systemctl ${toggle} ser2bt-e-paper.service && printf "${good_dot}" || printf "${bad_dot}" &
 		spinner $!
-#		python3 upgrade_scr &
-#		spinner $!
 		printf "${completed}\n"
 	elif [ "${result}" = "inactive" ] && [ ${toggle} = "stop" ]; then
 		printf "\n${toggle^}ping the e-paper service..."
-		python3 upgrade_scr &
 		spinner $!
 		printf "${completed}\n"
 	elif [ "${result}" = "inactive" ] && [ ${toggle} = "start" ]; then
