@@ -669,15 +669,15 @@ fi
 	if [ "${bin_flag}" -gt 0 ] ; then
 		printf "\n${nor}Restarting services that are associated to running scripts:${nor}\n"
 		if [ "${svc_1_bin_flag}" -eq 1 ] ; then
-			systemctl restart "${service_assoc[1]}" && printf " ${nor}${service_assoc[1]} ${drk_grn}Successfully ${nor}Restarted.\n" || printf "${drk_red}Failed ${yellow}${svc_file}${nor}!\n"
+			systemctl restart "${service_assoc[1]}" && printf " ${yel}${service_assoc[1]} ${drk_grn}Successfully ${nor}Restarted.\n" || printf "${drk_red}Failed ${yellow}${svc_file}${nor}!\n"
 			let svc_count++
 		fi
 		if [ "${svc_3_bin_flag}" -eq 1 ] ; then
-			systemctl restart "${service_assoc[3]}" && printf " ${nor}${service_assoc[3]} ${drk_grn}Successfully ${nor}Restarted.\n" || printf "${drk_red}Failed ${yellow}${svc_file}${nor}!\n"
+			systemctl restart "${service_assoc[3]}" && printf " ${yel}${service_assoc[3]} ${drk_grn}Successfully ${nor}Restarted.\n" || printf "${drk_red}Failed ${yellow}${svc_file}${nor}!\n"
 			let svc_count++
 		fi
 		if [ "${svc_5_bin_flag}" -eq 1 ] ; then
-			systemctl restart "${service_assoc[5]}" && printf " ${nor}${service_assoc[5]} ${drk_grn}Successfully ${nor}Restarted.\n" || printf "${drk_red}Failed ${yellow}${svc_file}${nor}!\n"
+			systemctl restart "${service_assoc[5]}" && printf " ${yel}${service_assoc[5]} ${drk_grn}Successfully ${nor}Restarted.\n" || printf "${drk_red}Failed ${yellow}${svc_file}${nor}!\n"
 			let svc_count++
 		fi
 	fi
