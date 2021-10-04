@@ -352,9 +352,6 @@ try:
                     draw.text((usb_serial_status_pos, 100),str(total_serial_lines), font=f_var_font18, fill = int(foreground))
                     old_total_serial_lines = total_serial_lines
 
-#            if first_pass is True:
-#                epd.init(epd.FULL_UPDATE)
-#                first_pass = False
             epd.init(epd.PART_UPDATE)
             epd.displayPartial(epd.getbuffer(image.rotate(screen_rotate))) #update the screeen to actually print the above to the e-ink display.
 
@@ -378,12 +375,12 @@ except KeyboardInterrupt:
     set_shutdown_flag ('e')
     syslog.syslog(syslog.LOG_INFO, 'Quit (SIGINT) Due to Keyboard interrupt when not being run as a service')
     epd.init(epd.FULL_UPDATE)
-    term_image = Image.new('1', (epd.height, epd.width), int(background))  # clear the frame
-    term_draw = ImageDraw.Draw(term_image)
-    term_draw.text((80, 20), 'Standby:', font=f_title_font24, fill = int(foreground))
-    term_draw.text((26, 55), 'Serial 2 Bluetooth Bridge', font=f_title_font18, fill = int(foreground))
-    term_draw.text((23, 75), 'Has Stopped due to SIGINT', font=f_title_font18, fill = int(foreground))
-    epd.display(epd.getbuffer(term_image.rotate(screen_rotate)))
+#    term_image = Image.new('1', (epd.height, epd.width), int(background))  # clear the frame
+#    term_draw = ImageDraw.Draw(term_image)
+#    term_draw.text((80, 20), 'Standby:', font=f_title_font24, fill = int(foreground))
+#    term_draw.text((26, 55), 'Serial 2 Bluetooth Bridge', font=f_title_font18, fill = int(foreground))
+#    term_draw.text((23, 75), 'Has Stopped due to SIGINT', font=f_title_font18, fill = int(foreground))
+#    epd.display(epd.getbuffer(term_image.rotate(screen_rotate)))
     syslog.syslog(syslog.LOG_INFO, 'Shutting Down ser2bt_status - interupted by Control C')
     epd.sleep()
 #    epaper_exit()
@@ -393,12 +390,12 @@ except KeyboardInterrupt:
 except SystemExit:
     syslog.syslog(syslog.LOG_INFO, 'Quit (SIGTERM) from service telling us to terminate')
     epd.init(epd.FULL_UPDATE)
-    term_image = Image.new('1', (epd.height, epd.width), int(background))  # 255: clear the frame
-    term_draw = ImageDraw.Draw(term_image)
-    term_draw.text((80, 20), 'Standby:', font=f_title_font24, fill = int(foreground))
-    term_draw.text((26, 55), 'Serial 2 Bluetooth Bridge', font=f_title_font18, fill = int(foreground))
-    term_draw.text((23, 75), 'Is exiting due to SIGTERM', font=f_title_font18, fill = int(foreground))
-    epd.display(epd.getbuffer(term_image.rotate(screen_rotate)))
+#    term_image = Image.new('1', (epd.height, epd.width), int(background))  # 255: clear the frame
+#    term_draw = ImageDraw.Draw(term_image)
+#    term_draw.text((80, 20), 'Standby:', font=f_title_font24, fill = int(foreground))
+#    term_draw.text((26, 55), 'Serial 2 Bluetooth Bridge', font=f_title_font18, fill = int(foreground))
+#    term_draw.text((23, 75), 'Is exiting due to SIGTERM', font=f_title_font18, fill = int(foreground))
+#    epd.display(epd.getbuffer(term_image.rotate(screen_rotate)))
     syslog.syslog(syslog.LOG_INFO, 'Shutting Down/Restarting service - interupted by service stop, from command, shutdown, or reboot')
     epd.sleep()
 #    epaper_exit()
