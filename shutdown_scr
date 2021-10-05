@@ -39,11 +39,13 @@ f_title_font24 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 24)
 bmp = Image.open(os.path.join(picdir, 'logo.bmp'))
 exit_image = Image.new('1', (epd.height, epd.width), int(background))  #clear the frame
 exit_draw = ImageDraw.Draw(exit_image)
-display_buffer = 11 #Will start all text at the 11th pixel
-line_position = display_buffer #initial line to start on.
-next_line_position = display_buffer #initial line to start on.
+left_margin = 1 #Left margin.
+top_margin = 11 #Will start all text at the 11th pixel
+bottom_margen = epd.width - 1
+line_position = top_margin #initial line to start on.
+next_line_position = top_margin #initial line to start on.
 
-def center_calc(msg,font):
+def center_text(msg,font):
     w, h = exit_draw.textsize(msg, font)
     return (w)
 
@@ -51,7 +53,7 @@ def line_pos(msg,font):
     global line_position
     global next_line_position
     w, h = exit_draw.textsize(msg, font)
-    if next_line_position == display_buffer:
+    if next_line_position == top_margin:
         next_line_position = line_position + h
         return (line_position)
     else:
@@ -98,11 +100,8 @@ def bat_lvl():
 epd.init(epd.FULL_UPDATE)
 
 #Draw out the boot screen
-#w, h = exit_draw.textsize(standby_msg, f_title_font24)
-#print ("width = "+str(w)+" & height = "+str(h)+" Screen width is "+str(epd.height))
-#print ("starting point is "+str((epd.height/2) - (w/2)))
-exit_draw.text(((epd.height/2) - (center_calc(standby_msg,f_title_font24)/2), line_pos(standby_msg,f_title_font24)), standby_msg, font=f_title_font24, fill = int(foreground))
-exit_draw.text(((epd.height/2) - (center_calc(title_msg,f_title_font18)/2), line_pos(title_msg,f_title_font18)), title_msg, font=f_title_font18, fill = int(foreground))
+exit_draw.text(((epd.height/2) - (center_text(standby_msg,f_title_font24)/2), line_pos(standby_msg,f_title_font24)), standby_msg, font=f_title_font24, fill = int(foreground))
+exit_draw.text(((epd.height/2) - (center_text(title_msg,f_title_font18)/2), line_pos(title_msg,f_title_font18)), title_msg, font=f_title_font18, fill = int(foreground))
 if shutdown_check() == "Exit":
     reason = "Is Exiting"
 elif shutdown_check() == "Upgrade":
@@ -114,16 +113,16 @@ elif shutdown_check() == "Shutdown":
 else:
     reason = "Is Exiting"
 
-exit_draw.text(((epd.height/2) - (center_calc(reason,f_title_font18)/2), line_pos(reason,f_title_font18)), reason, font=f_title_font18, fill = int(foreground))
+exit_draw.text(((epd.height/2) - (center_text(reason,f_title_font18)/2), line_pos(reason,f_title_font18)), reason, font=f_title_font18, fill = int(foreground))
 epd.display(epd.getbuffer(exit_image.rotate(screen_rotate)))
 
 if shutdown_check() == "Shutdown":
+    #new page, reset line_position.
     epd.sleep()
     time.sleep(2)
-    #new page, reset line_position.
-    display_buffer = 6
-    next_line_position = display_buffer
-    line_position = display_buffer
+    top_margin = 6
+    next_line_position = top_margin
+    line_position = top_margin
 
     #compute and format uptime
     up_time = subprocess.check_output(['uptime', '-p']).decode("utf8").replace(',', '').replace("up ","")
@@ -137,18 +136,18 @@ if shutdown_check() == "Shutdown":
     icon_image = Image.new('1', (epd.height, epd.width), int(background))  #clear the frame
     icon_draw = ImageDraw.Draw(icon_image)
 
-    icon_image.paste(bmp, (0,0)) #Display the background image
+    icon_image.paste(bmp, (0,20)) #Display the background image
     #display the screen title"
-    icon_draw.text(((epd.height/2) - (center_calc(title_msg,f_title_font18)/2), line_pos(title_msg,f_title_font18)), title_msg, font=f_title_font18,fill = int(foreground))
+    icon_draw.text(((epd.height/2) - (center_text(title_msg,f_title_font18)/2), line_pos(title_msg,f_title_font18)), title_msg, font=f_title_font18,fill = int(foreground))
 
     #Add the discriptions to the boxes in the image
-    icon_draw.text((4,47), 'master', font=f_top_line_font16,fill = int(foreground))
-    icon_draw.text((122,47), host_name, font=f_top_line_font16,fill = int(foreground))
-    icon_draw.text((204,47), 'slave', font=f_top_line_font16,fill = int(foreground))
+    icon_draw.text((4,45), 'master', font=f_top_line_font16,fill = int(foreground)) #28 is the top of the square
+    icon_draw.text((122,45), host_name, font=f_top_line_font16,fill = int(foreground))
+    icon_draw.text((204,45), 'slave', font=f_top_line_font16,fill = int(foreground)) #75 is the bottom of the square
 
     #Add uptime, battery level, then add uptime at the bottom of the screen
-    icon_draw.text((1,85), 'Halted @ '+time.strftime('%H:%M')+'/'+'bat:'+bat_lvl(), font=f_top_line_font16,fill = int(foreground))
-    icon_draw.text((1,105), 'Uptime:'+ up_time, font=f_top_line_font16,fill = int(foreground))
+    icon_draw.text((left_margin,85), 'Halted @ '+time.strftime('%H:%M')+'/'+'bat:'+bat_lvl(), font=f_top_line_font16,fill = int(foreground))
+    icon_draw.text((left_margin,103), 'Uptime:'+ up_time, font=f_top_line_font16,fill = int(foreground))
     epd.init(epd.FULL_UPDATE)
     epd.display(epd.getbuffer(icon_image.rotate(screen_rotate)))
 
