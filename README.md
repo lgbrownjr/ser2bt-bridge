@@ -3,43 +3,44 @@
 ## Serial to Bluetooth bridge for raspberry pi zero w
 Before we begin, understand that everything in this repository is a work in progress...  :slightly_smiling_face:
 ### Definitions:
-I tend to use several different discipters for each piece thats involved with this project, so I've tried to define them below to helpkeep the reader from being confused:
+I tend to use several different descriptors for each component that is involved with this project, so I've tried to define them below:
 * For the purpose of this project, the terms *slave* refers to a end device you want to connect to, such as a router, switch, Firewall, Wireless LAN Controller, or any appliance that has a console interfiace.
 * The terms *master*  refers to the PC, laptop, phone, or tablet.
 * The terms *bridge*, or *pi* refer to the *raspberry pi zero w*, that is being used as a *bridge* to connect *master* to *slave*(s).
 * The terms *user*, *you*, *network engineer*, *network administrator*, *administrator*, or *engineer* all refer to the person using this *bridge*.
 ### Preamble:
-This project is made up of a set of scripts, services and libraries that allow a user to connect "through" a *raspberry pi zero w* from their phone/tablet/laptop's bluetooth interface, to the console port of a *slave* device such as a switch, router, firewall, etc.  This allows the network/system engineer to manage devices via it's console port, while enjoying the benefit of not having to be tethered right up to it.
+This project is made up of a set of scripts, services and libraries "used loosely" that allow a user to connect "through" a *raspberry pi zero w* from their phone/tablet/laptop's bluetooth interface to the console port on a *slave* device such as a switch, router, firewall, etc.  This allows the network/system engineer to manage devices via it's console port, while enjoying the benefit of not having to be tethered right up to it.
 #### How it works at a high level/Feature List:
-These scripts and services basicaly utilize *screen* and *rfcomm* to "bridge" each connection between the *master*, and the *slave* you are attempting to connect to. 
+These scripts and services basicaly utilize *screen* and *rfcomm* to "bridge" a connection between the *master*, and the *slave* you are attempting to connect to. 
 * By design, this prject does not have security in mind, preferring instead to focus on easy discovery, pairing, and connectivity to allow the network administrator to focus on getting their work done.
   * The Bridge will always be discoverable, and will not require a pin to complete the pairing process.
   * This has been tested with *master* devices using the following Operating Systems: Linux, Android, Windows 10, and ChromeOS (with caveats).
   * When connecting to the bridge over bluetooth, the administrator will be auto logged-in as pi.
-    * This will in no way affect access to the slave device. If the Slave requires a username/password to access it, you will still be required to use those credentials.
-* Connection between the *master* and the bridge will be 9600 Baud - this is to maximize the possible range.
+    * This will in no way affect access to the _slave_ device. If the _slave_ requires a username/password to access it, you will still be required to use those credentials.
+* Connection between the *master* and the *bridge* will be 9600 Baud - this is to maximize range.
 * Once the *master* is connected to the *bridge*, it will attempt to look for any available serial (usb or acm) ports.  At this point one of three things are expected to occur:
   * If the *bridge* was connected to a single *slave*, then it will open a *screen* session to that serial port outomagically.
   * If the *bridge* was connected (via OTG usb hub), then it will create one *screen* session for each serial port it found, list them on your display, and exit to shell.
-  * If the *bridge* does not detect any new usb/acm ports, then it will state that fact and then drop to the *bridges* bash shell.
-* The connection between the bidge and the *slave* is set to 9600 Baud.  I'm looking to set this as a configurable element in the future.
-* While connected to a *slave*, the *bridge* will begin logging all session traffic between the *master* and *slave*. (This is why it is important to make sure the *bridge* somehow receives time from an external source, and/or onboard rtc.)
-* If you become disconnected from the *bridge*, and want to reconnect, do not try to use the terminal program's *reconnect* feature.  Close the window, and then re-open the connection profile.
+  * If the *bridge* does not detect any new usb/acm ports, then the it will state that fact and then drop to the *bridges* bash shell.
+* The connection between the *bidge* and the *slave* is set to 9600 Baud.  I'm looking to set this as a configurable element in the future.
+* While connected to a *slave*, the *bridge* will begin logging all session traffic between the *master* and *slave*. (This is why it is important to make sure the *bridge* somehow either has its time set manually, or receives its time from an external source, such as ntp server and/or an onboard rtc.)
+* If you become disconnected from the *bridge*, and want to reconnect, do not try to use the terminal program's *reconnect* feature.  I order to reconnect, first close the window, then re-open the connection profile.
 * If your setup has one of the two UPS's listed below, then services that will monitor battery level, and will automatically shutdown if the battery level reaches 2%.
-  * If you are using the PiSugar2 UPS option, then you get several added benefits:
+  * If you are using the *PiSugar2* UPS, then you get several added benefits:
     * An on board RTC.
-    * A button to safely turn off the *bridge* when you are done using it.  (This makes it so much easier then having to login just to power it off!)
-* If your setup has a *waveshare* e-ink screen, then there are services that will monitor and display uptades as to the systems health/status.
-* Telnet is installed and is used for bridging to serial connections via *ser2net*.
-* If you are relying on the *slave's* USB port to supply power to your bridge, and decide to reboot the slave, your bridge will most likely be un-gracefully powercycled along with it.  This is not good as there is a risk that your pi's SD card will become corrupted, and stop working all-to-gether.  There are two possible ways around this:
-  * Add a battery backup, to allow the pi to weather those pesky, but necessary.  This will allow the pi to be moved around between closets, or devices without powering it down, and back up.  See below for more details.
-  * Turn on *Overlay FS*.  This basically, turns your pi's sd card into a read only drive, so the risk of corrupting your SD card goes way, way down.  The down side is that you need to turn *Overlay FS* Off to update it or to make configuration adjustments, then turn it back on.  I'm till testing this feature to see how well it works over the long run.
-
+    * A button to safely turn off the *bridge* when you are done using it.  This makes it so much easier then having to login just to power it off:
+      * Short-press - between 1 to 2 seconds will cause the bridge to safely shutdown.
+      * Long-press - between 3 - 4 seconds will cause the bridge to safely reboot.
+* If your setup has a *waveshare* e-ink screen, then there are services that will continiously upate the state of the bridge on the display.
+* Telnet is installed and is used for bridging to serial connections via *ser2net*.  This is just to provide another method to connect to a *slave* device.
+* If you are relying on the *slave's* USB port to supply power to your *bridge*, and decide to reboot the *slave*, your bridge will most likely be un-gracefully powercycled along with it.  This is not good as there is a risk that your Pi's SD card will become corrupted, and stop working all together.  There are two possible ways around this:
+  * Add a battery/UPS backup to allow the pi to weather those pesky, but necessary reboots.  This will also allow the *bridge* to be moved around between closets, or *devices* without powering it down, and back up.  See below for more details.
+  * Turn on *Overlay FS*.  This basically, turns your pi's sd card into a read only drive, so the risk of corrupting your SD card goes way, way down.  The down side is that you need to turn *Overlay FS* Off anythime the *bridge* needs and update applied or to make configuration adjustments.  I'm till testing this feature to see how well it works over the long run.
 ---
 ## Setup:
 There are two different setup options, basic, and full.
-* Basic should be used if you are only using a pi, and do not wish (at this point) to add a screen, or an external battery.
-* Full should be used if you are using the pi, along with the e-ink display, and an external UPS.
+* Basic should be used if you are only using a pi, and do not wish (at this point) to add a screen, rtc, or an external battery.
+* Full should be used if you are using the pi, either the e-ink display and/or an external UPS.  By selecting *full* the upgrade script will determine what is hardware is attatched, and install the necessary software to make it work.
 ### Basic setup:
 The following steps will guide you through the process getting this system to work from just after everything is unboxed, to the point where you are connecting to a switch, router, or whatever - that is the raspberry pi zero, by itself acting as a bluetooth to serial bridge.  We will be using headless installation method, so you will not need a keyboard, mouse, or monitor.
 #### Parts needed for Basic setup:
@@ -52,6 +53,14 @@ You will need:
 * A Micro USB (Pi side) to Mini USB (switch side) to connect between the raspberry pi's usb port to the switches USB-console port:  [Example](https://www.amazon.com/gp/product/B018M8YNDG/ref=ox_sc_act_title_1?smid=ATVPDKIKX0DER&psc=1)
 * Optional:  A Micro USB (pi side) to USB A female OTG Hub.  This will permit you to connect the *bridge* to multiple *slave* devices, so you won't have to keep walking back to switch the cable back and forth.  A good example is if you have VSS/Stack, or a FHRP pair:  [Example](https://www.amazon.com/gp/product/B01HYJLZH6/ref=ppx_yo_dt_b_asin_title_o01_s00?ie=UTF8&psc=1)
 * A case to house the pi.  Check this [option](https://www.amazon.com/Flirc-Raspberry-Pi-Zero-Case/dp/B08837L144/ref=sr_1_11_sspa?dchild=1&keywords=raspberry+pi+zero+battery+hat&qid=1600716473&sr=8-11-spons&psc=1&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUE0V0NONk1LS0hLNEEmZW5jcnlwdGVkSWQ9QTA5ODgwMDExTzgzV1hIVUxSQVJEJmVuY3J5cHRlZEFkSWQ9QTAxMTk0NDQySzdKM0UwV1FESTdBJndpZGdldE5hbWU9c3BfbXRmJmFjdGlvbj1jbGlja1JlZGlyZWN0JmRvTm90TG9nQ2xpY2s9dHJ1ZQ==) out for a good example, slightly pricey, but in my opinion, worth the cost.  Down side is that it will not work well with the *raspberry pi wh*'s.
+### Full setup:
+#### Installation of the *UPS* & *e-ink screen*:
+The addition of am e-paper screen and ups backup will allow you to continue providing power to the Pi while not being plugged into a power source, and to easily tell the status of the bridge (Pi) without having to login to check.
+#### Parts needed for this phase:
+- For Battery UPS, we have two supported options:
+  + The first option is a [ups-lite](https://www.ebay.com/itm/UPS-Lite-for-Raspberry-Pi-Zero-/352888138785).
+  + The second UPS option is a PiSugar2 which also has a built-in real time clock, and a button that can be controlled via software, but at double the cost as the &ups_lite*.
+- For status and system health updates, attach a [waveshare.2.13 e-paper](https://www.waveshare.com/2.13inch-e-Paper-HAT.htm) display.  _Make sure it says V2_, for Version 2.
 #### Installation:
 ##### OS installation and setup:
 - insert the SD card into a different computer to perform the first few steps:
@@ -156,17 +165,6 @@ sudo ./upgrade basic
 ###### We're Done!
 If everything went as planned, your *raspberry pi zero w* should be acting like a bluetooth to serial bridge, allowing you to connect to a switche's console port via bluetooth from your computer.
 - Now, reboot your *bridge* and skip down to How to use:
-
-### Full setup:
-#### Installation of the *UPS* & *e-ink screen*:
-The addition of am e-paper screen and ups backup will allow you to continue providing power to the Pi while not being plugged into a power source, and to easily tell the status of the bridge (Pi) without having to login to check.
-#### Parts needed for this phase:
-- For Battery UPS, we have two supported options:
-  + The first option is a [ups-lite](https://www.ebay.com/itm/UPS-Lite-for-Raspberry-Pi-Zero-/352888138785).
-  + The second UPS option is a PiSugar2 which also has a built-in real time clock, and a button that can be controlled via software, but at double the cost as the &ups_lite*.
-- For status and system health updates, attach a [waveshare.2.13 e-paper](https://www.waveshare.com/2.13inch-e-Paper-HAT.htm) display.
-#### Full Installation:
-Coming soon!
 
 ---
 ## How to use:
