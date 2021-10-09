@@ -38,6 +38,9 @@ bt_config="main.conf"
 boot_config="config.txt"
 serial_fix_file="override.conf"
 rc_local="rc.local"
+wiringpi="wiringpi-latest.deb"
+wiringpi_link="https://project-downloads.drogon.net/"
+wget_options=("-P ${tmp_folder}" "-q")
 disable_svc=("keyboard-setup.service" "dphys-swapfile.service" "triggerhappy.service" \
 "triggerhappy.socket" "apt-daily.service" "apt-daily.timer" \
 "apt-daily-upgrade.service" "apt-daily-upgrade.timer" "rpi-eeprom-update.service" \
@@ -159,6 +162,22 @@ function e-paper_service_toggle() {
 	fi
 }
 
+#Upgrade wiringpi.
+function upgrade_wiringpi() {
+	printf "\n${nor}Upgrading ${yel}wiringpi${nor}:"
+	wget ${wget_options[@]} ${wiringpi_link}${wiringpi}
+	if [ ${?} -eq 0 ]; then
+		printf "${drk_grn}.${nor}"
+	else
+		printf "${drk_red}.${nor}"
+	fi
+	sudo dpkg -iE ${tmp_folder}${wiringpi} > /dev/null 2>&1
+	if [ ${?} -eq 0 ]; then
+		printf "${drk_grn}.Done\n${nor}"
+	else
+		printf "${drk_red}Failed, ${nor}Continuing.\n"
+	fi
+}
 #Upgrade system files
 function system_update() {
 	printf "\n${nor}Update package manager:"
@@ -188,6 +207,7 @@ function system_update() {
 		fi
 	fi
 	if [[ "${up_to_date_flag}" -eq 0  ||  "${apt_update_flag}" -eq 0 ]]; then
+		printf "\n${nor}Upgrade package manager:"
 		apt full-upgrade -y > /dev/null 2>&1
 		if [ ${?} -eq 1 ]; then
 			printf " \n${drk_red}Upgrade failed${nor}, exiting to shell\n"
@@ -318,7 +338,6 @@ fi
 system_update &
 spinner $!
 
-
 #Based on what was discovered from any installed hardware, start putting the file lists and settings together for installation:
 if [ "${e_ink}" = "True" ] && [ "${upgrade_path}" = "full" ] ; then
 	config_txt_addons=("${config_txt_addons[@]}" "${wavesh_config_txt_addons[@]}")
@@ -390,6 +409,10 @@ if [ ${upgrade_path} != "basic" ] ; then
 			printf "  ${nor}Module ${yel}${module}${nor} is${drk_grn} already installed${nor}\n"
 		fi
 	done
+
+#upgrade wiringpi:
+	upgrade_wiringpi &
+	spinner $!
 fi
 
 #Check for and correct missing or incorrect locale settings that can happen while managing a headless pi:
@@ -596,7 +619,7 @@ done
 		fi
 	done
 
-if [ "${e_ink}" = "True" ] && [ "${upgrade_path}" = "full" ] ; then
+if [ "${e_ink}" = "True" ] && [ "${upgrade_path}" = "Full" ] ; then
 	printf "\nCopying files to the ${cyn}${ser2bt_lib_folder} ${nor}directory:\n"
 	for file in "${ser2bt_lib_files[@]}" ; do
 		if cmp --silent "${ser2bt_lib_folder}${file}" "${project_folder}${file}" ; then
