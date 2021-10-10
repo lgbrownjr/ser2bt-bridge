@@ -38,9 +38,14 @@ bt_config="main.conf"
 boot_config="config.txt"
 serial_fix_file="override.conf"
 rc_local="rc.local"
+bcm_ver="1.69"
+bcm2835_lib_file="libbcm2835.a"
+bcm2835_install_file="bcm2835-${bcm_ver}.tar.gz"
+bcm2835_link="http://www.airspayce.com/mikem/bcm2835/"
 wiringpi="wiringpi-latest.deb"
 wiringpi_link="https://project-downloads.drogon.net/"
 wget_options=("-P ${tmp_folder}" "-q")
+tar_post_options="-C ${tmp_folder}"
 disable_svc=("keyboard-setup.service" "dphys-swapfile.service" "triggerhappy.service" \
 "triggerhappy.socket" "apt-daily.service" "apt-daily.timer" \
 "apt-daily-upgrade.service" "apt-daily-upgrade.timer" "rpi-eeprom-update.service" \
@@ -141,7 +146,7 @@ function e-paper_service_toggle() {
 		systemctl ${toggle} ser2bt-e-paper.service && printf "${good_dot}" || printf "${bad_dot}" &
 		spinner $!
 		printf "${completed}\n"
-	elif [ "${result}" = "inactive" ] && [ ${toggle} = "stop" ]; then
+	elif [ "${result}" = "inactive" ] && [ ${toggle} = "${stop}" ]; then
 		printf "\n${toggle^}ping the e-paper service..."
 		if [ -f ${tmp_folder}${shut_file} ]; then
 			echo "u" > ${tmp_folder}${shut_file} && printf ${good_dot} || printf ${bad_dot}
@@ -149,7 +154,7 @@ function e-paper_service_toggle() {
 		shutdown_scr &
 		spinner $!
 		printf "${completed}\n"
-	elif [ "${result}" = "inactive" ] && [ ${toggle} = "start" ]; then
+	elif [ "${result}" = "inactive" ] && [ ${toggle} = "${start}" ]; then
 		printf "\n${toggle^}ing the e-paper service..."
 		if [ -f ${tmp_folder}${shut_file} ]; then
 			echo "p" > ${tmp_folder}${shut_file} && printf "${good_dot}" || printf "${bad_dot}${bad_failed}"
@@ -167,17 +172,40 @@ function upgrade_wiringpi() {
 	printf "\n${nor}Upgrading ${yel}wiringpi${nor}:"
 	wget ${wget_options[@]} ${wiringpi_link}${wiringpi}
 	if [ ${?} -eq 0 ]; then
-		printf "${drk_grn}.${nor}"
+		printf "${good_dot}"
 	else
-		printf "${drk_red}.${nor}"
+		printf "${bad_dot}"
 	fi
 	dpkg -iE ${tmp_folder}${wiringpi} > /dev/null 2>&1
 	if [ ${?} -eq 0 ]; then
-		printf "${drk_grn}.Done\n${nor}"
+		printf "${completed}"
 	else
-		printf "${drk_red}Failed, ${nor}Continuing.\n"
+		printf "${bad_failed} ${continuing}"
 	fi
 }
+
+function install_upgrade_bcm_lib() {
+	printf "\n${nor}Checking for ${yel}${bcm2835_lib_file}${nor}:\n"
+	if [ -f "${main_lib_folder}${bcm2835_lib_file}" ]; then
+		printf " ${yel}${bcm2835_lib_file}${nor} exists, skipping...\n"
+	else
+		printf " ${yel}${bcm2835_lib_file}${nor} does not exist, installing..."
+		wget ${wget_options[@]} ${bcm2835_link}${bcm2835_install_file}
+		if [ ${?} -eq 0 ]; then
+			printf "${good_dot}"
+			tar zxvf ${tmp_folder}${bcm2835_install_file} ${tar_post_options} > /dev/null 2>&1 && printf "${good_dot}" || (printf "${bad_dot}Exiting, we cannot continue without installing first.\n"; exit 1)
+			cd "${tmp_folder}bcm2835-${bcm_ver}" && printf "${good_dot}" || exit 1
+			./configure > /dev/null 2>&1 && printf "${good_dot}" || (printf "${bad_dot}Exiting, we cannot continue without installing first.\n"; exit 1)
+			make > /dev/null 2>&1 && printf "${good_dot}" || (printf "${bad_dot}Exiting, we cannot continue without installing first.\n"; exit 1)
+			make check > /dev/null 2>&1 && printf "${good_dot}" || (printf "${bad_dot}Exiting, we cannot continue without installing first.\n"; exit 1)
+			make install > /dev/null 2>&1 && printf "${good_dot}" || (printf "${bad_dot}Exiting, we cannot continue without installing first.\n"; exit 1)
+			printf "${completed}\n"
+		else
+			printf "${bad_dot}"
+		fi
+	fi
+}
+
 #Upgrade system files
 function system_update() {
 	printf "\n${nor}Update package manager:"
@@ -335,8 +363,8 @@ if [ "${e_ink}" = "True" ]; then
 fi
 
 #Run a full apt update, and upgrade:
-system_update &
-spinner $!
+#system_update &
+#spinner $!
 
 #Based on what was discovered from any installed hardware, start putting the file lists and settings together for installation:
 if [ "${e_ink}" = "True" ] && [ "${upgrade_path}" = "full" ] ; then
@@ -413,6 +441,9 @@ if [ ${upgrade_path} != "basic" ] ; then
 #upgrade wiringpi:
 	upgrade_wiringpi &
 	spinner $!
+
+#Install and/or upgrade bcm2835 as needed.
+	install_upgrade_bcm_lib
 fi
 
 #Check for and correct missing or incorrect locale settings that can happen while managing a headless pi:
