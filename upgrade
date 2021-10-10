@@ -171,7 +171,7 @@ function upgrade_wiringpi() {
 	else
 		printf "${drk_red}.${nor}"
 	fi
-	sudo dpkg -iE ${tmp_folder}${wiringpi} > /dev/null 2>&1
+	dpkg -iE ${tmp_folder}${wiringpi} > /dev/null 2>&1
 	if [ ${?} -eq 0 ]; then
 		printf "${drk_grn}.Done\n${nor}"
 	else
