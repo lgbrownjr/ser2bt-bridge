@@ -8,7 +8,9 @@ import os
 
 #Var decloration:
 bus=1
-battery_loop_sleep = 1
+battery_loop_sleep = .3
+tmp_dir = "/tmp/"
+shut_file = "shut"
 address = 0x75 # pisugar2 i2c address is 0x75 for battery management.
 TAP_ARRAY = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
@@ -18,7 +20,7 @@ syslog.syslog(syslog.LOG_INFO, ' button_detect was started')
 
 #Begin Function defenition:
 ######################################################################################################
-#Future use:
+#This module detects the type of press - single tap; double tap, or long press:
 def gpio_tap_detect(tap):
     global TAP_ARRAY
     if tap > 0:
@@ -27,8 +29,8 @@ def gpio_tap_detect(tap):
     del TAP_ARRAY[0]
     TAP_ARRAY.append(tap)
     string = "".join([str(x) for x in TAP_ARRAY])
-    print (string)
-    print (tap)
+#    print (string)
+#    print (tap)
     should_refresh = False
     current_tap_type = ""
 
@@ -53,20 +55,8 @@ def gpio_tap_detect(tap):
         should_refresh = True
     if should_refresh:
         TAP_ARRAY = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    return (current_tap_type)
 
-#Future Use
-def button_detect(adddress, bus):
-#   bus=smbus.SMBus(1)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
-    button_value = bus.read_byte_data(address, 0x55)
-    try:
-        button_value = bus.read_byte_data(address, 0x55)
-    except:
-        button_press = False
-    if hex(button_value) is 0:
-        button_press = False
-    else:
-        button_press = True
-    return button_press
 #End Function defenition:
 ######################################################################################################
 
@@ -80,13 +70,25 @@ except: #if we hit except, we exit.
     exit(1)
 syslog.syslog(syslog.LOG_INFO, 'Found the PiSugar2 button.')
 while True:
-    button_press = i2c_bus.read_byte_data(address, 0x55) #Wait for the button press
-    if button_press > 0: #Once the button is pressed...
-        syslog.syslog(syslog.LOG_INFO, 'Button was pressed, shutting down...')
-        os.system('wall -n "shutdown by way of the power button being pressed!"')
-        os.system("poweroff -p") #shut the pi down.
-
     time.sleep(battery_loop_sleep) #sleep for for the duration of battery_loop_sleep, before we loop again.
+    button_press = i2c_bus.read_byte_data(address, 0x55) #Wait for the button press
+    if button_press >= 0: #Once the button is pressed...
+        tap_type=gpio_tap_detect(button_press)
+        if tap_type == "single": #maximum 2 second press
+            file = open(tmp_dir+shut_file,'w')
+            file.write(str("p"))
+            file.close()
+            syslog.syslog(syslog.LOG_INFO, 'Button-press detected, shutting down...')
+            os.system('wall -n "shutdown by way of the power button being pressed!"')
+            os.system("poweroff -p") #shut the pi down.
+        if tap_type == "long": #minimum of 3 second press
+            file = open(tmp_dir+shut_file,'w')
+            file.write(str("r"))
+            file.close()
+            syslog.syslog(syslog.LOG_INFO, 'Button-press detected, rebooting...')
+            os.system('wall -n "reboot by way of the power button being long pressed!"')
+            os.system("reboot") #reboot the pi.
 
+#exit routine:
 syslog.syslog(syslog.LOG_INFO, 'button_detect terminated, exiting...')
 exit(0)

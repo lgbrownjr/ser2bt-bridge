@@ -3,25 +3,67 @@
 # -*- coding:utf-8 -*-
 from PIL import Image, ImageDraw, ImageFont  # Font handeling
 from waveshare_epd import epd2in13_V2
+import os
+#user-changable settings.
+screen_rotate = 180
+foreground = 0
+background = 255
 
 # Variable decleration
 epd = epd2in13_V2.EPD()
+tmp_dir = "/tmp/"
+shut_file = "shut"
+title_msg = 'Loading:'
+msg = 'Serial to bluetooth bridge'
 roboto_font_dir='/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/'
 f_title_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 18)
-f_title_font24 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 24)
+f_title_font24 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 24)
+
+#location
+left_margin = 1 #Left margin.
+top_margin = 11 #Will start all text at the 11th pixel
+bottom_margen = epd.width - 1
+line_position = top_margin #initial line to start on.
+next_line_position = top_margin #initial line to start on.
+
+def center_text(msg,font):
+    w, h = boot_draw.textsize(msg, font)
+    return (w)
+
+def line_pos(msg,font):
+    global line_position
+    global next_line_position
+    w, h = boot_draw.textsize(msg, font)
+    if next_line_position == top_margin:
+        next_line_position = line_position + h
+        return (line_position)
+    else:
+        line_position = next_line_position
+        next_line_position = line_position + h
+        return (line_position)
+
+#Check if battery file exists, create if it does not:
+if not os.path.exists(tmp_dir+shut_file):
+    os.mknod(tmp_dir+shut_file)
+
+#Then, change the rights on the file.
+os.chmod(tmp_dir+shut_file, 0o664)
 
 #Clear the Screen:
 epd.init(epd.FULL_UPDATE)
-epd.Clear(0xFF)
+epd.Clear(background)
 
 #Draw out the boot screen
-boot_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
+boot_image = Image.new('1', (epd.height, epd.width), background)  #clear the frame
 boot_draw = ImageDraw.Draw(boot_image)
-boot_draw.text((77, 20), 'Loading ', font=f_title_font24, fill=0)
-boot_draw.text((22, 50), 'Serial to bluetooth bridge  ', font=f_title_font18, fill=0)
+
+#Plot the text:
+boot_draw.text(((epd.height/2) - center_text(title_msg, f_title_font24)/2, line_pos(title_msg, f_title_font24)), title_msg, font=f_title_font24, fill = foreground)
+boot_draw.text(((epd.height/2) - center_text(msg, f_title_font18)/2, line_pos(msg, f_title_font18)), msg, font=f_title_font18, fill = foreground)
+
 #Display the screen
-epd.display(epd.getbuffer(boot_image))
+epd.display(epd.getbuffer(boot_image.rotate(screen_rotate)))
 
 #Exit:
-#epd2in13_V2.epdconfig.module_exit()
+epd2in13_V2.epdconfig.module_exit()
 exit()

@@ -5,6 +5,7 @@
 import os #hostname
 import sys #check python version.
 import time #timers for sleep
+import configparser #to handle the config file.
 try:
     from waveshare_epd import epd2in13_V2
     from PIL import Image, ImageDraw, ImageFont  # Font handeling
@@ -22,11 +23,25 @@ except:
     print ("No supporing system/network libraries were detected.  Please investigate, and try again\n")
     exit()
 
+#import configuration file:
+#Read ser2bt_config.ini file
+config_obj = configparser.ConfigParser()
+config_obj.read("/etc/ser2bt_config.ini")
+screen = config_obj["screen"]
+
+# parameters to use the keys from the ser2bt_config.ini
+screen_rotate = int(screen["screen_rotate"])
+foreground = int(screen["foreground"])
+background = int(screen["background"])
+
 # Variable decleration:
 sys.path.append(r'lib')
 epd = epd2in13_V2.EPD()
 host_name=os.uname()[1]  # define host_name
 dev_dir='/dev/'
+tmp_dir='/tmp/'
+bat_file='bat'
+shut_file = 'shut'
 bt_ser_short_label='BT'
 bt_ser_label='rfcomm0'
 bt_ser_port=bt_ser_label
@@ -60,10 +75,26 @@ f_top_line_font16 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 16)
 syslog.openlog(ident="ser2bt-bridge",logoption=syslog.LOG_PID, facility=syslog.LOG_LOCAL7)
 syslog.syslog(syslog.LOG_INFO, 'ser2bt_status was started')
 
+#Put the display into sleep
+epd.init(epd.FULL_UPDATE)
+epd.sleep()
+
 #Define the functions:
 ###################################################################################################################
+def set_shutdown_flag(intent):
+    power_off = 'p'
+    exit_out = 'e'
+    file = open(tmp_dir+shut_file,'w')
+    file.write(intent)
+    file.close()
+    if intent == power_off:
+        msg = 'Shutdown'
+    else:
+        msg = 'No Shutdown'
+    return (msg)
+
 def bat_lvl():
-    f = open("/tmp/bat",'r')
+    f = open(tmp_dir+bat_file,'r')
     bat = f.read()
     f.close()
     if bat == "":
@@ -101,7 +132,7 @@ def get_bt_service_status():
     return (bt_status, bt_status_change_flag)
 
 
-def get_lan_service_status(ssid, ssid_change_flag):
+def get_lan_service_status(ssid,ssid_change_flag):
     global old_lan_status
     global not_connected
     lan_service = 'ser2net'
@@ -242,56 +273,58 @@ signal.signal(signal.SIGTERM, handler)
 
 try:
     #Define frame size for e-ink display
-    image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear frame
+    image = Image.new('1', (epd.height, epd.width), int(background))  # clear frame
     draw = ImageDraw.Draw(image)
 
     epd.init(epd.FULL_UPDATE)
+    epd.Clear(background)
 
     #Draw the non variablers to the to the screen
-    draw.text((0, 0), host_name, font = f_top_line_font16, fill = 0)
-    draw.text((50, 0), 'Bat:', font = f_top_line_font16, fill = 0)
-    draw.line([(0, 17), (250, 17)], fill = 0, width = 2)
-    draw.text((0, 20), 'Load:', font = f_title_font18, fill = 0)
-    draw.text((50, 20), 'CPU', font = f_var_font18, fill = 0)
-    draw.text((153, 20), 'Mem', font = f_var_font18, fill = 0)
-    draw.text((0, 40), 'SSID:', font = f_title_font18, file = 0)
-    draw.text((0, 60), 'IP:', font = f_title_font18, fill = 0)
-    draw.text((0, 80), 'Svcs:', font = f_title_font18, fill = 0)
-    draw.text((50, 80), 'BT', font = f_var_font18, fill = 0)
-    draw.text((153, 80), 'ser2net', font = f_var_font18, fill = 0)
-    draw.text((0, 100), 'TTY:', font = f_title_font18, fill = 0)
-    epd.displayPartBaseImage(epd.getbuffer(image)) #This is the command to actually place the above to the e-ink display.
-    epd.init(epd.PART_UPDATE) #Initialize the partial screen
+    draw.text((0, 0), host_name, font = f_top_line_font16, fill = int(foreground))
+    draw.text((50, 0), 'Bat:', font = f_top_line_font16, fill = int(foreground))
+    draw.line([(0, 17), (250, 17)], fill = int(foreground), width = 2)
+    draw.text((0, 20), 'Load:', font = f_title_font18, fill = int(foreground))
+    draw.text((50, 20), 'CPU', font = f_var_font18, fill = int(foreground))
+    draw.text((153, 20), 'Mem', font = f_var_font18, fill = int(foreground))
+    draw.text((0, 40), 'SSID:', font = f_title_font18, fill = int(foreground))
+    draw.text((0, 60), 'IP:', font = f_title_font18, fill = int(foreground))
+    draw.text((0, 80), 'Svcs:', font = f_title_font18, fill = int(foreground))
+    draw.text((50, 80), 'BT', font = f_var_font18, fill = int(foreground))
+    draw.text((153, 80), 'ser2net', font = f_var_font18, fill = int(foreground))
+    draw.text((0, 100), 'TTY:', font = f_title_font18, fill = int(foreground))
+    epd.displayPartBaseImage(epd.getbuffer(image.rotate(screen_rotate))) #This is the command to actually place the above to the e-ink display.
+    epd.sleep()
 
     while True:
+#        first_pass = True
         try:
-            draw.rectangle((82, 0, 120, 16), fill=255)
-            draw.text((82, 0), bat_lvl(), font=f_top_line_font16, fill=0)
-            draw.rectangle((137, 0, 250, 16), fill=255)
-            draw.text((137, 0), time.strftime('%D %H:%M'), font=f_top_line_font16, fill=0)
-            draw.rectangle((89, 19, 152, 39), fill=255)
-            draw.text((89, 20), str(psutil.cpu_percent())+'%', font=f_var_font18, fill=0)
-            draw.rectangle((200, 19, 250, 39), fill=255)
-            draw.text((200, 20), str(psutil.virtual_memory().percent)+'%', font=f_var_font18, fill=0)
+            draw.rectangle((82, 0, 120, 16), fill = int(background))
+            draw.text((82, 0), bat_lvl(), font=f_top_line_font16, fill = int(foreground))
+            draw.rectangle((137, 0, 250, 16), fill = int(background))
+            draw.text((137, 0), time.strftime('%D %H:%M'), font=f_top_line_font16, fill = int(foreground))
+            draw.rectangle((89, 19, 152, 39), fill = int(background))
+            draw.text((89, 20), str(psutil.cpu_percent())+'%', font=f_var_font18, fill = int(foreground))
+            draw.rectangle((200, 19, 250, 39), fill = int(background))
+            draw.text((200, 20), str(psutil.virtual_memory().percent)+'%', font=f_var_font18, fill = int(foreground))
 
             #Collect connected ssid, system ip address, bt and lan service status:
             ssid, ssid_change_flag = get_ssid()
             if ssid_change_flag is True:
                 ip_host, ip_host_change_flag = get_ip()
                 lan_service, get_lan_service_change_flag  = get_lan_service_status(ssid, ssid_change_flag)
-                draw.rectangle((50, 39, 198, 59), fill=255)
-                draw.text((50, 40), ssid, font=f_var_font18, fill=0)
-                draw.rectangle((50, 59, 198, 79), fill=255)
-                draw.text((50, 60), ip_host, font=f_var_font18, fill=0)
+                draw.rectangle((50, 39, 198, 59), fill = int(background))
+                draw.text((50, 40), ssid, font=f_var_font18, fill = int(foreground))
+                draw.rectangle((50, 59, 198, 79), fill = int(background))
+                draw.text((50, 60), ip_host, font=f_var_font18, fill = int(foreground))
                 if get_lan_service_change_flag is True:
-                    draw.rectangle((215, 79, 225, 99), fill=255)
-                    draw.text((215, 80), lan_service, font=f_var_spc_char_font18, fill=0)
+                    draw.rectangle((215, 79, 225, 99), fill = int(background))
+                    draw.text((215, 80), lan_service, font=f_var_spc_char_font18, fill = int(foreground))
 
             # display rfcomm, bluetooth, hci, status.
             bt_service, bt_service_change_flag = get_bt_service_status()
             if bt_service_change_flag is True:
-                draw.rectangle((72, 79, 84, 99), fill=255)
-                draw.text((72, 80), bt_service, font=f_var_spc_char_font18, fill=0)
+                draw.rectangle((72, 79, 84, 99), fill = int(background))
+                draw.text((72, 80), bt_service, font=f_var_spc_char_font18, fill = int(foreground))
 
             # Setting up the dynamic parts of tty status
             usb_serial_port, usb_serial_status_pos, usb_serial_connect, usb_serial_status = cap_usb_serial_port()
@@ -304,23 +337,23 @@ try:
                 full_tty_status = "No tty Connections"
                 if old_full_tty_status != full_tty_status:
                     old_full_tty_status = full_tty_status
-                    draw.rectangle((50, 99, 245, 122), fill=255)
-                    draw.text((50, 100), full_tty_status, font=f_var_font18, fill=0)
+                    draw.rectangle((50, 99, 245, 122), fill = int(background))
+                    draw.text((50, 100), full_tty_status, font=f_var_font18, fill = int(foreground))
                     old_total_serial_lines = 'XX'
             else: #Otherwise, display the inidividual state of the ttys.
                 full_tty_status = ""
                 old_full_tty_status = full_tty_status
-                draw.rectangle((50, 99, 152, 122), fill=255)
-                draw.text((50, 100), bt_ser_short_label + ' In:', font=f_var_font18, fill=0)
-                draw.text((bt_serial_status_pos, 100), bt_serial_status, font=f_var_font18, fill=0)
+                draw.rectangle((50, 99, 152, 122), fill = int(background))
+                draw.text((50, 100), bt_ser_short_label + ' In:', font=f_var_font18, fill = int(foreground))
+                draw.text((bt_serial_status_pos, 100), bt_serial_status, font=f_var_font18, fill = int(foreground))
                 if old_total_serial_lines != total_serial_lines:
-                    draw.rectangle((153, 99, 245, 122), fill=255)
-                    draw.text((153, 100), 'Serial Out:', font=f_var_font18, fill=0)
-                    draw.text((usb_serial_status_pos, 100),str(total_serial_lines), font=f_var_font18, fill=0)
+                    draw.rectangle((153, 99, 245, 122), fill = int(background))
+                    draw.text((153, 100), 'Serial Out:', font=f_var_font18, fill = int(foreground))
+                    draw.text((usb_serial_status_pos, 100),str(total_serial_lines), font=f_var_font18, fill = int(foreground))
                     old_total_serial_lines = total_serial_lines
 
-            epd.displayPartial(epd.getbuffer(image)) #update the screeen to actually print the above to the e-ink display.
-#            epd.sleep()
+            epd.init(epd.PART_UPDATE)
+            epd.displayPartial(epd.getbuffer(image.rotate(screen_rotate))) #update the screeen to actually print the above to the e-ink display.
 
         except IOError as e:
             syslog.syslog(syslog.LOG_INFO, 'traceback.format_exc():\n%s',traceback.format_exc())
@@ -329,36 +362,43 @@ try:
             exit()
 
         #sleep, then resume.
+        epd.sleep()
         time.sleep(end_of_loop_pause)
+        epd.init(epd.FULL_UPDATE) #Initialize the partial screen
 
 # End of while true loop...
-    epaper_exit()
+    epd.sleep()
+#    epaper_exit()
     exit()
 
 except KeyboardInterrupt:
+    set_shutdown_flag ('e')
     syslog.syslog(syslog.LOG_INFO, 'Quit (SIGINT) Due to Keyboard interrupt when not being run as a service')
     epd.init(epd.FULL_UPDATE)
-    term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
-    term_draw = ImageDraw.Draw(term_image)
-    term_draw.text((25, 20), 'Serial to bluetooth', font=f_title_font24, fill=0)
-    term_draw.text((90, 50), 'bridge', font=f_title_font24, fill=0)
-    term_draw.text((15, 80), 'Has Stopped due to SIGINT', font=f_title_font18, fill=0)
-    epd.display(epd.getbuffer(term_image))
+#    term_image = Image.new('1', (epd.height, epd.width), int(background))  # clear the frame
+#    term_draw = ImageDraw.Draw(term_image)
+#    term_draw.text((80, 20), 'Standby:', font=f_title_font24, fill = int(foreground))
+#    term_draw.text((26, 55), 'Serial 2 Bluetooth Bridge', font=f_title_font18, fill = int(foreground))
+#    term_draw.text((23, 75), 'Has Stopped due to SIGINT', font=f_title_font18, fill = int(foreground))
+#    epd.display(epd.getbuffer(term_image.rotate(screen_rotate)))
     syslog.syslog(syslog.LOG_INFO, 'Shutting Down ser2bt_status - interupted by Control C')
-    epaper_exit()
+    epd.sleep()
+#    epaper_exit()
+#    epd2in13_V2.epdconfig.module_exit()
     exit()
 
 except SystemExit:
     syslog.syslog(syslog.LOG_INFO, 'Quit (SIGTERM) from service telling us to terminate')
     epd.init(epd.FULL_UPDATE)
-    term_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
-    term_draw = ImageDraw.Draw(term_image)
-    term_draw.text((25, 20), 'Serial to bluetooth', font=f_title_font24, fill=0)
-    term_draw.text((90, 50), 'bridge', font=f_title_font24, fill=0)
-    term_draw.text((15, 80), 'Is exiting Due to SIGTERM', font=f_title_font18, fill=0)
-    epd.display(epd.getbuffer(term_image))
+#    term_image = Image.new('1', (epd.height, epd.width), int(background))  # 255: clear the frame
+#    term_draw = ImageDraw.Draw(term_image)
+#    term_draw.text((80, 20), 'Standby:', font=f_title_font24, fill = int(foreground))
+#    term_draw.text((26, 55), 'Serial 2 Bluetooth Bridge', font=f_title_font18, fill = int(foreground))
+#    term_draw.text((23, 75), 'Is exiting due to SIGTERM', font=f_title_font18, fill = int(foreground))
+#    epd.display(epd.getbuffer(term_image.rotate(screen_rotate)))
     syslog.syslog(syslog.LOG_INFO, 'Shutting Down/Restarting service - interupted by service stop, from command, shutdown, or reboot')
-    epaper_exit()
+    epd.sleep()
+#    epaper_exit()
     exit()
 
 except IOError as e:

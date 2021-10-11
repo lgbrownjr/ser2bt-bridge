@@ -1,6 +1,6 @@
 #color defenitions:
-bla=$'\e[00;30m'
-gre=$'\e[01;30m'
+bla=$'\e[00;30m' #black
+gre=$'\e[01;30m' #dark grey
 drk_red=$'\e[00;31m'
 red=$'\e[01;31m'
 grn=$'\e[01;32m'
@@ -48,9 +48,9 @@ function spinner(){
 		local temp=${spinstr#?}
 		printf "${nor}(${cyn}%c${nor})" "$spinstr"
 		local spinstr=$temp${spinstr%"$temp"}
-		sleep $delay
 		printf "\b\b\b"
+		sleep $delay
 	done
-	printf "    \b\b\b${curs}"
+	printf "   \b\b\b${curs}"
 }
 

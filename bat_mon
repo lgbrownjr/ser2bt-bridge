@@ -16,8 +16,9 @@ min_bat_cap=2  # setting in percent minimum battery capacity before we'll shutdo
 bus=1
 i2c_bus=smbus.SMBus(bus)
 bat_cap = min_bat_cap+1 #Define the initial battery capacity.
-bat_log_dir = "/tmp/"
-bat_log_file = "bat"
+tmp_dir = "/tmp/"
+bat_file = "bat"
+shut_file = "shut"
 #Setup logging:  Work in progress
 syslog.openlog(ident="battery_monitor",logoption=syslog.LOG_PID, facility=syslog.LOG_LOCAL7)
 syslog.syslog(syslog.LOG_INFO, 'bat_mon was started')
@@ -122,22 +123,25 @@ def read_bat_capacity(ups_type, address, bus):
 #determine UPS type, bus number, and if its charging or not:
 ups, address = init_ups_check(i2c_bus, bus)
 
-#Check if logfile exists, create if it does not:
-if not os.path.exists(bat_log_dir+bat_log_file):
-    os.mknod(bat_log_dir+bat_log_file)
+#Check if battery file exists, create if it does not:
+if not os.path.exists(tmp_dir+bat_file):
+    os.mknod(tmp_dir+bat_file)
+
 try:
-    os.chmod(bat_log_dir+bat_log_file, 0o644)
+    os.chmod(tmp_dir+bat_file, 0o664)
     while (bat_cap > min_bat_cap or charge is True):
         bat_cap, volts, charge = read_bat_capacity(ups, address, i2c_bus) #Formatted battery level
         bat_lvl=str(bat_cap)+"%"
-        bat_file = open(bat_log_dir+bat_log_file,'w')
-        bat_file.write(str(bat_lvl))
-        bat_file.close()
+        b_file = open(tmp_dir+bat_file,'w')
+        b_file.write(str(bat_lvl))
+        b_file.close()
         if int(bat_cap) >=30 and int(bat_cap) <=100:
             sleep_time = 60
         elif int(bat_cap) >=15 and int(bat_cap) <=29:
             sleep_time = 30
-        elif int(bat_cap) >=0 and int(bat_cap) <=14:
+        elif int(bat_cap) >=8 and int(bat_cap) <=14:
+            sleep_time = 15
+        elif int(bat_cap) >=0 and int(bat_cap) <=7:
             sleep_time = 10
         print(int(sleep_time))
         print(str(bat_cap))
@@ -146,20 +150,26 @@ try:
     #if the bat_cap is less that min_bat_cap, then bail out of the loop, and follow the remaining code to shutdown.
     syslog.syslog(syslog.LOG_INFO, 'Shutting down - battary has reached critical level')
     syslog.syslog(syslog.LOG_INFO, 'Battary is: '+bat_lvl+'Uptime was: '+str(os.system("uptime -p")))
-    bat_file.close()
+    s_file = open(tmp_dir+shut_file,'w')
+    s_file.write(str("p"))
+    s_file.close()
+    b_file.close()
     os.system('wall -n "Shutdown by way of low battery!"')
     os.system("poweroff -p")
     exit(0)
 
 except KeyboardInterrupt:
     syslog.syslog(syslog.LOG_INFO, 'Quit (SIGINT) Due to Keyboard interrupt when not being run as a service')
-    bat_file.close()
+    s_file = open(tmp_dir+shut_file,'w')
+    s_file.write(str("e"))
+    s_file.close()
+    b_file.close()
     exit(1)
 
 except SystemExit:
    syslog.syslog(syslog.LOG_INFO, 'Quit (SIGTERM) from service telling us to terminate')
    syslog.syslog(syslog.LOG_INFO, 'Shutting Down/Restarting bat_mon - interupted by service stop, from command, shutdown, or reboot')
-   bat_file.close()
+   b_file.close()
    exit(0)
 
 except IOError as e:

@@ -5,8 +5,29 @@ from PIL import Image, ImageDraw, ImageFont  # Font handeling
 from waveshare_epd import epd2in13_V2
 import os
 import time
+from os.path import exists
+import re
+import subprocess
+import configparser #to handle the config file.
+
+#import configuration file:
+#Read ser2bt_config.ini file
+config_obj = configparser.ConfigParser()
+config_obj.read("/etc/ser2bt_config.ini")
+screen = config_obj["screen"]
+shutdown_screen = config_obj["shutdown_screen"]
+
+# parameters to use the keys from the ser2bt_config.ini
+screen_rotate = int(screen["screen_rotate"])
+foreground = int(screen["foreground"])
+background = int(screen["background"])
 
 # Variable decleration
+standby_msg = 'Standby:'
+title_msg = 'Serial 2 Bluetooth Bridge'
+tmp_dir='/tmp/'
+shut_file = 'shut'
+bat_file = 'bat'
 host_name=os.uname()[1]  # define host_name
 epd = epd2in13_V2.EPD()
 picdir='/usr/local/lib/ser2bt-bridge/'
@@ -14,27 +35,122 @@ roboto_font_dir='/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/'
 f_top_line_font16 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 16)
 f_title_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 18)
 f_title_font24 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 24)
+
 bmp = Image.open(os.path.join(picdir, 'logo.bmp'))
-exit_image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
+exit_image = Image.new('1', (epd.height, epd.width), int(background))  #clear the frame
 exit_draw = ImageDraw.Draw(exit_image)
+left_margin = 1 #Left margin.
+top_margin = 11 #Will start all text at the 11th pixel
+bottom_margen = epd.width - 1
+line_position = top_margin #initial line to start on.
+next_line_position = top_margin #initial line to start on.
+
+def center_text(msg,font):
+    w, h = exit_draw.textsize(msg, font)
+    return (w)
+
+def line_pos(msg,font):
+    global line_position
+    global next_line_position
+    w, h = exit_draw.textsize(msg, font)
+    if next_line_position == top_margin:
+        next_line_position = line_position + h
+        return (line_position)
+    else:
+        line_position = next_line_position
+        next_line_position = line_position + h
+        return (line_position)
+
+def shutdown_check():
+    power_off = 'p' #flag to indicate that the bridge is being powered off.
+    exit_out = 'e' #flag to indicate that the bridge will exit out of its service(s).
+    reboot = 'r' #flag to indicate that the bridge will reboot.
+    upgrade = 'u' #flag to indicate that the bridge is upgrading.
+    flag = ' ' #capture contents of shut_file
+    msg = " " #message to send back to calling statement.
+    if os.path.exists(tmp_dir+shut_file):
+        file = open(tmp_dir+shut_file,'r')
+        flag = file.read()
+        file.close()
+        if exit_out in flag:
+            msg = 'Exit'
+        elif power_off in flag:
+            msg = 'Shutdown'
+        elif reboot in flag:
+            msg = 'Reboot'
+        elif upgrade in flag:
+            msg = 'Upgrade'
+        else:
+            msg = 'Shutdown'
+    else:
+        msg = 'Shutdown'
+#    print (msg)
+#    print (flag)
+    return (msg)
+
+def bat_lvl():
+    f = open(tmp_dir+bat_file,'r')
+    bat = f.read()
+    f.close()
+    if bat == "":
+        bat="Err"
+    return (bat)
 
 #Clear the Screen:
 epd.init(epd.FULL_UPDATE)
-#epd.Clear(0xFF)
 
 #Draw out the boot screen
-exit_draw.text((6, 20), 'ser2bt_status service', font=f_title_font24, fill=0)
-exit_draw.text((48, 50), 'Has been stopped', font=f_title_font18, fill=0)
-epd.display(epd.getbuffer(exit_image))
-time.sleep(2)
-epd.init(epd.FULL_UPDATE)
-exit_image.paste(bmp, (0,0))
-exit_draw.text((19,5), 'Serial to Bluetooth Bridge  ', font=f_title_font18,fill=0)
-exit_draw.text((4,47), 'master', font=f_top_line_font16,fill=0)
-exit_draw.text((122,47), host_name, font=f_top_line_font16,fill=0)
-exit_draw.text((204,47), 'slave', font=f_top_line_font16,fill=0)
-epd.display(epd.getbuffer(exit_image))
+exit_draw.text(((epd.height/2) - (center_text(standby_msg,f_title_font24)/2), line_pos(standby_msg,f_title_font24)), standby_msg, font=f_title_font24, fill = int(foreground))
+exit_draw.text(((epd.height/2) - (center_text(title_msg,f_title_font18)/2), line_pos(title_msg,f_title_font18)), title_msg, font=f_title_font18, fill = int(foreground))
+if shutdown_check() == "Exit":
+    reason = "Is Exiting"
+elif shutdown_check() == "Upgrade":
+    reason = "Is being Upgraded"
+elif shutdown_check() == "Reboot":
+    reason = "Is Rebooting"
+elif shutdown_check() == "Shutdown":
+    reason = "Is being Shutdown"
+else:
+    reason = "Is Exiting"
 
-#Exit:
+exit_draw.text(((epd.height/2) - (center_text(reason,f_title_font18)/2), line_pos(reason,f_title_font18)), reason, font=f_title_font18, fill = int(foreground))
+epd.display(epd.getbuffer(exit_image.rotate(screen_rotate)))
+
+if shutdown_check() == "Shutdown":
+    #new page, reset line_position.
+    epd.sleep()
+    time.sleep(2)
+    top_margin = 6
+    next_line_position = top_margin
+    line_position = top_margin
+
+    #compute and format uptime
+    up_time = subprocess.check_output(['uptime', '-p']).decode("utf8").replace(',', '').replace("up ","")
+    up_time = re.sub("hours?","hrs", up_time)
+    up_time = re.sub("minutes?","min", up_time)
+    # updated parameters to use the keys from the ser2bt_config.ini
+    screen_rotate = int(shutdown_screen["screen_rotate"])
+    foreground = int(shutdown_screen["foreground"])
+    background = int(shutdown_screen["background"])
+
+    icon_image = Image.new('1', (epd.height, epd.width), int(background))  #clear the frame
+    icon_draw = ImageDraw.Draw(icon_image)
+
+    icon_image.paste(bmp, (0,20)) #Display the background image
+    #display the screen title"
+    icon_draw.text(((epd.height/2) - (center_text(title_msg,f_title_font18)/2), line_pos(title_msg,f_title_font18)), title_msg, font=f_title_font18,fill = int(foreground))
+
+    #Add the discriptions to the boxes in the image
+    icon_draw.text((4,45), 'master', font=f_top_line_font16,fill = int(foreground)) #28 is the top of the square
+    icon_draw.text((122,45), host_name, font=f_top_line_font16,fill = int(foreground))
+    icon_draw.text((204,45), 'slave', font=f_top_line_font16,fill = int(foreground)) #75 is the bottom of the square
+
+    #Add uptime, battery level, then add uptime at the bottom of the screen
+    icon_draw.text((left_margin,85), 'Halted @ '+time.strftime('%H:%M')+'/'+'bat:'+bat_lvl(), font=f_top_line_font16,fill = int(foreground))
+    icon_draw.text((left_margin,103), 'Uptime:'+ up_time, font=f_top_line_font16,fill = int(foreground))
+    epd.init(epd.FULL_UPDATE)
+    epd.display(epd.getbuffer(icon_image.rotate(screen_rotate)))
+
+epd2in13_V2.epdconfig.module_init()
 epd2in13_V2.epdconfig.module_exit()
 exit()
