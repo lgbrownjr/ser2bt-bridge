@@ -38,12 +38,12 @@ These scripts and services basicaly utilize *screen* and *rfcomm* to "bridge" a 
   * Turn on *Overlay FS*.  This basically, turns your pi's sd card into a read only drive, so the risk of corrupting your SD card goes way, way down.  The down side is that you need to turn *Overlay FS* Off anythime the *bridge* needs and update applied or to make configuration adjustments.  I'm till testing this feature to see how well it works over the long run.
 ---
 ## Setup:
-There are two different setup options, basic, and full.
-* Basic should be used if you are only using a pi, and do not wish (at this point) to add a screen, rtc, or an external battery.
-* Full should be used if you are using the pi, either the e-ink display and/or an external UPS.  By selecting *full* the upgrade script will determine what is hardware is attatched, and install the necessary software to make it work.
+There are two different setup options, *basic*, and *full*.
+- *Basic* should be used if you are only using a pi, and do not wish (at this point) to add a screen, rtc, or an external battery.
+- *Full* should be used if you are using the pi, either the e-ink display and/or an external UPS.  By selecting *full* the upgrade script will determine what is hardware is attatched, and install the necessary software to make it work.
 ### Basic setup:
 The following steps will guide you through the process getting this system to work from just after everything is unboxed, to the point where you are connecting to a switch, router, or whatever - that is the raspberry pi zero, by itself acting as a bluetooth to serial bridge.  We will be using headless installation method, so you will not need a keyboard, mouse, or monitor.
-#### Parts needed for Basic setup:
+#### Parts needed for *Basic* setup:
 You will need:
 * A *raspberry pi zero w* - at a minimum, but if you don't like soldering, and have at least a desire to expand, get the *raspberry pi zero wh* instead.
 * An SD card with a minimum size of 8G.  Don't skimp hear, you'll need to get a quality card to weather any accidental power-cuts.  an good example is:  [Example](https://www.amazon.com/SanDisk-Extreme-MicroSDXC-Everything-Stromboli/dp/B087SNYQLJ?pd_rd_w=gwWVo&pf_rd_p=19ad5bd3-3223-4635-a9ad-e42b3305d40b&pf_rd_r=H004CN0Q32QCP6VHNET2&pd_rd_r=9e6d3d01-28b1-4ade-87f1-e02d15f8f8ae&pd_rd_wg=uCCau&pd_rd_i=B087SNYQLJ&psc=1&ref_=pd_bap_d_rp_10_t)
@@ -59,10 +59,10 @@ The addition of am e-paper screen and ups backup will allow you to continue prov
 #### Parts needed for this phase:
 - For Battery UPS, we have two supported options:
   + The first option is a [ups-lite](https://www.ebay.com/itm/UPS-Lite-for-Raspberry-Pi-Zero-/352888138785).
-  + The second UPS option is a PiSugar2 which also has a built-in real time clock, and a button that can be controlled via software, but at double the cost as the &ups_lite*.
+  + The second UPS option is a *PiSugar2* which includes a built-in real time clock (RTC), and a button that can be controlled via software.  The bridge will take advantage both the rtc, and button.
 - For status and system health updates, attach a [waveshare.2.13 e-paper](https://www.waveshare.com/2.13inch-e-Paper-HAT.htm) display.  _Make sure it says V2_, for Version 2.
-#### Installation:
-##### OS installation and setup:
+### Installation:
+#### OS installation and setup:
 - insert the SD card into a different computer to perform the first few steps:
   - Download link is [here](https://www.raspberrypi.org/downloads/raspberry-pi-os/).
   - Follow Raspbian’s directions [here](https://www.raspberrypi.org/documentation/installation/installing-images/README.md).
@@ -87,7 +87,7 @@ network={
 - Be sure to replace *\<SSID\>* with the SSID you want your pi to connect to, and replace *\<passphrase/password\>*
 
 You are now done with this section, safely eject the SD card, and insert it into you *raspberry pi zero*.
-###### First login:
+##### First login:
 - Power on the bridge, and give it about a minute to boot.
   - Using your favorite SSH client, login into your pi: `pi@<[hostname|IP Address]>`, where *hostname*, or *IP Address* is = to your Pi's.
 
@@ -98,15 +98,15 @@ Finding the IP address can be painful unless you have a utility on your PC or ph
 
 ---
 
-###### Update OS:
+##### Update OS:
 ```bash
 sudo apt update && sudo apt full-upgrade -y
 ```
 Reboot your Pi when the upgrade is complete.
-###### Additional OS Setup:
-###### Install git:
+##### Additional OS Setup:
+##### Install git:
 `sudo apt install git -y`
-###### Setup using raspi-config
+##### Setup using raspi-config
 * Enter `sudo raspi-config`:
 * From the main menu, under *Advanced Options*.
   * select *Expand Filesystem* to expand.
@@ -132,7 +132,7 @@ Do Not forget that you just changed the password and hostname of your *bridge*!
 
 ---
 
-###### Additional Network Setup:
+##### Additional Network Setup:
 In order for your *bridge* to keep the correct time, perform updates, or allow an alternate way to access the it, it is advisable you add more wireless networks into your *wpa_supplicant.conf*.  Examples include: allowable work networks, your home network, your hotspot, and even hotspots of your peer's phones (as allowed).
 - Open `/etc/wpa_supplicant/wpa_supplicant.conf`, and add the following:
 ```bash
@@ -146,7 +146,7 @@ network={
   * Make sure to set the ssid and psk as needed.
   * **Be sure to test each network.**
 
-###### Pre-Requisites to software installation:
+##### Pre-Requisites to software installation:
 ```bash
 mkdir -p /home/pi/Projects/
 ```
@@ -160,22 +160,22 @@ git clone https://github.com/lgbrownjr/ser2bt-bridge.git
 - Run the upgrade tool:
 ```bash
 cd ser2bt-bridge/
-sudo ./upgrade basic
+sudo ./upgrade [basic|full]
 ```
-###### We're Done!
+##### We're Done!
 If everything went as planned, your *raspberry pi zero w* should be acting like a bluetooth to serial bridge, allowing you to connect to a switche's console port via bluetooth from your computer.
 - Now, reboot your *bridge* and skip down to How to use:
-
 ---
 ## How to use:
 ![Raspberry Pi Zero usb port location and definition:](/readme_md_images/rpi0_diagram_port.png)
 ### Power on the *bridge*:
 1. Different ways, depending on your setup:
-  1. For the basic *bridge* option, Plug the power into it's power port.  See the diagram here:
+  1. For the *basic* *bridge* option, Plug the power into it's power port.  See the diagram here:
   2. If your version of the *bridge* has a UPS, then slide the switch to the on position.
-  3. To charge the UPS, insert the power cord into the UPS's power input plug, do not power the pi using the pi's power port.
-  4. It will take up to 30 seconds to boot to a point where a *master* can connect to it via bluetooth.
-
+    a. If your UPS is a *PiShugar2*:
+      1. The real time clock should be enabeled and providing your pi with the correct time, while it is off of the internet.
+    b. To charge the UPS, insert the power cord into the UPS's power input plug, and _not_ the the pi's power port.
+  3. It will take up to 45 seconds to boot to a point where a you can connect to it via bluetooth.
 ---
 **NOTE**
 
@@ -204,42 +204,48 @@ You should now all of your device terminal programs setup to easily connect to t
 2. Click on and launch/open the connection profile you just built.
 3. A terminal should open up, and you should see the banner appear, along with the results of your bridges attemtps to connect to the slave(s), and then either the login prompt of the slave, or a list of possible slaves you can conncect with.
 
+#### Shutdown/Reboot your *bridge*:
+1. To shutdown your bridge, type `sudo poweroff`
+2. To reboot your *bridge*, type `sudo reboot`
+3. If you have a *PiSugar2* UPS:
+  - Short press the button (between 1 - 2 seconds) to power it down.
+  - Long press the power button for 3 - 4 seconds, to reboot.
+4. If you are connected to any one of the UPS options, slide the switch to the off position once the shutdown process is complete.
+
 #### How To:
-1. If you were dropped off in the *bridg*'s bash shell, you have access to perform updates, play games, set the time, whatever, here are some ideas:
-   1. Set the timezone (for those travelers)
-      1. follow from here: [Setup Using raspi-config](#setup-using-raspi-config)
-   2. Set the date and time (if you don't have an onboard rtc, or access to a network:
-      1. `sudo date --set="4 MAR 2021 18:00:00"
-   3. Update the ser2bt software:
-      1. `screen`
-      2. `cd /home/pi/Projects/ser2bt/`
-      3. `git pull`
-      4. `sudo ./upgrade [full|basic|screen|ups]`
-      5. `exit` to exit out of acreen.
-   4. Update the OS:
-      1. `screen` Need to use screen to be able to access network resources, this is a workaround to an issue that prevents reliable network communications while an admin is logged in.
-      2. `sudo apt update -y`
-         1. If the result of the above command included `no updates available`, then skip to step 4.
-      3. `sudo apt full-upgrade -y`
-      4. `exit` to exit out of screen.
+1. If you were dropped off in the *bridge*'s bash shell, you have access to perform updates, play games, set the time, whatever. Here are some ideas:
+  1. Set the timezone (for those travelers)
+    - follow from here: [Setup Using raspi-config](#setup-using-raspi-config)
+  2. Set the date and time (if you don't have an onboard rtc, or access to a network:
+    - `sudo date --set="4 MAR 2021 18:00:00"
+  3. Update the ser2bt software - if you are connected using bluetooth, then start at step 1, otherwise, skip step 1 and step 5:
+    - `screen`
+    - `cd /home/pi/Projects/ser2bt/`
+    - `git pull`
+    - `sudo ./upgrade [basic|full]`
+    - `exit` to exit out of acreen.
+  4. Update the OS: (this is also done in the *upgrade* utility.)
+    - `screen` Need to use screen to be able to access network resources, this is a workaround to an issue that prevents reliable network communications while an admin is logged in.
+    - `sudo apt update -y`
+  5. If the result of the above command included `no updates available`, then skip to step 4.
+    - `sudo apt full-upgrade -y`
+    - `exit` to exit out of screen.
 2. If your *bridge* is connected to a single *slave*:
-   1. `ctrl` + `a`, then `d` to suspend you screen session.
-   2. `ctrl` + `a`, then `\` to terminate your screen session. (you can always re-enter).
-   3. If you want to enter a serial session, and you either terminated the session prior, or plugged a cable in after boot, then run `ser2bt_bridge`.
-   3. To return to an existing session after it has been suspended, then type `screen -r`
+  - `ctrl` + `a`, then `d` to suspend you screen session.
+  - `ctrl` + `a`, then `\` to terminate your screen session. (you can always re-enter).
+  - If you want to enter a serial session, and you either terminated the session prior, or plugged a cable in after boot, then run `ser2bt_bridge`.
+  - To return to an existing session after it has been suspended, then type `screen -r`
 3. If your *bridge* is connected to multiple *slaves*:
-   1. If you are in the *slave* (read switch), and you want to get out to do something or enter another switch, and come back, then:
-      1. `ctrl` + `a`, then `d ` to suspend you screen session allowing you to return later.
-      2. `ctrl` + `a`, then `\` to terminate your screen session. (you can always re-enter). 
-   2. To re-nter a session that has been suspended, type `screen -r Switch_x`.
-   3. To enter a switch that has never been entered, or had its screen session terminated, type `screen Switch_x` where x = the connection number.
-   4. To list the available switches that you can enter, type `screen -l`
-4. To Reboot your bridge, type `sudo reboot`
-5. If you're lost, and you need to reconnect to the *slave* were connected to, type `ser2bt_bridge` to relaunch the discovery script.  if that gives you an error, then reboot.
-6. To shutdown your bridge, type `sudo poweroff`
-7. To resize your terminal, suspend/exit and *screen* sessions, and type `resize`
-8. When you are within a screen session, configuring, or administering a *slave*:
-   1. Use the *PageUp* key to enter scrolback mode, then continue to use *PageUp*/*PageDown* or *Up*/*Down* arrows to move up and down your buffer.  Use the *Escape* key to exit, and go back to the normal mode.
+  - If you are in the *slave* (read switch), and you want to get out to do something or enter another switch, and come back, then:
+  - `ctrl` + `a`, then `d ` to suspend you screen session allowing you to return later.
+  - `ctrl` + `a`, then `\` to terminate your screen session. (you can always re-enter). 
+  - To re-nter a session that has been suspended, type `screen -r Switch_x`.
+  - To enter a switch that has never been entered, or had its screen session terminated, type `screen Switch_x` where x = the connection number.
+  - To list the available switches that you can enter, type `screen -l`
+4. If you're lost, and you need to reconnect to the *slave* were connected to, type `ser2bt_bridge` to relaunch the discovery script.  if that gives you an error, then reboot.
+5. To resize your terminal, suspend/exit and *screen* sessions, and type `resize`
+6. When you are within a screen session, configuring, or administering a *slave*:
+  - Use the *PageUp* key to enter scrolback mode, then continue to use *PageUp*/*PageDown* or *Up*/*Down* arrows to move up and down your buffer.  Use the *Escape* key to exit, and go back to the normal mode.
 ---
 
 ## Improvements:
@@ -247,6 +253,7 @@ Features I want to add to this project:
 - [X] Add a session logging feature for sessions that are connected to a switch, or router.
 - [X] Build an installation script to automate most of the installation steps.
 - [X] add support for RTC (Real Time Clocks) so as not to have to rely on ntp so much, especially in envornments where there is no wifi available to the pi.
+- [X] upgrade utility now installs everything wether you have a *basic* setup, or the *full* setup.
 - [X] Add support for USB micro to OTG HUB's to allow connectivity to more than one *slave* at a time.
 - [ ] I'm not sure if this even doable, but attempt to allow multiple concurrent bluetooth connections, especially if the item listed above is completed.
 - [ ] Continue testing *Overlay FS* as a means to protect the SD cards from corruption.
