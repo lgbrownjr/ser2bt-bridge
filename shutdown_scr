@@ -9,7 +9,7 @@ from os.path import exists
 import re
 import subprocess
 import configparser #to handle the config file.
-
+from ser2bt_lib import center_text, line_pos
 #import configuration file:
 #Read ser2bt_config.ini file
 config_obj = configparser.ConfigParser()
@@ -28,6 +28,7 @@ title_msg = 'Serial 2 Bluetooth Bridge'
 tmp_dir='/tmp/'
 shut_file = 'shut'
 bat_file = 'bat'
+np = True #New page True or False
 host_name=os.uname()[1]  # define host_name
 epd = epd2in13_V2.EPD()
 picdir='/usr/local/lib/ser2bt-bridge/'
@@ -40,26 +41,8 @@ bmp = Image.open(os.path.join(picdir, 'logo.bmp'))
 exit_image = Image.new('1', (epd.height, epd.width), int(background))  #clear the frame
 exit_draw = ImageDraw.Draw(exit_image)
 left_margin = 1 #Left margin.
-top_margin = 11 #Will start all text at the 11th pixel
+title_correction = 5 #Will start all text at the 6th pixel from the top on the shutdown screen only.
 bottom_margen = epd.width - 1
-line_position = top_margin #initial line to start on.
-next_line_position = top_margin #initial line to start on.
-
-def center_text(msg,font):
-    w, h = exit_draw.textsize(msg, font)
-    return (w)
-
-def line_pos(msg,font):
-    global line_position
-    global next_line_position
-    w, h = exit_draw.textsize(msg, font)
-    if next_line_position == top_margin:
-        next_line_position = line_position + h
-        return (line_position)
-    else:
-        line_position = next_line_position
-        next_line_position = line_position + h
-        return (line_position)
 
 def shutdown_check():
     power_off = 'p' #flag to indicate that the bridge is being powered off.
@@ -84,8 +67,6 @@ def shutdown_check():
             msg = 'Shutdown'
     else:
         msg = 'Shutdown'
-#    print (msg)
-#    print (flag)
     return (msg)
 
 def bat_lvl():
@@ -100,8 +81,9 @@ def bat_lvl():
 epd.init(epd.FULL_UPDATE)
 
 #Draw out the boot screen
-exit_draw.text(((epd.height/2) - (center_text(standby_msg,f_title_font24)/2), line_pos(standby_msg,f_title_font24)), standby_msg, font=f_title_font24, fill = int(foreground))
-exit_draw.text(((epd.height/2) - (center_text(title_msg,f_title_font18)/2), line_pos(title_msg,f_title_font18)), title_msg, font=f_title_font18, fill = int(foreground))
+exit_draw.text((center_text(exit_draw, standby_msg,f_title_font24), line_pos(np,exit_draw,standby_msg,f_title_font24)), standby_msg, font=f_title_font24, fill = int(foreground))
+np = False
+exit_draw.text((center_text(exit_draw, title_msg,f_title_font18), line_pos(np,exit_draw,title_msg,f_title_font18)), title_msg, font=f_title_font18, fill = int(foreground))
 if shutdown_check() == "Exit":
     reason = "Is Exiting"
 elif shutdown_check() == "Upgrade":
@@ -113,17 +95,14 @@ elif shutdown_check() == "Shutdown":
 else:
     reason = "Is Exiting"
 
-exit_draw.text(((epd.height/2) - (center_text(reason,f_title_font18)/2), line_pos(reason,f_title_font18)), reason, font=f_title_font18, fill = int(foreground))
+exit_draw.text((center_text(exit_draw,reason,f_title_font18), line_pos(np,exit_draw,standby_msg,f_title_font18)), reason, font=f_title_font18, fill = int(foreground))
 epd.display(epd.getbuffer(exit_image.rotate(screen_rotate)))
 
 if shutdown_check() == "Shutdown":
     #new page, reset line_position.
     epd.sleep()
     time.sleep(2)
-    top_margin = 6
-    next_line_position = top_margin
-    line_position = top_margin
-
+    np = True
     #compute and format uptime
     up_time = subprocess.check_output(['uptime', '-p']).decode("utf8").replace(',', '').replace("up ","")
     up_time = re.sub("hours?","hrs", up_time)
@@ -138,8 +117,8 @@ if shutdown_check() == "Shutdown":
 
     icon_image.paste(bmp, (0,20)) #Display the background image
     #display the screen title"
-    icon_draw.text(((epd.height/2) - (center_text(title_msg,f_title_font18)/2), line_pos(title_msg,f_title_font18)), title_msg, font=f_title_font18,fill = int(foreground))
-
+    icon_draw.text((center_text(icon_draw,title_msg,f_title_font18), line_pos(np,icon_draw,standby_msg,f_title_font18)-title_correction), title_msg, font=f_title_font18,fill = int(foreground))
+    np = False
     #Add the discriptions to the boxes in the image
     icon_draw.text((4,45), 'master', font=f_top_line_font16,fill = int(foreground)) #28 is the top of the square
     icon_draw.text((122,45), host_name, font=f_top_line_font16,fill = int(foreground))

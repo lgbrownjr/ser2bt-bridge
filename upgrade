@@ -52,7 +52,7 @@ disable_svc=("keyboard-setup.service" "dphys-swapfile.service" "triggerhappy.ser
 "ser2net.service")
 base_package_install_list=("screen" "git" "minicom" "tio" "rfkill" "dnsutils" "xterm" "telnet" "telnetd" "ser2net" "spi-tools")
 base_bin_files=(ser2bt_bridge screen_bat_mon screen_get_baud)
-wavesh_bin_files=(ser2bt_status init_scr shutdown_scr)
+wavesh_bin_files=(ser2bt_status init_scr shutdown_scr ser2bt_lib.py)
 full_bin_files=( "${base_bin_files[@]}")
 pisugar2_bin_files=(button_detect bat_mon)
 ups_lite_bin_files=(bat_mon)
@@ -178,9 +178,9 @@ function upgrade_wiringpi() {
 	fi
 	dpkg -iE ${tmp_folder}${wiringpi} > /dev/null 2>&1
 	if [ ${?} -eq 0 ]; then
-		printf "${completed}"
+		printf "${completed}\n"
 	else
-		printf "${bad_failed} ${continuing}"
+		printf "${bad_failed} ${continuing}\n"
 	fi
 }
 
