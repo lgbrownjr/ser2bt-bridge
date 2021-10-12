@@ -2,7 +2,7 @@
 
 # -*- coding:utf-8 -*-
 #import:
-from PIL import Image, ImageDraw, ImageFont  # Font handeling
+#from PIL import Image, ImageDraw, ImageFont  # Font handeling
 from waveshare_epd import epd2in13_V2
 
 # Variable decleration
