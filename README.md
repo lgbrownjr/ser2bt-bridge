@@ -4,75 +4,76 @@
 Before we begin, understand that everything in this repository is a work in progress...  :slightly_smiling_face:
 ### Definitions:
 I tend to use several different descriptors for each component that is involved with this project, so I've tried to define them below:
-* For the purpose of this project, the terms *slave* refers to a end device you want to connect to, such as a router, switch, Firewall, Wireless LAN Controller, or any appliance that has a console interfiace.
-* The terms *master*  refers to the PC, laptop, phone, or tablet.
-* The terms *bridge*, or *pi* refer to the *raspberry pi zero w*, that is being used as a *bridge* to connect *master* to *slave*(s).
-* The terms *user*, *you*, *network engineer*, *network administrator*, *administrator*, or *engineer* all refer to the person using this *bridge*.
+- For the purpose of this project, the terms *slave* refers to a end device you want to connect to, such as a router, switch, Firewall, Wireless LAN Controller, or any appliance that has a console interfiace.
+- The terms *master*  refers to the PC, laptop, phone, or tablet.
+- The terms *bridge*, or *pi* refer to the *raspberry pi zero w*, that is being used as a *bridge* to connect *master* to *slave*(s).
+- The terms *user*, *you*, *network engineer*, *network administrator*, *administrator*, or *engineer* all refer to the person using this *bridge*.
 ### Preamble:
 This project is made up of a set of scripts, services and libraries "used loosely" that allow a user to connect "through" a *raspberry pi zero w* from their phone/tablet/laptop's bluetooth interface to the console port on a *slave* device such as a switch, router, firewall, etc.  This allows the network/system engineer to manage devices via it's console port, while enjoying the benefit of not having to be tethered right up to it.
 #### How it works at a high level/Feature List:
 These scripts and services basicaly utilize *screen* and *rfcomm* to "bridge" a connection between the *master*, and the *slave* you are attempting to connect to. 
-* By design, this prject does not have security in mind, preferring instead to focus on easy discovery, pairing, and connectivity to allow the network administrator to focus on getting their work done.
-  * The Bridge will always be discoverable, and will not require a pin to complete the pairing process.
-  * This has been tested with *master* devices using the following Operating Systems: Linux, Android, Windows 10, and ChromeOS (with caveats).
-  * When connecting to the bridge over bluetooth, the administrator will be auto logged-in as pi.
-    * This will in no way affect access to the _slave_ device. If the _slave_ requires a username/password to access it, you will still be required to use those credentials.
-* Connection between the *master* and the *bridge* will be 9600 Baud - this is to maximize range.
-* Once the *master* is connected to the *bridge*, it will attempt to look for any available serial (usb or acm) ports.  At this point one of three things are expected to occur:
-  * If the *bridge* was connected to a single *slave*, then it will open a *screen* session to that serial port outomagically.
-  * If the *bridge* was connected (via OTG usb hub), then it will create one *screen* session for each serial port it found, list them on your display, and exit to shell.
-  * If the *bridge* does not detect any new usb/acm ports, then the it will state that fact and then drop to the *bridges* bash shell.
-* The connection between the *bidge* and the *slave* is set to 9600 Baud.  I'm looking to set this as a configurable element in the future.
-* While connected to a *slave*, the *bridge* will begin logging all session traffic between the *master* and *slave*. (This is why it is important to make sure the *bridge* somehow either has its time set manually, or receives its time from an external source, such as ntp server and/or an onboard rtc.)
-* If you become disconnected from the *bridge*, and want to reconnect, do not try to use the terminal program's *reconnect* feature.  I order to reconnect, first close the window, then re-open the connection profile.
-* If your setup has one of the two UPS's listed below, then services that will monitor battery level, and will automatically shutdown if the battery level reaches 2%.
-  * If you are using the *PiSugar2* UPS, then you get several added benefits:
-    * An on board RTC.
-    * A button to safely turn off the *bridge* when you are done using it.  This makes it so much easier then having to login just to power it off:
-      * Short-press - between 1 to 2 seconds will cause the bridge to safely shutdown.
-      * Long-press - between 3 - 4 seconds will cause the bridge to safely reboot.
-* If your setup has a *waveshare* e-ink screen, then there are services that will continiously upate the state of the bridge on the display.
-* Telnet is installed and is used for bridging to serial connections via *ser2net*.  This is just to provide another method to connect to a *slave* device.
-* If you are relying on the *slave's* USB port to supply power to your *bridge*, and decide to reboot the *slave*, your bridge will most likely be un-gracefully powercycled along with it.  This is not good as there is a risk that your Pi's SD card will become corrupted, and stop working all together.  There are two possible ways around this:
-  * Add a battery/UPS backup to allow the pi to weather those pesky, but necessary reboots.  This will also allow the *bridge* to be moved around between closets, or *devices* without powering it down, and back up.  See below for more details.
-  * Turn on *Overlay FS*.  This basically, turns your pi's sd card into a read only drive, so the risk of corrupting your SD card goes way, way down.  The down side is that you need to turn *Overlay FS* Off anythime the *bridge* needs and update applied or to make configuration adjustments.  I'm till testing this feature to see how well it works over the long run.
+- By design, this prject does not have security in mind, preferring instead to focus on easy discovery, pairing, and connectivity to allow the network administrator to focus on getting their work done.
+    - The Bridge will always be discoverable, and will not require a pin to complete the pairing process.
+    - This has been tested with *master* devices using the following Operating Systems: Linux, Android, Windows 10, and ChromeOS (with caveats).
+    - When connecting to the bridge over bluetooth, the administrator will be auto logged-in as pi.
+        - This will in no way affect access to the _slave_ device. If the _slave_ requires a username/password to access it, you will still be required to use those credentials.
+- Connection between the *master* and the *bridge* will be 9600 Baud - this is to maximize range.
+- Once the *master* is connected to the *bridge*, it will attempt to look for any available serial (usb or acm) ports.  At this point one of three things are expected to occur:
+    - If the *bridge* was connected to a single *slave*, then it will open a *screen* session to that serial port outomagically.
+    - If the *bridge* was connected (via OTG usb hub), then it will create one *screen* session for each serial port it found, list them on your display, and exit to shell.
+    - If the *bridge* does not detect any new usb/acm ports, then the it will state that fact and then drop to the *bridges* bash shell.
+- The connection between the *bidge* and the *slave* is set to 9600 Baud.  I'm looking to set this as a configurable element in the future.
+- While connected to a *slave*, the *bridge* will begin logging all session traffic between the *master* and *slave*. (This is why it is important to make sure the *bridge* somehow either has its time set manually, or receives its time from an external source, such as ntp server and/or an onboard rtc.)
+- If you become disconnected from the *bridge*, and want to reconnect, do not try to use the terminal program's *reconnect* feature.  I order to reconnect, first close the window, then re-open the connection profile.
+- If your setup has one of the two UPS's listed below, then services that will monitor battery level, and will automatically shutdown if the battery level reaches 2%.
+    - If you are using the *PiSugar2* UPS, then you get several added benefits:
+        - An on board RTC.
+        - A button to safely turn off the *bridge* when you are done using it.  This makes it so much easier then having to login just to power it off:
+        - Short-press - between 1 to 2 seconds will cause the bridge to safely shutdown.
+        - Long-press - between 3 - 4 seconds will cause the bridge to safely reboot.
+- If your setup has a *waveshare* e-ink screen, then there are services that will continiously upate the state of the bridge on the display.
+- Telnet is installed and is used for bridging to serial connections via *ser2net*.  This is just to provide another method to connect to a *slave* device.
+- If you are relying on the *slave's* USB port to supply power to your *bridge*, and decide to reboot the *slave*, your bridge will most likely be un-gracefully powercycled along with it.  This is not good as there is a risk that your Pi's SD card will become corrupted, and stop working all together.  There are two possible ways around this:
+    - Add a battery/UPS backup to allow the pi to weather those pesky, but necessary reboots.  This will also allow the *bridge* to be moved around between closets, or *devices* without powering it down, and back up.  See below for more details.
+    - Turn on *Overlay FS*.  This basically, turns your pi's sd card into a read only drive, so the risk of corrupting your SD card goes way, way down.  The down side is that you need to turn *Overlay FS* Off anythime the *bridge* needs and update applied or to make configuration adjustments.  I'm till testing this feature to see how well it works over the long run.
 ---
 ## Setup:
-There are two different setup options, *basic*, and *full*.
+There are two different setup options, *basic*, and *full*:
 - *Basic* should be used if you are only using a pi, and do not wish (at this point) to add a screen, rtc, or an external battery.
 - *Full* should be used if you are using the pi, either the e-ink display and/or an external UPS.  By selecting *full* the upgrade script will determine what is hardware is attatched, and install the necessary software to make it work.
 ### Basic setup:
 The following steps will guide you through the process getting this system to work from just after everything is unboxed, to the point where you are connecting to a switch, router, or whatever - that is the raspberry pi zero, by itself acting as a bluetooth to serial bridge.  We will be using headless installation method, so you will not need a keyboard, mouse, or monitor.
 #### Parts needed for *Basic* setup:
 You will need:
-* A *raspberry pi zero w* - at a minimum, but if you don't like soldering, and have at least a desire to expand, get the *raspberry pi zero wh* instead.
-* An SD card with a minimum size of 8G.  Don't skimp hear, you'll need to get a quality card to weather any accidental power-cuts.  an good example is:  [Example](https://www.amazon.com/SanDisk-Extreme-MicroSDXC-Everything-Stromboli/dp/B087SNYQLJ?pd_rd_w=gwWVo&pf_rd_p=19ad5bd3-3223-4635-a9ad-e42b3305d40b&pf_rd_r=H004CN0Q32QCP6VHNET2&pd_rd_r=9e6d3d01-28b1-4ade-87f1-e02d15f8f8ae&pd_rd_wg=uCCau&pd_rd_i=B087SNYQLJ&psc=1&ref_=pd_bap_d_rp_10_t)
-* A USB type A to RJ45 serial cable:  [Example](https://www.amazon.com/gp/product/B01AFNBC3K/ref=ppx_yo_dt_b_asin_title_o07_s00?ie=UTF8&psc=1)
-* A USB micro to USB type A for power:  [Example](https://www.amazon.com/6in-Micro-USB-Cable-6-inches/dp/B003YKX6WM/ref=sr_1_18?dchild=1&keywords=usb+micro+to+usb+a+male+6+inch+uart+cable&qid=1599147190&s=electronics&sr=1-18)
-* A USB micro to USB type A Female to connect to a USB type A to RJ45 serial cable to connect to a Cisco RJ45 console port:  [Example](https://www.amazon.com/UGREEN-Adapter-Samsung-Controller-Smartphone/dp/B00LN3LQKQ/ref=sr_1_2?dchild=1&keywords=usb%2Bmicro%2Bto%2Busb%2Ba%2Bfemale%2Bcable&qid=1599146495&s=electronics&sr=1-2&th=1).
-* A Micro USB (Pi side) to Mini USB (switch side) to connect between the raspberry pi's usb port to the switches USB-console port:  [Example](https://www.amazon.com/gp/product/B018M8YNDG/ref=ox_sc_act_title_1?smid=ATVPDKIKX0DER&psc=1)
-* Optional:  A Micro USB (pi side) to USB A female OTG Hub.  This will permit you to connect the *bridge* to multiple *slave* devices, so you won't have to keep walking back to switch the cable back and forth.  A good example is if you have VSS/Stack, or a FHRP pair:  [Example](https://www.amazon.com/gp/product/B01HYJLZH6/ref=ppx_yo_dt_b_asin_title_o01_s00?ie=UTF8&psc=1)
-* A case to house the pi.  Check this [option](https://www.amazon.com/Flirc-Raspberry-Pi-Zero-Case/dp/B08837L144/ref=sr_1_11_sspa?dchild=1&keywords=raspberry+pi+zero+battery+hat&qid=1600716473&sr=8-11-spons&psc=1&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUE0V0NONk1LS0hLNEEmZW5jcnlwdGVkSWQ9QTA5ODgwMDExTzgzV1hIVUxSQVJEJmVuY3J5cHRlZEFkSWQ9QTAxMTk0NDQySzdKM0UwV1FESTdBJndpZGdldE5hbWU9c3BfbXRmJmFjdGlvbj1jbGlja1JlZGlyZWN0JmRvTm90TG9nQ2xpY2s9dHJ1ZQ==) out for a good example, slightly pricey, but in my opinion, worth the cost.  Down side is that it will not work well with the *raspberry pi wh*'s.
+- A *raspberry pi zero w* - at a minimum, but if you don't like soldering, and have at least a desire to expand, get the *raspberry pi zero wh* instead.
+- An SD card with a minimum size of 8G.  Don't skimp hear, you'll need to get a quality card to weather any accidental power-cuts.  an good example is:  [Example](https://www.amazon.com/SanDisk-Extreme-MicroSDXC-Everything-Stromboli/dp/B087SNYQLJ?pd_rd_w=gwWVo&pf_rd_p=19ad5bd3-3223-4635-a9ad-e42b3305d40b&pf_rd_r=H004CN0Q32QCP6VHNET2&pd_rd_r=9e6d3d01-28b1-4ade-87f1-e02d15f8f8ae&pd_rd_wg=uCCau&pd_rd_i=B087SNYQLJ&psc=1&ref_=pd_bap_d_rp_10_t)
+- A USB type A to RJ45 serial cable:  [Example](https://www.amazon.com/gp/product/B01AFNBC3K/ref=ppx_yo_dt_b_asin_title_o07_s00?ie=UTF8&psc=1)
+- A USB micro to USB type A for power:  [Example](https://www.amazon.com/6in-Micro-USB-Cable-6-inches/dp/B003YKX6WM/ref=sr_1_18?dchild=1&keywords=usb+micro+to+usb+a+male+6+inch+uart+cable&qid=1599147190&s=electronics&sr=1-18)
+- A USB micro to USB type A Female to connect to a USB type A to RJ45 serial cable to connect to a Cisco RJ45 console port:  [Example](https://www.amazon.com/UGREEN-Adapter-Samsung-Controller-Smartphone/dp/B00LN3LQKQ/ref=sr_1_2?dchild=1&keywords=usb%2Bmicro%2Bto%2Busb%2Ba%2Bfemale%2Bcable&qid=1599146495&s=electronics&sr=1-2&th=1).
+- A Micro USB (Pi side) to Mini USB (switch side) to connect between the raspberry pi's usb port to the switches USB-console port:  [Example](https://www.amazon.com/gp/product/B018M8YNDG/ref=ox_sc_act_title_1?smid=ATVPDKIKX0DER&psc=1)
+- Optional:  A Micro USB (pi side) to USB A female OTG Hub.  This will permit you to connect the *bridge* to multiple *slave* devices, so you won't have to keep walking back to switch the cable back and forth.  A good example is if you have VSS/Stack, or a FHRP pair:  [Example](https://www.amazon.com/gp/product/B01HYJLZH6/ref=ppx_yo_dt_b_asin_title_o01_s00?ie=UTF8&psc=1)
+- A case to house the pi.  Check this [option](https://www.amazon.com/Flirc-Raspberry-Pi-Zero-Case/dp/B08837L144/ref=sr_1_11_sspa?dchild=1&keywords=raspberry+pi+zero+battery+hat&qid=1600716473&sr=8-11-spons&psc=1&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUE0V0NONk1LS0hLNEEmZW5jcnlwdGVkSWQ9QTA5ODgwMDExTzgzV1hIVUxSQVJEJmVuY3J5cHRlZEFkSWQ9QTAxMTk0NDQySzdKM0UwV1FESTdBJndpZGdldE5hbWU9c3BfbXRmJmFjdGlvbj1jbGlja1JlZGlyZWN0JmRvTm90TG9nQ2xpY2s9dHJ1ZQ==) out for a good example, slightly pricey, but in my opinion, worth the cost.  Down side is that it will not work well with the *raspberry pi wh*'s.
 ### Full setup:
 #### Installation of the *UPS* & *e-ink screen*:
-The addition of am e-paper screen and ups backup will allow you to continue providing power to the Pi while not being plugged into a power source, and to easily tell the status of the bridge (Pi) without having to login to check.
+The addition of an e-paper display and ups will allow you greater mobility and flexability without being plugged to a power source, and a laptop just to shut it down prior to moving it, or checking its operating status.
 #### Parts needed for this phase:
-- For Battery UPS, we have two supported options:
-  + The first option is a [ups-lite](https://www.ebay.com/itm/UPS-Lite-for-Raspberry-Pi-Zero-/352888138785).
-  + The second UPS option is a *PiSugar2* which includes a built-in real time clock (RTC), and a button that can be controlled via software.  The bridge will take advantage both the rtc, and button.
+- For UPS, we have two supported options:
+    - The first option is a [ups-lite](https://www.ebay.com/itm/UPS-Lite-for-Raspberry-Pi-Zero-/352888138785).
+    - The second UPS option is a *PiSugar2* which includes a built-in real time clock (RTC), and a button that can be controlled via software.  The bridge will take advantage both the rtc, and button.
 - For status and system health updates, attach a [waveshare.2.13 e-paper](https://www.waveshare.com/2.13inch-e-Paper-HAT.htm) display.  _Make sure it says V2_, for Version 2.
+- Connect the UPS and e-paper display to your *raspberry pi zero w* per their instructions.  Do **NOT** follow any instructions to install software or change any settings.  That will be handled by the installation script.
 ### Installation:
 #### OS installation and setup:
 - insert the SD card into a different computer to perform the first few steps:
-  - Download link is [here](https://www.raspberrypi.org/downloads/raspberry-pi-os/).
-  - Follow Raspbian’s directions [here](https://www.raspberrypi.org/documentation/installation/installing-images/README.md).
+    - Download link is [here](https://www.raspberrypi.org/downloads/raspberry-pi-os/).
+    - Follow Raspbian’s directions [here](https://www.raspberrypi.org/documentation/installation/installing-images/README.md).
 - Eject and re-insert the SD card, and use your PC's file explorer to open the SD card which should be called *boot*.
-  - Add the following to the end of the first line in the `/boot/cmdline.txt` file:
-    - modules-load=dwc2,g_serial
-  - Save and close *cmdline.txt*
+    - Add the following to the end of the first line in the `/boot/cmdline.txt` file:
+        - modules-load=dwc2,g_serial
+    - Save and close *cmdline.txt*
 - Create an empty file and call it *ssh* - no extensions, just *ssh*.
 - Create another file called *wpa_supplicant.conf*, and open it:
-  - Insert the following:
+    - Insert the following:
 ```bash
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
@@ -89,7 +90,7 @@ network={
 You are now done with this section, safely eject the SD card, and insert it into you *raspberry pi zero*.
 ##### First login:
 - Power on the bridge, and give it about a minute to boot.
-  - Using your favorite SSH client, login into your pi: `pi@<[hostname|IP Address]>`, where *hostname*, or *IP Address* is = to your Pi's.
+    - Using your favorite SSH client, login into your pi: `pi@<[hostname|IP Address]>`, where *hostname*, or *IP Address* is = to your Pi's.
 
 ---
 **Note**
@@ -104,27 +105,27 @@ sudo apt update && sudo apt full-upgrade -y
 ```
 Reboot your Pi when the upgrade is complete.
 ##### Additional OS Setup:
-##### Install git:
+###### Install git:
 `sudo apt install git -y`
-##### Setup using raspi-config
-* Enter `sudo raspi-config`:
-* From the main menu, under *Advanced Options*.
-  * select *Expand Filesystem* to expand.
-* From the main menu, under *System Options*.
-  * Select *Hostname*, then change to a name with **6 characters**.  Sorry for the restriction, it is in my roadmap to deal with bridges with hostnames of differnt sizes.
-* From the main menu, under *System Options*.
-  * Select *Boot / Autologin*, then select *Console Autologin*.
-  * Select *Password* and change.
-  * Select *Network at boot*, then select *No* to Disable *Waiting for network on boot*.
-* From the main menu, under *localization Options* verify, or set:
-  * Setup locales.
-    * De-select the default selection of *en_GB.UTF-8 UTF-8* (if you are'nt from Great Britain), and select your country's locale.
-    * Select *Ok*, then tab to and select *Ok* again.
-    * Select the locale you selected in the previous screen, then tab to and select *Ok*.
-  * Set timezone on the pi.
-  * Keyboard.  **Note**, there may be errors thrown here, that's fine for now, as we'll fix them later.
-  * wifi location.
-* From the *Main Menu*, select *Finish*, and even if you are not asked to reboot, do so.
+###### Setup using raspi-config
+- Enter `sudo raspi-config`:
+- From the main menu, under *Advanced Options*.
+    + select *Expand Filesystem* to expand.
+-  From the main menu, under *System Options*.
+    + Select *Hostname*, then change to a name with **6 characters**.  Sorry for the restriction, it is in my roadmap to deal with bridges with hostnames of differnt sizes.
+- From the main menu, under *System Options*.
+    + Select *Boot / Autologin*, then select *Console Autologin*.
+    + Select *Password* and change.
+    + Select *Network at boot*, then select *No* to Disable *Waiting for network on boot*.
+- From the main menu, under *localization Options* verify, or set:
+    + Setup locales:
+        + De-select the default selection of *en_GB.UTF-8 UTF-8* (if you are'nt from Great Britain), and select your country's locale.
+        + Select *Ok*, then tab to and select *Ok* again.
+        + Select the locale you selected in the previous screen, then tab to and select *Ok*.
+        + Set timezone on the pi.
+        + Keyboard.  **Note**, there may be errors thrown here, that's fine for now, as we'll fix them later.
+        + wifi location.
+- From the *Main Menu*, select *Finish*, and even if you are not asked to reboot, do so.
 ---
 **NOTE**
 
@@ -142,9 +143,9 @@ network={
     key_mgmt=WPA-PSK
 }
 ```
-* One block for each network you want to add.
-  * Make sure to set the ssid and psk as needed.
-  * **Be sure to test each network.**
+- One block for each network you want to add.
+    - Make sure to set the ssid and psk as needed.
+    - **Be sure to test each network.**
 
 ##### Pre-Requisites to software installation:
 ```bash
@@ -170,12 +171,12 @@ If everything went as planned, your *raspberry pi zero w* should be acting like 
 ![Raspberry Pi Zero usb port location and definition:](/readme_md_images/rpi0_diagram_port.png)
 ### Power on the *bridge*:
 1. Different ways, depending on your setup:
-  1. For the *basic* *bridge* option, Plug the power into it's power port.  See the diagram here:
-  2. If your version of the *bridge* has a UPS, then slide the switch to the on position.
-    a. If your UPS is a *PiShugar2*:
-      1. The real time clock should be enabeled and providing your pi with the correct time, while it is off of the internet.
-    b. To charge the UPS, insert the power cord into the UPS's power input plug, and _not_ the the pi's power port.
-  3. It will take up to 45 seconds to boot to a point where a you can connect to it via bluetooth.
+    1. For the *basic* *bridge* option, Plug the power into it's power port.  See the diagram here:
+    2. If your version of the *bridge* has a UPS, then slide the switch to the on position.
+        a. If your UPS is a *PiShugar2*:
+            1. The real time clock should be enabeled and providing your pi with the correct time, while it is off of the internet.
+        b. To charge the UPS, insert the power cord into the UPS's power input plug, and _not_ the the pi's power port.
+ 2. It will take up to 45 seconds to boot to a point where a you can connect to it via bluetooth.
 ---
 **NOTE**
 
@@ -186,21 +187,21 @@ If you are interested in accurate time, I advise you let it connect to an availa
 ### First time connecting to your *bridge*:
 #### Pairing:
 1. The *Bridge* is set to allways be available to pair with it, so this step should go by fairly easily and painlessly:
-   1. Open bluetooth settings and pair with the bridge - the name of the bridge should be the hostname you assigned it during the setup.  See [Additional OS Setup:](#Additional-OS-Setup).
-   2. Assign com/tty ports to the *bridge* device.
+    1. Open bluetooth settings and pair with the bridge - the name of the bridge should be the hostname you assigned it during the setup.  See [Additional OS Setup:](#Additional-OS-Setup).
+    2. Assign com/tty ports to the *bridge* device.
 Pairing should now be complete!
 
 #### Setting up your Favourite Terminal application to connect to your *Bridge*:
 1. In your favourite terminal program (screen/minicom/putty/securecrt/etc).
-2. Ccreate a connection profile to connect to your bridge using serial, and assign the profile the com/tty port that was assigned during pairing.
+2. Create a connection profile to connect to your bridge using serial, and assign the profile the com/tty port that was assigned during pairing.
 3. Use N81, and 9600 baud.
-4. use xterm as your terminal type.
+4. Use xterm as your terminal type.
 5. Now save and test.
 6. Repeat steps for all devices that you might think that will need to connect.
 You should now all of your device terminal programs setup to easily connect to the *bridge* as needed.
 
 #### Connecting to your *bridge*:
-1. open your terminal program.
+1. Open your terminal program.
 2. Click on and launch/open the connection profile you just built.
 3. A terminal should open up, and you should see the banner appear, along with the results of your bridges attemtps to connect to the slave(s), and then either the login prompt of the slave, or a list of possible slaves you can conncect with.
 
@@ -208,44 +209,44 @@ You should now all of your device terminal programs setup to easily connect to t
 1. To shutdown your bridge, type `sudo poweroff`
 2. To reboot your *bridge*, type `sudo reboot`
 3. If you have a *PiSugar2* UPS:
-  - Short press the button (between 1 - 2 seconds) to power it down.
-  - Long press the power button for 3 - 4 seconds, to reboot.
+    - Short press the button (between 1 - 2 seconds) to power it down.
+    - Long press the power button for 3 - 4 seconds, to reboot.
 4. If you are connected to any one of the UPS options, slide the switch to the off position once the shutdown process is complete.
 
 #### How To:
 1. If you were dropped off in the *bridge*'s bash shell, you have access to perform updates, play games, set the time, whatever. Here are some ideas:
-  1. Set the timezone (for those travelers)
-    - follow from here: [Setup Using raspi-config](#setup-using-raspi-config)
-  2. Set the date and time (if you don't have an onboard rtc, or access to a network:
-    - `sudo date --set="4 MAR 2021 18:00:00"
-  3. Update the ser2bt software - if you are connected using bluetooth, then start at step 1, otherwise, skip step 1 and step 5:
-    - `screen`
-    - `cd /home/pi/Projects/ser2bt/`
-    - `git pull`
-    - `sudo ./upgrade [basic|full]`
-    - `exit` to exit out of acreen.
-  4. Update the OS: (this is also done in the *upgrade* utility.)
-    - `screen` Need to use screen to be able to access network resources, this is a workaround to an issue that prevents reliable network communications while an admin is logged in.
-    - `sudo apt update -y`
-  5. If the result of the above command included `no updates available`, then skip to step 4.
-    - `sudo apt full-upgrade -y`
-    - `exit` to exit out of screen.
+    1. Set the timezone (for those travelers)
+        - follow from here: [Setup Using raspi-config](#setup-using-raspi-config)
+    2. Set the date and time (if you don't have an onboard rtc, or access to a network:
+        - `sudo date --set="4 MAR 2021 18:00:00"
+    3. Update the ser2bt software - if you are connected using bluetooth, then start at step 1, otherwise, skip step 1 and step 5:
+        - `screen`
+        - `cd /home/pi/Projects/ser2bt/`
+        - `git pull`
+        - `sudo ./upgrade [basic|full]`
+        - `exit` to exit out of acreen.
+    4. Update the OS: (this is also done in the *upgrade* utility.)
+        - `screen` Need to use screen to be able to access network resources, this is a workaround to an issue that prevents reliable network communications while an admin is logged in.
+        - `sudo apt update -y`
+    5. If the result of the above command included `no updates available`, then skip to step 4.
+        - `sudo apt full-upgrade -y`
+        - `exit` to exit out of screen.
 2. If your *bridge* is connected to a single *slave*:
-  - `ctrl` + `a`, then `d` to suspend you screen session.
-  - `ctrl` + `a`, then `\` to terminate your screen session. (you can always re-enter).
-  - If you want to enter a serial session, and you either terminated the session prior, or plugged a cable in after boot, then run `ser2bt_bridge`.
-  - To return to an existing session after it has been suspended, then type `screen -r`
+    1. `ctrl` + `a`, then `d` to suspend you screen session.
+    2. `ctrl` + `a`, then `\` to terminate your screen session. (you can always re-enter).
+    3. If you want to enter a serial session, and you either terminated the session prior, or plugged a cable in after boot, then run `ser2bt_bridge`.
+    4. To return to an existing session after it has been suspended, then type `screen -r`
 3. If your *bridge* is connected to multiple *slaves*:
-  - If you are in the *slave* (read switch), and you want to get out to do something or enter another switch, and come back, then:
-  - `ctrl` + `a`, then `d ` to suspend you screen session allowing you to return later.
-  - `ctrl` + `a`, then `\` to terminate your screen session. (you can always re-enter). 
-  - To re-nter a session that has been suspended, type `screen -r Switch_x`.
-  - To enter a switch that has never been entered, or had its screen session terminated, type `screen Switch_x` where x = the connection number.
-  - To list the available switches that you can enter, type `screen -l`
+    1. If you are in the *slave* (read switch), and you want to get out to do something or enter another switch, and come back, then:
+    2. `ctrl` + `a`, then `d ` to suspend you screen session allowing you to return later.
+    3. `ctrl` + `a`, then `\` to terminate your screen session. (you can always re-enter). 
+    4. To re-nter a session that has been suspended, type `screen -r Switch_x`.
+    5. To enter a switch that has never been entered, or had its screen session terminated, type `screen Switch_x` where x = the connection number.
+    6. To list the available switches that you can enter, type `screen -l`
 4. If you're lost, and you need to reconnect to the *slave* were connected to, type `ser2bt_bridge` to relaunch the discovery script.  if that gives you an error, then reboot.
 5. To resize your terminal, suspend/exit and *screen* sessions, and type `resize`
 6. When you are within a screen session, configuring, or administering a *slave*:
-  - Use the *PageUp* key to enter scrolback mode, then continue to use *PageUp*/*PageDown* or *Up*/*Down* arrows to move up and down your buffer.  Use the *Escape* key to exit, and go back to the normal mode.
+    1. Use the *PageUp* key to enter scrolback mode, then continue to use *PageUp*/*PageDown* or *Up*/*Down* arrows to move up and down your buffer.  Use the *Escape* key to exit, and go back to the normal mode.
 ---
 
 ## Improvements:
