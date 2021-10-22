@@ -44,7 +44,6 @@ There are two different setup options, *basic*, and *full*:
 ### Basic setup:
 The following steps will guide you through the process getting this system to work from just after everything is unboxed, to the point where you are connecting to a switch, router, or whatever - that is the raspberry pi zero, by itself acting as a bluetooth to serial bridge.  We will be using headless installation method, so you will not need a keyboard, mouse, or monitor.
 #### Parts needed for *Basic* setup:
-You will need:
 - A *raspberry pi zero w* - at a minimum, but if you don't like soldering, and have at least a desire to expand, get the *raspberry pi zero wh* instead.
 - An SD card with a minimum size of 8G.  Don't skimp hear, you'll need to get a quality card to weather any accidental power-cuts.  an good example is:  [Example](https://www.amazon.com/SanDisk-Extreme-MicroSDXC-Everything-Stromboli/dp/B087SNYQLJ?pd_rd_w=gwWVo&pf_rd_p=19ad5bd3-3223-4635-a9ad-e42b3305d40b&pf_rd_r=H004CN0Q32QCP6VHNET2&pd_rd_r=9e6d3d01-28b1-4ade-87f1-e02d15f8f8ae&pd_rd_wg=uCCau&pd_rd_i=B087SNYQLJ&psc=1&ref_=pd_bap_d_rp_10_t)
 - A USB type A to RJ45 serial cable:  [Example](https://www.amazon.com/gp/product/B01AFNBC3K/ref=ppx_yo_dt_b_asin_title_o07_s00?ie=UTF8&psc=1)
@@ -54,14 +53,13 @@ You will need:
 - Optional:  A Micro USB (pi side) to USB A female OTG Hub.  This will permit you to connect the *bridge* to multiple *slave* devices, so you won't have to keep walking back to switch the cable back and forth.  A good example is if you have VSS/Stack, or a FHRP pair:  [Example](https://www.amazon.com/gp/product/B01HYJLZH6/ref=ppx_yo_dt_b_asin_title_o01_s00?ie=UTF8&psc=1)
 - A case to house the pi.  Check this [option](https://www.amazon.com/Flirc-Raspberry-Pi-Zero-Case/dp/B08837L144/ref=sr_1_11_sspa?dchild=1&keywords=raspberry+pi+zero+battery+hat&qid=1600716473&sr=8-11-spons&psc=1&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUE0V0NONk1LS0hLNEEmZW5jcnlwdGVkSWQ9QTA5ODgwMDExTzgzV1hIVUxSQVJEJmVuY3J5cHRlZEFkSWQ9QTAxMTk0NDQySzdKM0UwV1FESTdBJndpZGdldE5hbWU9c3BfbXRmJmFjdGlvbj1jbGlja1JlZGlyZWN0JmRvTm90TG9nQ2xpY2s9dHJ1ZQ==) out for a good example, slightly pricey, but in my opinion, worth the cost.  Down side is that it will not work well with the *raspberry pi wh*'s.
 ### Full setup:
-#### Installation of the *UPS* & *e-ink screen*:
-The addition of an e-paper display and ups will allow you greater mobility and flexability without being plugged to a power source, and a laptop just to shut it down prior to moving it, or checking its operating status.
-#### Parts needed for this phase:
-- For UPS, we have two supported options:
+#### Additional parts needed for *Full* setup:
+- For UPS, there are two supported options:
     - The first option is a [ups-lite](https://www.ebay.com/itm/UPS-Lite-for-Raspberry-Pi-Zero-/352888138785).
-    - The second UPS option is a *PiSugar2* which includes a built-in real time clock (RTC), and a button that can be controlled via software.  The bridge will take advantage both the rtc, and button.
+    - The second UPS option is a [PiSugar2](https://www.amazon.com/Pisugar2-Portable-Pwnagotchi-Raspberry-Accessories/dp/B08D678XPR) which includes a built-in real time clock (RTC), and a button that can be controlled via software.
+        - The bridge will take advantage both the rtc, and button.
 - For status and system health updates, attach a [waveshare.2.13 e-paper](https://www.waveshare.com/2.13inch-e-Paper-HAT.htm) display.  _Make sure it says V2_, for Version 2.
-- Connect the UPS and e-paper display to your *raspberry pi zero w* per their instructions.  Do **NOT** follow any instructions to install software or change any settings.  That will be handled by the installation script.
+- Attatch the e-paper display and UPS per the manufacturers instructions.
 ### Installation:
 #### OS installation and setup:
 - insert the SD card into a different computer to perform the first few steps:
