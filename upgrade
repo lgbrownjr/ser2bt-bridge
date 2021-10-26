@@ -220,6 +220,7 @@ function system_update() {
 		if [ ${?} -eq 0 ]; then
 			packadge_count=$(echo ${apt_update_result} | grep -o "[0-9]* packages can be upgraded" 2> /dev/null | grep -o "[0-9]*")
 			printf "   \n ${grn}Update completed${nor}, ${yel}${packadge_count} ${nor} packadges will be upgraded.\n"
+			apt list --upgradable 2> /dev/null | grep -oe "^[-\.0-9a-z]*" 2> /dev/null
 			apt_update_flag=1 #True
 			up_to_date_flag=0 #False
 		elif [ ${?} -eq 1 ]; then
