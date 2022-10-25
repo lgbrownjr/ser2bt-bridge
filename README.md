@@ -14,13 +14,14 @@ This project is made up of a set of scripts, services and libraries "used loosel
 These scripts and services basicaly utilize *screen* and *rfcomm* to "bridge" a connection between the *master*, and the *slave* you are attempting to connect to. 
 - By design, this prject does not have security in mind, preferring instead to focus on easy discovery, pairing, and connectivity to allow the network administrator to focus on getting their work done.
     - The Bridge will always be discoverable, and will not require a pin to complete the pairing process.
-    - This has been tested with *master* devices using the following Operating Systems: Linux, Android, Windows 10, and ChromeOS (with caveats).
-    - When connecting to the bridge over bluetooth, the administrator will be auto logged-in as pi.
-        - This will in no way affect access to the _slave_ device. If the _slave_ requires a username/password to access it, you will still be required to use those credentials.
+    - *ser2bt-bridge* has been tested with *master* devices using the following Operating Systems: Linux, Android, Windows 10, and ChromeOS (with caveats).
+        - Although I do not own a mac, I have no reason to belive it won't work with *ser2bt-bridge*.
+    - When connecting to the bridge over bluetooth, the administrator will be auto logged-in as user pi.
+        - This will in no way affect access to the _slave_ device. If the _slave_ requires a username/password to administer it, then you will still be required to use those credentials.
 - Connection between the *master* and the *bridge* will be 9600 Baud - this is to maximize range.
 - Once the *master* is connected to the *bridge*, it will attempt to look for any available serial (usb or acm) ports.  At this point one of three things are expected to occur:
     - If the *bridge* was connected to a single *slave*, then it will open a *screen* session to that serial port outomagically.
-    - If the *bridge* was connected (via OTG usb hub), then it will create one *screen* session for each serial port it found, list them on your display, and exit to shell.
+    - If the *bridge* was connected (via OTG usb hub) to multiple switches, then it will create one *screen* session for each active serial port found, list them on your display, and exit to shell.
     - If the *bridge* does not detect any new usb/acm ports, then the it will state that fact and then drop to the *bridges* bash shell.
 - The connection between the *bidge* and the *slave* is set to 9600 Baud.  I'm looking to set this as a configurable element in the future.
 - While connected to a *slave*, the *bridge* will begin logging all session traffic between the *master* and *slave*. (This is why it is important to make sure the *bridge* somehow either has its time set manually, or receives its time from an external source, such as ntp server and/or an onboard rtc.)

@@ -4,6 +4,7 @@
 from PIL import Image, ImageDraw, ImageFont  # Font handeling
 from waveshare_epd import epd2in13_V2
 import os
+from ser2bt_lib import line_pos, center_text
 #user-changable settings.
 screen_rotate = 180
 foreground = 0
@@ -15,32 +16,10 @@ tmp_dir = "/tmp/"
 shut_file = "shut"
 title_msg = 'Loading:'
 msg = 'Serial to bluetooth bridge'
+np = True #New Page, True or False
 roboto_font_dir='/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/'
 f_title_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 18)
 f_title_font24 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 24)
-
-#location
-left_margin = 1 #Left margin.
-top_margin = 11 #Will start all text at the 11th pixel
-bottom_margen = epd.width - 1
-line_position = top_margin #initial line to start on.
-next_line_position = top_margin #initial line to start on.
-
-def center_text(msg,font):
-    w, h = boot_draw.textsize(msg, font)
-    return (w)
-
-def line_pos(msg,font):
-    global line_position
-    global next_line_position
-    w, h = boot_draw.textsize(msg, font)
-    if next_line_position == top_margin:
-        next_line_position = line_position + h
-        return (line_position)
-    else:
-        line_position = next_line_position
-        next_line_position = line_position + h
-        return (line_position)
 
 #Check if battery file exists, create if it does not:
 if not os.path.exists(tmp_dir+shut_file):
@@ -58,8 +37,9 @@ boot_image = Image.new('1', (epd.height, epd.width), background)  #clear the fra
 boot_draw = ImageDraw.Draw(boot_image)
 
 #Plot the text:
-boot_draw.text(((epd.height/2) - center_text(title_msg, f_title_font24)/2, line_pos(title_msg, f_title_font24)), title_msg, font=f_title_font24, fill = foreground)
-boot_draw.text(((epd.height/2) - center_text(msg, f_title_font18)/2, line_pos(msg, f_title_font18)), msg, font=f_title_font18, fill = foreground)
+boot_draw.text((center_text(boot_draw, title_msg, f_title_font24), line_pos(np,boot_draw, title_msg, f_title_font24)), title_msg, font=f_title_font24, fill = foreground)
+np = False
+boot_draw.text((center_text(boot_draw, msg, f_title_font18), line_pos(np,boot_draw, msg, f_title_font18)), msg, font=f_title_font18, fill = foreground)
 
 #Display the screen
 epd.display(epd.getbuffer(boot_image.rotate(screen_rotate)))
