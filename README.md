@@ -85,18 +85,6 @@ You are now done with this section, safely eject the SD card, and insert it into
 - Power on the bridge, and give it about a minute to boot.
     - Using your favorite SSH client, login into your pi: `pi@<[hostname|IP Address]>`, where *hostname*, or *IP Address* is = to your Pi's.
 
----
-**Note**
-
-Finding the IP address can be painful unless you have a utility on your PC or phone that can scan the network for active devices.  Recommend trying the default hostname *raspberrypi.local* first.
-
----
-
-##### Update bootfile:
-- Add the following to the end of the first line in the `/boot/cmdline.txt` file:
-    - modules-load=dwc2,g_serial
-- Save and close *cmdline.txt*
-- Reboot the *Pi* `sudo reboot`
 ##### Update OS:
 ```bash
 sudo apt update && sudo apt full-upgrade -y
