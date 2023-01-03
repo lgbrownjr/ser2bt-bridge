@@ -4,11 +4,19 @@
 from PIL import Image, ImageDraw, ImageFont  # Font handeling
 from waveshare_epd import epd2in13_V2
 import os
+import configparser #to handle the config file.
 from ser2bt_lib import line_pos, center_text
-#user-changable settings.
-screen_rotate = 180
-foreground = 0
-background = 255
+#import configuration file:
+#Read ser2bt_config.ini file
+config_obj = configparser.ConfigParser()
+config_obj.read("/etc/ser2bt_config.ini")
+screen = config_obj["screen"]
+init_screen = config_obj["init_screen"]
+
+# parameters to use the keys from the ser2bt_config.ini
+screen_rotate = int(screen["screen_rotate"])
+foreground = int(screen["foreground"])
+background = int(screen["background"])
 
 # Variable decleration
 epd = epd2in13_V2.EPD()

@@ -37,7 +37,10 @@ f_top_line_font16 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 16)
 f_title_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 18)
 f_title_font24 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 24)
 
-bmp = Image.open(os.path.join(picdir, 'logo.bmp'))
+if foreground == 0:
+    bmp = Image.open(os.path.join(picdir, 'logo.bmp'))
+else:
+    bmp = Image.open(os.path.join(picdir, 'logo_inverted.bmp'))
 exit_image = Image.new('1', (epd.height, epd.width), int(background))  #clear the frame
 exit_draw = ImageDraw.Draw(exit_image)
 left_margin = 1 #Left margin.
