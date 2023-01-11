@@ -1,31 +1,32 @@
 # ser2bt-bridge
 ---
-## Serial to Bluetooth bridge for raspberry pi zero w
-Before we begin, understand that everything in this repository is a work in progress...  :slightly_smiling_face:
+## Serial to Bluetooth bridge for raspberry pi zero w & w2:
+
 ### Definitions:
 I tend to use several different descriptors for each component that is involved with this project, so I've tried to define them below:
-- For the purpose of this project, the terms *slave* refers to a end device you want to connect to, such as a router, switch, Firewall, Wireless LAN Controller, or any appliance that has a console interfiace.
-- The terms *master*  refers to the PC, laptop, phone, or tablet.
-- The terms *bridge*, or *pi* refer to the *raspberry pi zero w*, that is being used as a *bridge* to connect *master* to *slave*(s).
+- For the purpose of this project, the terms *slave* refers to a end device you want to connect to, such as a router, switch, Firewall, Wireless LAN Controller, or any appliance that has a console interface.
+- The terms *master*  refers to the PC, laptop, phone, or tablet that is being usede to connect to the *slave* device.
+- The terms *bridge*, or *pi* refer to the *raspberry pi zero w/w2*, that is being used to *bridge* the *master* to *slave* device.
 - The terms *user*, *you*, *network engineer*, *network administrator*, *administrator*, or *engineer* all refer to the person using this *bridge*.
 ### Preamble:
-This project is made up of a set of scripts, services and libraries "used loosely" that allow a user to connect "through" a *raspberry pi zero w* from their phone/tablet/laptop's bluetooth interface to the console port on a *slave* device such as a switch, router, firewall, etc.  This allows the network/system engineer to manage devices via it's console port, while enjoying the benefit of not having to be tethered right up to it.
+This project is made up of a set of scripts, services and libraries (used loosely) that allow a *user* to connect "through" a *raspberry pi zero w* from their phone/tablet/laptop's bluetooth interface to the console port on a *slave* device such as a switch, router, firewall, etc.  This allows the *user* to manage *slave* devices via it's console port, while enjoying the benefit of not having to be tethered right up to it.
 #### How it works at a high level/Feature List:
-These scripts and services basicaly utilize *screen* and *rfcomm* to "bridge" a connection between the *master*, and the *slave* you are attempting to connect to. 
+These scripts and services basicaly utilize *screen* and *rfcomm* to "bridge" a connection between the *master*, and the *slave* device you are attempting to connect to. 
 - By design, this prject does not have security in mind, preferring instead to focus on easy discovery, pairing, and connectivity to allow the network administrator to focus on getting their work done.
     - The Bridge will always be discoverable, and will not require a pin to complete the pairing process.
     - *ser2bt-bridge* has been tested with *master* devices using the following Operating Systems: Linux, Android, Windows 10, and ChromeOS (with caveats).
         - Although I do not own a mac, I have no reason to belive it won't work with *ser2bt-bridge*.
-    - When connecting to the bridge over bluetooth, the administrator will be auto logged-in as user pi.
-        - This will in no way affect access to the _slave_ device. If the _slave_ requires a username/password to administer it, then you will still be required to use those credentials.
-- Connection between the *master* and the *bridge* will be 9600 Baud - this is to maximize range.
-- Once the *master* is connected to the *bridge*, it will attempt to look for any available serial (usb or acm) ports.  At this point one of three things are expected to occur:
-    - If the *bridge* was connected to a single *slave*, then it will open a *screen* session to that serial port outomagically.
-    - If the *bridge* was connected (via OTG usb hub) to multiple switches, then it will create one *screen* session for each active serial port found, list them on your display, and exit to shell.
-    - If the *bridge* does not detect any new usb/acm ports, then the it will state that fact and then drop to the *bridges* bash shell.
-- The connection between the *bidge* and the *slave* is set to 9600 Baud.  I'm looking to set this as a configurable element in the future.
+    - When connecting to the bridge over bluetooth, the administrator will be auto logged-in to it as user *pi*.
+        - This will in no way affect access to the *slave* device. If the *slave* requires a username/password to administer it, then you will still be required to use those credentials.
+- Once the *master* is connected to the *bridge*, it will attempt to look for any available serial (usb or acm) ports.  At this point 1 of 3 things are expected to occur:
+    1. If the *bridge* was connected to a single *slave*, then it will open a *screen* session to that serial port outomagically.
+    2. If the *bridge* was connected (via OTG usb hub) to multiple switches, then it will create one *screen* session for each active serial port found, list them on your display, and exit to shell.
+        - There will be instructions on the monitor telling you how to access each screen.
+    3. If the *bridge* does not detect any new usb/acm ports, then the it will state that fact and then drop the user to the bash shell.
+        - If you connect the *bridge* to the slave after power on, and initial detection of the usb/acm ports, then type the following command to have it look for connected ports:  `ser2bt-bridge`
+- The connection between the *bidge* and the *slave* is set to 9600 Baud.  I'm looking to set this as a configurable element in the future.  But as the baud rate goes up, the range one can walk away from the *bridge* will go down.
 - While connected to a *slave*, the *bridge* will begin logging all session traffic between the *master* and *slave*. (This is why it is important to make sure the *bridge* somehow either has its time set manually, or receives its time from an external source, such as ntp server and/or an onboard rtc.)
-- If you become disconnected from the *bridge*, and want to reconnect, do not try to use the terminal program's *reconnect* feature.  I order to reconnect, first close the window, then re-open the connection profile.
+- If you become disconnected from the *bridge*, and want to reconnect, do not try to use the terminal program's *reconnect* feature.  In order to reconnect, first close the window, then re-open the connection profile.
 - If your setup has one of the two UPS's listed below, then services that will monitor battery level, and will automatically shutdown if the battery level reaches 2%.
     - If you are using the *PiSugar2* UPS, then you get several added benefits:
         - An on board RTC.
@@ -34,25 +35,23 @@ These scripts and services basicaly utilize *screen* and *rfcomm* to "bridge" a 
         - Long-press - between 3 - 4 seconds will cause the bridge to safely reboot.
 - If your setup has a *waveshare* e-ink screen, then there are services that will continiously upate the state of the bridge on the display.
 - Telnet is installed and is used for bridging to serial connections via *ser2net*.  This is just to provide another method to connect to a *slave* device.
-- If you are relying on the *slave's* USB port to supply power to your *bridge*, and decide to reboot the *slave*, your bridge will most likely be un-gracefully powercycled along with it.  This is not good as there is a risk that your Pi's SD card will become corrupted, and stop working all together.  There are two possible ways around this:
-    - Add a battery/UPS backup to allow the pi to weather those pesky, but necessary reboots.  This will also allow the *bridge* to be moved around between closets, or *devices* without powering it down, and back up.  See below for more details.
-    - Turn on *Overlay FS*.  This basically, turns your pi's sd card into a read only drive, so the risk of corrupting your SD card goes way, way down.  The down side is that you need to turn *Overlay FS* Off anythime the *bridge* needs and update applied or to make configuration adjustments.  I'm till testing this feature to see how well it works over the long run.
+- If your *bridge* does not have a connected UPS solution, and you are relying on the *slave's* USB port to supply power to your *bridge*, and decide to reboot the *slave*, your bridge will most likely be un-gracefully powercycled along with it.  This is not good as there is a risk that your Pi's SD card will become corrupted.
 ---
 ## Setup:
 There are two different setup options, *basic*, and *full*:
-- *Basic* should be used if you are only using a pi, and do not wish (at this point) to add a screen, rtc, or an external battery.
+- *Basic* should be used if you are only using a pi, and do not wish (at this point) to add a screen, or an external battery.
 - *Full* should be used if you are using the pi, either the e-ink display and/or an external UPS.  By selecting *full* the upgrade script will determine what is hardware is attatched, and install the necessary software to make it work.
 ### Basic setup:
 The following steps will guide you through the process getting this system to work from just after everything is unboxed, to the point where you are connecting to a switch, router, or whatever - that is the raspberry pi zero, by itself acting as a bluetooth to serial bridge.  We will be using headless installation method, so you will not need a keyboard, mouse, or monitor.
 #### Parts needed for *Basic* setup:
 - A *raspberry pi zero w* - at a minimum, but if you don't like soldering, and have at least a desire to expand, get the *raspberry pi zero wh* instead.
-- An SD card with a minimum size of 8G.  Don't skimp hear, you'll need to get a quality card to weather any accidental power-cuts.  an good example is:  [Example](https://www.amazon.com/SanDisk-Extreme-MicroSDXC-Everything-Stromboli/dp/B087SNYQLJ?pd_rd_w=gwWVo&pf_rd_p=19ad5bd3-3223-4635-a9ad-e42b3305d40b&pf_rd_r=H004CN0Q32QCP6VHNET2&pd_rd_r=9e6d3d01-28b1-4ade-87f1-e02d15f8f8ae&pd_rd_wg=uCCau&pd_rd_i=B087SNYQLJ&psc=1&ref_=pd_bap_d_rp_10_t)
+- An SD card with a minimum size of 8G.  You'll need to get a quality card to weather accidental power-cuts.  A good example is:  [Example](https://www.amazon.com/SanDisk-Extreme-MicroSDXC-Everything-Stromboli/dp/B087SNYQLJ?pd_rd_w=gwWVo&pf_rd_p=19ad5bd3-3223-4635-a9ad-e42b3305d40b&pf_rd_r=H004CN0Q32QCP6VHNET2&pd_rd_r=9e6d3d01-28b1-4ade-87f1-e02d15f8f8ae&pd_rd_wg=uCCau&pd_rd_i=B087SNYQLJ&psc=1&ref_=pd_bap_d_rp_10_t)
 - A USB type A to RJ45 serial cable:  [Example](https://www.amazon.com/gp/product/B01AFNBC3K/ref=ppx_yo_dt_b_asin_title_o07_s00?ie=UTF8&psc=1)
 - A USB micro to USB type A for power:  [Example](https://www.amazon.com/6in-Micro-USB-Cable-6-inches/dp/B003YKX6WM/ref=sr_1_18?dchild=1&keywords=usb+micro+to+usb+a+male+6+inch+uart+cable&qid=1599147190&s=electronics&sr=1-18)
 - A USB micro to USB type A Female to connect to a USB type A to RJ45 serial cable to connect to a Cisco RJ45 console port:  [Example](https://www.amazon.com/UGREEN-Adapter-Samsung-Controller-Smartphone/dp/B00LN3LQKQ/ref=sr_1_2?dchild=1&keywords=usb%2Bmicro%2Bto%2Busb%2Ba%2Bfemale%2Bcable&qid=1599146495&s=electronics&sr=1-2&th=1).
 - A Micro USB (Pi side) to Mini USB (switch side) to connect between the raspberry pi's usb port to the switches USB-console port:  [Example](https://www.amazon.com/gp/product/B018M8YNDG/ref=ox_sc_act_title_1?smid=ATVPDKIKX0DER&psc=1)
 - Optional:  A Micro USB (pi side) to USB A female OTG Hub.  This will permit you to connect the *bridge* to multiple *slave* devices, so you won't have to keep walking back to switch the cable back and forth.  A good example is if you have VSS/Stack, or a FHRP pair:  [Example](https://www.amazon.com/gp/product/B01HYJLZH6/ref=ppx_yo_dt_b_asin_title_o01_s00?ie=UTF8&psc=1)
-- A case to house the pi.  Check this [option](https://www.amazon.com/Flirc-Raspberry-Pi-Zero-Case/dp/B08837L144/ref=sr_1_11_sspa?dchild=1&keywords=raspberry+pi+zero+battery+hat&qid=1600716473&sr=8-11-spons&psc=1&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUE0V0NONk1LS0hLNEEmZW5jcnlwdGVkSWQ9QTA5ODgwMDExTzgzV1hIVUxSQVJEJmVuY3J5cHRlZEFkSWQ9QTAxMTk0NDQySzdKM0UwV1FESTdBJndpZGdldE5hbWU9c3BfbXRmJmFjdGlvbj1jbGlja1JlZGlyZWN0JmRvTm90TG9nQ2xpY2s9dHJ1ZQ==) out for a good example, slightly pricey, but in my opinion, worth the cost.  Down side is that it will not work well with the *raspberry pi wh*'s.
+- A case to house the pi.  Check this [option](https://www.amazon.com/Flirc-Raspberry-Pi-Zero-Case/dp/B08837L144/ref=sr_1_11_sspa?dchild=1&keywords=raspberry+pi+zero+battery+hat&qid=1600716473&sr=8-11-spons&psc=1&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUE0V0NONk1LS0hLNEEmZW5jcnlwdGVkSWQ9QTA5ODgwMDExTzgzV1hIVUxSQVJEJmVuY3J5cHRlZEFkSWQ9QTAxMTk0NDQySzdKM0UwV1FESTdBJndpZGdldE5hbWU9c3BfbXRmJmFjdGlvbj1jbGlja1JlZGlyZWN0JmRvTm90TG9nQ2xpY2s9dHJ1ZQ==) out for a good example, slightly pricey, but in my opinion, worth the cost.  Down side is that it will not work with the *raspberry pi wh*'s.
 ### Full setup:
 #### Additional parts needed for *Full* setup:
 - For UPS, there are two supported options:
@@ -64,39 +63,27 @@ The following steps will guide you through the process getting this system to wo
 ### Installation:
 #### OS installation and setup:
 - insert the SD card into a different computer to perform the first few steps:
-    - Download link is [here](https://www.raspberrypi.org/downloads/raspberry-pi-os/).
-    - Follow Raspbian’s directions [here](https://www.raspberrypi.org/documentation/installation/installing-images/README.md).
-- Eject and re-insert the SD card, and use your PC's file explorer to open the SD card which should be called *boot*.
-    - Add the following to the end of the first line in the `/boot/cmdline.txt` file:
-        - modules-load=dwc2,g_serial
-    - Save and close *cmdline.txt*
-- Create an empty file and call it *ssh* - no extensions, just *ssh*.
-- Create another file called *wpa_supplicant.conf*, and open it:
-    - Insert the following:
-```bash
-ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
-update_config=1
-country=<Country Code>
-
-network={
-    ssid="<SSID>"
-    psk="<passphrase/password>"
-    key_mgmt=WPA-PSK
-}
-```
-- Be sure to replace *\<SSID\>* with the SSID you want your pi to connect to, and replace *\<passphrase/password\>*
+    - Download link is for the imager [here](https://www.raspberrypi.com/software/).
+    - Now open the imager and perform the following steps:
+        - Select the *Raspberry Pi OS (Other)* option.
+        - Then select the *Raspberry Pi OS lite* option.
+        - Then select the *Choose Storage* button, and select your SD card.
+        - Next, select the advanced (gears) button. and fill in:
+            - hostname
+            - Check SSH, and make sure *use password authentication* is selected.
+            - Set username and password.
+            - Check *Configure Wireless LAN*.
+                - Put in your wireless LAN credentials (SSID & WPA passphrase).
+                - Select the Country you are in.
+            - Check *Locale settings*:
+                - Set timezone and keyboard layout.
+        - Click on *Save*.
+        - Click on *Write*.
 
 You are now done with this section, safely eject the SD card, and insert it into you *raspberry pi zero*.
 ##### First login:
 - Power on the bridge, and give it about a minute to boot.
     - Using your favorite SSH client, login into your pi: `pi@<[hostname|IP Address]>`, where *hostname*, or *IP Address* is = to your Pi's.
-
----
-**Note**
-
-Finding the IP address can be painful unless you have a utility on your PC or phone that can scan the network for active devices.  Recommend trying the default hostname *raspberrypi.local* first.
-
----
 
 ##### Update OS:
 ```bash
@@ -110,27 +97,10 @@ Reboot your Pi when the upgrade is complete.
 - Enter `sudo raspi-config`:
 - From the main menu, under *Advanced Options*.
     + select *Expand Filesystem* to expand.
--  From the main menu, under *System Options*.
-    + Select *Hostname*, then change to a name with **6 characters**.  Sorry for the restriction, it is in my roadmap to deal with bridges with hostnames of differnt sizes.
 - From the main menu, under *System Options*.
     + Select *Boot / Autologin*, then select *Console Autologin*.
-    + Select *Password* and change.
     + Select *Network at boot*, then select *No* to Disable *Waiting for network on boot*.
-- From the main menu, under *localization Options* verify, or set:
-    + Setup locales:
-        + De-select the default selection of *en_GB.UTF-8 UTF-8* (if you are'nt from Great Britain), and select your country's locale.
-        + Select *Ok*, then tab to and select *Ok* again.
-        + Select the locale you selected in the previous screen, then tab to and select *Ok*.
-        + Set timezone on the pi.
-        + Keyboard.  **Note**, there may be errors thrown here, that's fine for now, as we'll fix them later.
-        + wifi location.
 - From the *Main Menu*, select *Finish*, and even if you are not asked to reboot, do so.
----
-**NOTE**
-
-Do Not forget that you just changed the password and hostname of your *bridge*!
-
----
 
 ##### Additional Network Setup:
 In order for your *bridge* to keep the correct time, perform updates, or allow an alternate way to access the it, it is advisable you add more wireless networks into your *wpa_supplicant.conf*.  Examples include: allowable work networks, your home network, your hotspot, and even hotspots of your peer's phones (as allowed).
@@ -179,7 +149,7 @@ If everything went as planned, your *raspberry pi zero w* should be acting like 
 ---
 **NOTE**
 
-If you are interested in accurate time, I advise you let it connect to an available hotspot, or wlan within range. See:
+If you are interested in accurate time and you are using a pi without a UPS connected, I advise you connect it to an available hotspot, or wlan within range. See:
 [Additional Network Setup](#additional-network-setup)
 
 ---
