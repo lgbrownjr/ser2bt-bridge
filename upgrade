@@ -29,7 +29,7 @@ etc_service_folder="${etc_folder}systemd/system/"
 lib_service_folder="${lib_folder}systemd/system/"
 serial_fix_folder="${etc_service_folder}getty@ttyGS0.service.d/"
 
-#File list:
+#List of required config and image files:
 shut_file="shut" #This is the file that hold the shutdown/exit flag to save time by not loading the graphics on the e-paper.  Flags are p for power, and e for exit.
 e_ink_dev="spidev0.0"
 python_req_file="requirements.txt"
