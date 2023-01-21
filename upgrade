@@ -9,7 +9,7 @@ else
 	format_ena=flag=0 #False
 fi
 
-#Location settings:
+#File and directory Location settings:
 home="/home/${SUDO_USER}/"
 etc_folder="/etc/"
 tmp_folder="/tmp/"
