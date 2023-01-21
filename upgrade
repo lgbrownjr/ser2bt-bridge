@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#color and other formatting defenitions:
+#color and other formatting configurations:
 if [ -f /usr/local/lib/format.sh ]; then
 	source /home/pi/Projects/ser2bt-bridge/format.sh > /dev/null 2>&1
 	format_ena=flag=1 #True
