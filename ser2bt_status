@@ -307,7 +307,7 @@ try:
 #            if int(bat_lvl()) <= 10:
             image.paste(bat_00, (82,0))
 #            else:
-#                draw.text((82, 0), bat_lvl(), font=f_top_line_font16, fill = int(foreground))
+            draw.text((82, 0), bat_lvl(), font=f_top_line_font16, fill = int(background))
             draw.rectangle((137, 0, 250, 16), fill = int(background))
             draw.text((137, 0), time.strftime('%D %H:%M'), font=f_top_line_font16, fill = int(foreground))
             draw.rectangle((89, 19, 152, 39), fill = int(background))
