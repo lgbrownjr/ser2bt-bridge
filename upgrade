@@ -19,12 +19,14 @@ dev_folder="/dev/"
 boot="/boot/"
 bt_folder="bluetooth/"
 project_folder="${home}Projects/ser2bt-bridge/"
+project_img_folder="${project_folder}app_images/"
 project_service_folder="${project_folder}services/"
 support_folder="${home}Projects/support/"
 logging_folder="${home}console_logs/"
 bin_folder="/usr/local/bin/"
 main_lib_folder="/usr/local/lib/"
 ser2bt_lib_folder="${main_lib_folder}ser2bt-bridge/"
+ser2bt_img_folder="${ser2bt_lib_folder}images/"
 etc_service_folder="${etc_folder}systemd/system/"
 lib_service_folder="${lib_folder}systemd/system/"
 serial_fix_folder="${etc_service_folder}getty@ttyGS0.service.d/"
@@ -57,7 +59,7 @@ full_bin_files=( "${base_bin_files[@]}")
 pisugar2_bin_files=(button_detect bat_mon)
 ups_lite_bin_files=(bat_mon)
 base_lib_files=("format.sh")
-ser2bt_lib_files=("logo.bmp" "logo_inverted.bmp")
+ser2bt_img_files=("logo.bmp" "logo_inverted.bmp" "battery.png" "battery-10.png" "battery-90.png")
 full_lib_files=( "${base_lib_files[@]}") #The script will determine what should get added to base_lib_files later on:
 etc_files=(ser2bt_bridge.screenrc)
 wavesh_etc_files=(ser2bt_config.ini)
@@ -373,7 +375,6 @@ if [ "${e_ink}" = "True" ] && [ "${upgrade_path}" = "full" ] ; then
 	config_txt_values=("${config_txt_values[@]}" "${wavesh_config_txt_values[@]}")
 	boot_search=("${boot_search[@]}" "${wavesh_boot_search[@]}")
 	bin_files=("${bin_files[@]}" "${wavesh_bin_files[@]}")
-#	lib_files=("${lib_files[@]}" "${ser2bt_lib_files[@]}")
 	etc_files=("${etc_files[@]}" "${wavesh_etc_files[@]}")
 	service_files=("${service_files[@]}" "${wavesh_service_files[@]}")
 	service_assoc=("${service_assoc[@]}" "${wavesh_service_assoc[@]}")
@@ -620,6 +621,14 @@ done
 		printf " ${nor}Directory ${drk_grn}already ${nor}exist, moving on.\n"
 	fi
 
+	printf "\n${nor}check to make sure the ${cyn}${ser2bt_img_folder} ${nor}directories exist:\n"
+	if [ ! -d ${ser2bt_img_folder} ]; then
+		printf " ${nor}Directory does ${drk_red}not ${nor}exist, creating...\n"
+		mkdir -p ${ser2bt_img_folder}
+	else
+		printf " ${nor}Directory ${drk_grn}already ${nor}exist, moving on.\n"
+	fi
+
 #copy files to proper directories:
 	printf "\nCopying files to the ${cyn}${bin_folder} ${nor}directory:\n"
 	for file in "${bin_files[@]}" ; do
@@ -652,12 +661,12 @@ done
 	done
 
 	if [ "${e_ink}" = "True" ] && [ "${upgrade_path}" = "full" ] ; then
-		printf "\nCopying files to the ${cyn}${ser2bt_lib_folder} ${nor}directory:\n"
-		for file in "${ser2bt_lib_files[@]}" ; do
-			if cmp --silent "${ser2bt_lib_folder}${file}" "${project_folder}${file}" ; then
+		printf "\nCopying files to the ${cyn}${ser2bt_img_folder} ${nor}directory:\n"
+		for file in "${ser2bt_img_files[@]}" ; do
+			if cmp --silent "${ser2bt_img_folder}${file}" "${project_folder}${file}" ; then
 				printf " ${nor}Both versions of ${yel}${file} ${nor}are the same, Skipping...\n"
 			else
-				cp ${project_folder}${file} ${ser2bt_lib_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
+				cp ${project_img_folder}${file} ${ser2bt_img_folder} && printf " ${yel}${file} ${nor}copied.\n" || break
 			fi
 		done
 	fi
