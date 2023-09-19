@@ -31,7 +31,7 @@ bat_file = 'bat'
 np = True #New page True or False
 host_name=os.uname()[1]  # define host_name
 epd = epd2in13_V2.EPD()
-picdir='/usr/local/lib/ser2bt-bridge/'
+picdir='/usr/local/lib/ser2bt-bridge/images/'
 roboto_font_dir='/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/'
 f_top_line_font16 = ImageFont.truetype(roboto_font_dir+'Roboto-Medium.ttf', 16)
 f_title_font18 = ImageFont.truetype(roboto_font_dir+'Roboto-Bold.ttf', 18)
@@ -134,5 +134,5 @@ if shutdown_check() == "Shutdown":
     epd.display(epd.getbuffer(icon_image.rotate(screen_rotate)))
 
 epd2in13_V2.epdconfig.module_init()
-epd2in13_V2.epdconfig.module_exit()
+#epd2in13_V2.epdconfig.module_exit()
 exit()
